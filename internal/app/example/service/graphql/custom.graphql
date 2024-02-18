@@ -1,0 +1,13 @@
+extend type Query {
+    userList(page: Int, size: Int, where: UserWhereInput, orderBy: UserOrder): UserListReply!
+}
+
+type UserListReply {
+    count: Int!
+    items: [User!]
+}
+
+extend type User {
+    """角色数量"""
+    roleCount: Int!
+}

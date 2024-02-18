@@ -1,0 +1,20 @@
+key: "${APP_KEY}"
+
+trace:
+  endpoint: "${TRACE_ENDPOINT}"
+
+server:
+  http:
+    addr: 0.0.0.0:8080
+    timeout: 30000
+    
+data:
+  database:
+    driver: "mysql"
+    dsn: "${EXAMPLE_DB_DSN}"
+
+log:
+  dir: "./logs/"
+  level: "debug"
+  maxAge: 30       # day
+  rotationTime: 1  # day
