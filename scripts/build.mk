@@ -2,7 +2,6 @@
 example.build: example.build
 example.image: example.image
 example.publish: example.publish
-example.deploy: example.deploy
 
 
 .PHONY: generate

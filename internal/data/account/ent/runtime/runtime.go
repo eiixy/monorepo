@@ -5,8 +5,8 @@ package runtime
 import (
 	"time"
 
-	"github.com/eiixy/monorepo/internal/data/example/ent/schema"
-	"github.com/eiixy/monorepo/internal/data/example/ent/user"
+	"github.com/eiixy/monorepo/internal/data/account/ent/schema"
+	"github.com/eiixy/monorepo/internal/data/account/ent/user"
 )
 
 // The init function reads all schema descriptors with runtime code

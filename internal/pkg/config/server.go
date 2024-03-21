@@ -44,7 +44,6 @@ func (s Server) GrpcOptions(logger log.Logger, opts ...grpc.ServerOption) []grpc
 }
 
 func (s Server) HttpOptions(logger log.Logger, opts ...http.ServerOption) []http.ServerOption {
-	opts = append(opts, http.RequestDecoder(request.Decoder()))
 	opts = append(opts, http.Middleware(
 		recovery.Recovery(),
 		tracing.Server(),
