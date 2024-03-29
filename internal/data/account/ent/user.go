@@ -39,13 +39,16 @@ type User struct {
 type UserEdges struct {
 	// Roles holds the value of the roles edge.
 	Roles []*Role `json:"roles,omitempty"`
+	// OperationLogs holds the value of the operation_logs edge.
+	OperationLogs []*OperationLog `json:"operation_logs,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 	// totalCount holds the count of the edges above.
-	totalCount [1]map[string]int
+	totalCount [2]map[string]int
 
-	namedRoles map[string][]*Role
+	namedRoles         map[string][]*Role
+	namedOperationLogs map[string][]*OperationLog
 }
 
 // RolesOrErr returns the Roles value or an error if the edge
@@ -55,6 +58,15 @@ func (e UserEdges) RolesOrErr() ([]*Role, error) {
 		return e.Roles, nil
 	}
 	return nil, &NotLoadedError{edge: "roles"}
+}
+
+// OperationLogsOrErr returns the OperationLogs value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) OperationLogsOrErr() ([]*OperationLog, error) {
+	if e.loadedTypes[1] {
+		return e.OperationLogs, nil
+	}
+	return nil, &NotLoadedError{edge: "operation_logs"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -143,6 +155,11 @@ func (u *User) QueryRoles() *RoleQuery {
 	return NewUserClient(u.config).QueryRoles(u)
 }
 
+// QueryOperationLogs queries the "operation_logs" edge of the User entity.
+func (u *User) QueryOperationLogs() *OperationLogQuery {
+	return NewUserClient(u.config).QueryOperationLogs(u)
+}
+
 // Update returns a builder for updating this User.
 // Note that you need to call User.Unwrap() before calling this method if this User
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -207,6 +224,30 @@ func (u *User) appendNamedRoles(name string, edges ...*Role) {
 		u.Edges.namedRoles[name] = []*Role{}
 	} else {
 		u.Edges.namedRoles[name] = append(u.Edges.namedRoles[name], edges...)
+	}
+}
+
+// NamedOperationLogs returns the OperationLogs named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (u *User) NamedOperationLogs(name string) ([]*OperationLog, error) {
+	if u.Edges.namedOperationLogs == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := u.Edges.namedOperationLogs[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (u *User) appendNamedOperationLogs(name string, edges ...*OperationLog) {
+	if u.Edges.namedOperationLogs == nil {
+		u.Edges.namedOperationLogs = make(map[string][]*OperationLog)
+	}
+	if len(edges) == 0 {
+		u.Edges.namedOperationLogs[name] = []*OperationLog{}
+	} else {
+		u.Edges.namedOperationLogs[name] = append(u.Edges.namedOperationLogs[name], edges...)
 	}
 }
 

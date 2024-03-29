@@ -1,18 +1,14 @@
 key: "${APP_KEY}"
-
 trace:
-  endpoint: "${TRACE_ENDPOINT}"
-
+  endpoint: ""
 server:
   http:
     addr: 0.0.0.0:8080
     timeout: 30000
-    
 data:
   database:
-    driver: "mysql"
+    driver: "${ACCOUNT_DB_DRIVER}"
     dsn: "${ACCOUNT_DB_DSN}"
-
 log:
   dir: "./logs/"
   level: "debug"

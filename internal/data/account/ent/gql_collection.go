@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/eiixy/monorepo/internal/data/account/ent/menu"
+	"github.com/eiixy/monorepo/internal/data/account/ent/operationlog"
 	"github.com/eiixy/monorepo/internal/data/account/ent/permission"
 	"github.com/eiixy/monorepo/internal/data/account/ent/role"
 	"github.com/eiixy/monorepo/internal/data/account/ent/user"
@@ -94,6 +95,107 @@ func newMenuPaginateArgs(rv map[string]any) *menuPaginateArgs {
 	}
 	if v, ok := rv[whereField].(*MenuWhereInput); ok {
 		args.opts = append(args.opts, WithMenuFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (ol *OperationLogQuery) CollectFields(ctx context.Context, satisfies ...string) (*OperationLogQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return ol, nil
+	}
+	if err := ol.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return ol, nil
+}
+
+func (ol *OperationLogQuery) collectField(ctx context.Context, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(operationlog.Columns))
+		selectedFields = []string{operationlog.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+		case "user":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&UserClient{config: ol.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			ol.withUser = query
+			if _, ok := fieldSeen[operationlog.FieldUserID]; !ok {
+				selectedFields = append(selectedFields, operationlog.FieldUserID)
+				fieldSeen[operationlog.FieldUserID] = struct{}{}
+			}
+		case "createdAt":
+			if _, ok := fieldSeen[operationlog.FieldCreatedAt]; !ok {
+				selectedFields = append(selectedFields, operationlog.FieldCreatedAt)
+				fieldSeen[operationlog.FieldCreatedAt] = struct{}{}
+			}
+		case "updatedAt":
+			if _, ok := fieldSeen[operationlog.FieldUpdatedAt]; !ok {
+				selectedFields = append(selectedFields, operationlog.FieldUpdatedAt)
+				fieldSeen[operationlog.FieldUpdatedAt] = struct{}{}
+			}
+		case "userID":
+			if _, ok := fieldSeen[operationlog.FieldUserID]; !ok {
+				selectedFields = append(selectedFields, operationlog.FieldUserID)
+				fieldSeen[operationlog.FieldUserID] = struct{}{}
+			}
+		case "type":
+			if _, ok := fieldSeen[operationlog.FieldType]; !ok {
+				selectedFields = append(selectedFields, operationlog.FieldType)
+				fieldSeen[operationlog.FieldType] = struct{}{}
+			}
+		case "context":
+			if _, ok := fieldSeen[operationlog.FieldContext]; !ok {
+				selectedFields = append(selectedFields, operationlog.FieldContext)
+				fieldSeen[operationlog.FieldContext] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		ol.Select(selectedFields...)
+	}
+	return nil
+}
+
+type operationlogPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []OperationLogPaginateOption
+}
+
+func newOperationLogPaginateArgs(rv map[string]any) *operationlogPaginateArgs {
+	args := &operationlogPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[whereField].(*OperationLogWhereInput); ok {
+		args.opts = append(args.opts, WithOperationLogFilter(v.Filter))
 	}
 	return args
 }
@@ -321,6 +423,18 @@ func (u *UserQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 				return err
 			}
 			u.WithNamedRoles(alias, func(wq *RoleQuery) {
+				*wq = *query
+			})
+		case "operationLogs":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&OperationLogClient{config: u.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			u.WithNamedOperationLogs(alias, func(wq *OperationLogQuery) {
 				*wq = *query
 			})
 		case "createdAt":

@@ -453,6 +453,29 @@ func HasRolesWith(preds ...predicate.Role) predicate.User {
 	})
 }
 
+// HasOperationLogs applies the HasEdge predicate on the "operation_logs" edge.
+func HasOperationLogs() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, OperationLogsTable, OperationLogsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasOperationLogsWith applies the HasEdge predicate on the "operation_logs" edge with a given conditions (other predicates).
+func HasOperationLogsWith(preds ...predicate.OperationLog) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newOperationLogsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.User) predicate.User {
 	return predicate.User(sql.AndPredicates(predicates...))

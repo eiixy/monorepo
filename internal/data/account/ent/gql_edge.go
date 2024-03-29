@@ -20,6 +20,14 @@ func (m *Menu) Roles(ctx context.Context) (result []*Role, err error) {
 	return result, err
 }
 
+func (ol *OperationLog) User(ctx context.Context) (*User, error) {
+	result, err := ol.Edges.UserOrErr()
+	if IsNotLoaded(err) {
+		result, err = ol.QueryUser().Only(ctx)
+	}
+	return result, err
+}
+
 func (pe *Permission) Roles(ctx context.Context) (result []*Role, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
 		result, err = pe.NamedRoles(graphql.GetFieldContext(ctx).Field.Alias)
@@ -76,6 +84,18 @@ func (u *User) Roles(ctx context.Context) (result []*Role, err error) {
 	}
 	if IsNotLoaded(err) {
 		result, err = u.QueryRoles().All(ctx)
+	}
+	return result, err
+}
+
+func (u *User) OperationLogs(ctx context.Context) (result []*OperationLog, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = u.NamedOperationLogs(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = u.Edges.OperationLogsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = u.QueryOperationLogs().All(ctx)
 	}
 	return result, err
 }

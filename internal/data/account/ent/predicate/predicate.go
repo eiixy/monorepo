@@ -9,6 +9,9 @@ import (
 // Menu is the predicate function for menu builders.
 type Menu func(*sql.Selector)
 
+// OperationLog is the predicate function for operationlog builders.
+type OperationLog func(*sql.Selector)
+
 // Permission is the predicate function for permission builders.
 type Permission func(*sql.Selector)
 

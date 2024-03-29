@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/eiixy/monorepo/internal/data/account/ent/menu"
+	"github.com/eiixy/monorepo/internal/data/account/ent/operationlog"
 	"github.com/eiixy/monorepo/internal/data/account/ent/permission"
 	"github.com/eiixy/monorepo/internal/data/account/ent/role"
 	"github.com/eiixy/monorepo/internal/data/account/ent/user"
@@ -76,10 +77,11 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			menu.Table:       menu.ValidColumn,
-			permission.Table: permission.ValidColumn,
-			role.Table:       role.ValidColumn,
-			user.Table:       user.ValidColumn,
+			menu.Table:         menu.ValidColumn,
+			operationlog.Table: operationlog.ValidColumn,
+			permission.Table:   permission.ValidColumn,
+			role.Table:         role.ValidColumn,
+			user.Table:         user.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

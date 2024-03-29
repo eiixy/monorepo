@@ -6,11 +6,57 @@ package graphql
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/eiixy/monorepo/internal/app/account/service/graphql/dataloader"
 	"github.com/eiixy/monorepo/internal/app/account/service/graphql/model"
 	"github.com/eiixy/monorepo/internal/data/account/ent"
 )
+
+// ResetPassword is the resolver for the resetPassword field.
+func (r *mutationResolver) ResetPassword(ctx context.Context, oldPassword string, password string) (bool, error) {
+	panic(fmt.Errorf("not implemented: ResetPassword - resetPassword"))
+}
+
+// ForgetPassword is the resolver for the forgetPassword field.
+func (r *mutationResolver) ForgetPassword(ctx context.Context, email string, code string, password string) (bool, error) {
+	panic(fmt.Errorf("not implemented: ForgetPassword - forgetPassword"))
+}
+
+// CreateAccount is the resolver for the createAccount field.
+func (r *mutationResolver) CreateAccount(ctx context.Context, input model.CreateUserInput) (*ent.User, error) {
+	panic(fmt.Errorf("not implemented: CreateAccount - createAccount"))
+}
+
+// UpdateAccount is the resolver for the updateAccount field.
+func (r *mutationResolver) UpdateAccount(ctx context.Context, id int, input model.UpdateUserInput) (*ent.User, error) {
+	panic(fmt.Errorf("not implemented: UpdateAccount - updateAccount"))
+}
+
+// UpdateProfile is the resolver for the updateProfile field.
+func (r *mutationResolver) UpdateProfile(ctx context.Context, input model.UpdateProfileInput) (*ent.User, error) {
+	panic(fmt.Errorf("not implemented: UpdateProfile - updateProfile"))
+}
+
+// Login is the resolver for the login field.
+func (r *queryResolver) Login(ctx context.Context, email string, password string) (*model.LoginReply, error) {
+	panic(fmt.Errorf("not implemented: Login - login"))
+}
+
+// Profile is the resolver for the profile field.
+func (r *queryResolver) Profile(ctx context.Context) (*ent.User, error) {
+	panic(fmt.Errorf("not implemented: Profile - profile"))
+}
+
+// Refresh is the resolver for the refresh field.
+func (r *queryResolver) Refresh(ctx context.Context) (*model.LoginReply, error) {
+	panic(fmt.Errorf("not implemented: Refresh - refresh"))
+}
+
+// SendVerifyCode is the resolver for the sendVerifyCode field.
+func (r *queryResolver) SendVerifyCode(ctx context.Context, email string, verifyType model.VerifyCodeType) (bool, error) {
+	panic(fmt.Errorf("not implemented: SendVerifyCode - sendVerifyCode"))
+}
 
 // UserList is the resolver for the userList field.
 func (r *queryResolver) UserList(ctx context.Context, page *int, size *int, where *ent.UserWhereInput, orderBy *ent.UserOrder) (*model.UserListReply, error) {
@@ -31,3 +77,18 @@ func (r *queryResolver) UserList(ctx context.Context, page *int, size *int, wher
 func (r *userResolver) RoleCount(ctx context.Context, obj *ent.User) (int, error) {
 	return dataloader.For(ctx).GetUserRoleCount(ctx, obj.ID)
 }
+
+// Permissions is the resolver for the permissions field.
+func (r *userResolver) Permissions(ctx context.Context, obj *ent.User) ([]*ent.Permission, error) {
+	panic(fmt.Errorf("not implemented: Permissions - permissions"))
+}
+
+// Menus is the resolver for the menus field.
+func (r *userResolver) Menus(ctx context.Context, obj *ent.User) ([]*ent.Menu, error) {
+	panic(fmt.Errorf("not implemented: Menus - menus"))
+}
+
+// Mutation returns MutationResolver implementation.
+func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
+
+type mutationResolver struct{ *Resolver }

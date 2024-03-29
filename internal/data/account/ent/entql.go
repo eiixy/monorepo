@@ -4,6 +4,7 @@ package ent
 
 import (
 	"github.com/eiixy/monorepo/internal/data/account/ent/menu"
+	"github.com/eiixy/monorepo/internal/data/account/ent/operationlog"
 	"github.com/eiixy/monorepo/internal/data/account/ent/permission"
 	"github.com/eiixy/monorepo/internal/data/account/ent/predicate"
 	"github.com/eiixy/monorepo/internal/data/account/ent/role"
@@ -17,7 +18,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 4)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 5)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   menu.Table,
@@ -35,6 +36,24 @@ var schemaGraph = func() *sqlgraph.Schema {
 	}
 	graph.Nodes[1] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
+			Table:   operationlog.Table,
+			Columns: operationlog.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeInt,
+				Column: operationlog.FieldID,
+			},
+		},
+		Type: "OperationLog",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			operationlog.FieldCreatedAt: {Type: field.TypeTime, Column: operationlog.FieldCreatedAt},
+			operationlog.FieldUpdatedAt: {Type: field.TypeTime, Column: operationlog.FieldUpdatedAt},
+			operationlog.FieldUserID:    {Type: field.TypeInt, Column: operationlog.FieldUserID},
+			operationlog.FieldType:      {Type: field.TypeString, Column: operationlog.FieldType},
+			operationlog.FieldContext:   {Type: field.TypeJSON, Column: operationlog.FieldContext},
+		},
+	}
+	graph.Nodes[2] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
 			Table:   permission.Table,
 			Columns: permission.Columns,
 			ID: &sqlgraph.FieldSpec{
@@ -49,7 +68,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			permission.FieldDesc: {Type: field.TypeString, Column: permission.FieldDesc},
 		},
 	}
-	graph.Nodes[2] = &sqlgraph.Node{
+	graph.Nodes[3] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   role.Table,
 			Columns: role.Columns,
@@ -63,7 +82,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			role.FieldName: {Type: field.TypeString, Column: role.FieldName},
 		},
 	}
-	graph.Nodes[3] = &sqlgraph.Node{
+	graph.Nodes[4] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   user.Table,
 			Columns: user.Columns,
@@ -93,6 +112,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"Menu",
 		"Role",
+	)
+	graph.MustAddE(
+		"user",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   operationlog.UserTable,
+			Columns: []string{operationlog.UserColumn},
+			Bidi:    false,
+		},
+		"OperationLog",
+		"User",
 	)
 	graph.MustAddE(
 		"roles",
@@ -153,6 +184,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"User",
 		"Role",
+	)
+	graph.MustAddE(
+		"operation_logs",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.OperationLogsTable,
+			Columns: []string{user.OperationLogsColumn},
+			Bidi:    false,
+		},
+		"User",
+		"OperationLog",
 	)
 	return graph
 }()
@@ -228,6 +271,85 @@ func (f *MenuFilter) WhereHasRolesWith(preds ...predicate.Role) {
 }
 
 // addPredicate implements the predicateAdder interface.
+func (olq *OperationLogQuery) addPredicate(pred func(s *sql.Selector)) {
+	olq.predicates = append(olq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the OperationLogQuery builder.
+func (olq *OperationLogQuery) Filter() *OperationLogFilter {
+	return &OperationLogFilter{config: olq.config, predicateAdder: olq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *OperationLogMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the OperationLogMutation builder.
+func (m *OperationLogMutation) Filter() *OperationLogFilter {
+	return &OperationLogFilter{config: m.config, predicateAdder: m}
+}
+
+// OperationLogFilter provides a generic filtering capability at runtime for OperationLogQuery.
+type OperationLogFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *OperationLogFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[1].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql int predicate on the id field.
+func (f *OperationLogFilter) WhereID(p entql.IntP) {
+	f.Where(p.Field(operationlog.FieldID))
+}
+
+// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
+func (f *OperationLogFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(operationlog.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
+func (f *OperationLogFilter) WhereUpdatedAt(p entql.TimeP) {
+	f.Where(p.Field(operationlog.FieldUpdatedAt))
+}
+
+// WhereUserID applies the entql int predicate on the user_id field.
+func (f *OperationLogFilter) WhereUserID(p entql.IntP) {
+	f.Where(p.Field(operationlog.FieldUserID))
+}
+
+// WhereType applies the entql string predicate on the type field.
+func (f *OperationLogFilter) WhereType(p entql.StringP) {
+	f.Where(p.Field(operationlog.FieldType))
+}
+
+// WhereContext applies the entql json.RawMessage predicate on the context field.
+func (f *OperationLogFilter) WhereContext(p entql.BytesP) {
+	f.Where(p.Field(operationlog.FieldContext))
+}
+
+// WhereHasUser applies a predicate to check if query has an edge user.
+func (f *OperationLogFilter) WhereHasUser() {
+	f.Where(entql.HasEdge("user"))
+}
+
+// WhereHasUserWith applies a predicate to check if query has an edge user with a given conditions (other predicates).
+func (f *OperationLogFilter) WhereHasUserWith(preds ...predicate.User) {
+	f.Where(entql.HasEdgeWith("user", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
 func (pq *PermissionQuery) addPredicate(pred func(s *sql.Selector)) {
 	pq.predicates = append(pq.predicates, pred)
 }
@@ -256,7 +378,7 @@ type PermissionFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *PermissionFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[1].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[2].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -325,7 +447,7 @@ type RoleFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *RoleFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[2].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[3].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -412,7 +534,7 @@ type UserFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[3].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[4].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -461,6 +583,20 @@ func (f *UserFilter) WhereHasRoles() {
 // WhereHasRolesWith applies a predicate to check if query has an edge roles with a given conditions (other predicates).
 func (f *UserFilter) WhereHasRolesWith(preds ...predicate.Role) {
 	f.Where(entql.HasEdgeWith("roles", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasOperationLogs applies a predicate to check if query has an edge operation_logs.
+func (f *UserFilter) WhereHasOperationLogs() {
+	f.Where(entql.HasEdge("operation_logs"))
+}
+
+// WhereHasOperationLogsWith applies a predicate to check if query has an edge operation_logs with a given conditions (other predicates).
+func (f *UserFilter) WhereHasOperationLogsWith(preds ...predicate.OperationLog) {
+	f.Where(entql.HasEdgeWith("operation_logs", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

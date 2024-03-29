@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 
 	"github.com/eiixy/monorepo/internal/data/account/ent/menu"
+	"github.com/eiixy/monorepo/internal/data/account/ent/operationlog"
 	"github.com/eiixy/monorepo/internal/data/account/ent/permission"
 	"github.com/eiixy/monorepo/internal/data/account/ent/role"
 	"github.com/eiixy/monorepo/internal/data/account/ent/user"
@@ -65,6 +66,68 @@ func (m *Menu) Node(ctx context.Context) (node *Node, err error) {
 	}
 	err = m.QueryRoles().
 		Select(role.FieldID).
+		Scan(ctx, &node.Edges[0].IDs)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
+// Node implements Noder interface
+func (ol *OperationLog) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     ol.ID,
+		Type:   "OperationLog",
+		Fields: make([]*Field, 5),
+		Edges:  make([]*Edge, 1),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(ol.CreatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "time.Time",
+		Name:  "created_at",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(ol.UpdatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "time.Time",
+		Name:  "updated_at",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(ol.UserID); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "int",
+		Name:  "user_id",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(ol.Type); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
+		Type:  "string",
+		Name:  "type",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(ol.Context); err != nil {
+		return nil, err
+	}
+	node.Fields[4] = &Field{
+		Type:  "map[string]interface {}",
+		Name:  "context",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "User",
+		Name: "user",
+	}
+	err = ol.QueryUser().
+		Select(user.FieldID).
 		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
@@ -174,7 +237,7 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 		ID:     u.ID,
 		Type:   "User",
 		Fields: make([]*Field, 5),
-		Edges:  make([]*Edge, 1),
+		Edges:  make([]*Edge, 2),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(u.CreatedAt); err != nil {
@@ -224,6 +287,16 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	err = u.QueryRoles().
 		Select(role.FieldID).
 		Scan(ctx, &node.Edges[0].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "OperationLog",
+		Name: "operation_logs",
+	}
+	err = u.QueryOperationLogs().
+		Select(operationlog.FieldID).
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}

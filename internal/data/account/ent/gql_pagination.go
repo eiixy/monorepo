@@ -15,6 +15,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/errcode"
 	"github.com/eiixy/monorepo/internal/data/account/ent/menu"
+	"github.com/eiixy/monorepo/internal/data/account/ent/operationlog"
 	"github.com/eiixy/monorepo/internal/data/account/ent/permission"
 	"github.com/eiixy/monorepo/internal/data/account/ent/role"
 	"github.com/eiixy/monorepo/internal/data/account/ent/user"
@@ -344,6 +345,252 @@ func (m *Menu) ToEdge(order *MenuOrder) *MenuEdge {
 	return &MenuEdge{
 		Node:   m,
 		Cursor: order.Field.toCursor(m),
+	}
+}
+
+// OperationLogEdge is the edge representation of OperationLog.
+type OperationLogEdge struct {
+	Node   *OperationLog `json:"node"`
+	Cursor Cursor        `json:"cursor"`
+}
+
+// OperationLogConnection is the connection containing edges to OperationLog.
+type OperationLogConnection struct {
+	Edges      []*OperationLogEdge `json:"edges"`
+	PageInfo   PageInfo            `json:"pageInfo"`
+	TotalCount int                 `json:"totalCount"`
+}
+
+func (c *OperationLogConnection) build(nodes []*OperationLog, pager *operationlogPager, after *Cursor, first *int, before *Cursor, last *int) {
+	c.PageInfo.HasNextPage = before != nil
+	c.PageInfo.HasPreviousPage = after != nil
+	if first != nil && *first+1 == len(nodes) {
+		c.PageInfo.HasNextPage = true
+		nodes = nodes[:len(nodes)-1]
+	} else if last != nil && *last+1 == len(nodes) {
+		c.PageInfo.HasPreviousPage = true
+		nodes = nodes[:len(nodes)-1]
+	}
+	var nodeAt func(int) *OperationLog
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *OperationLog {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *OperationLog {
+			return nodes[i]
+		}
+	}
+	c.Edges = make([]*OperationLogEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		c.Edges[i] = &OperationLogEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+	if l := len(c.Edges); l > 0 {
+		c.PageInfo.StartCursor = &c.Edges[0].Cursor
+		c.PageInfo.EndCursor = &c.Edges[l-1].Cursor
+	}
+	if c.TotalCount == 0 {
+		c.TotalCount = len(nodes)
+	}
+}
+
+// OperationLogPaginateOption enables pagination customization.
+type OperationLogPaginateOption func(*operationlogPager) error
+
+// WithOperationLogOrder configures pagination ordering.
+func WithOperationLogOrder(order *OperationLogOrder) OperationLogPaginateOption {
+	if order == nil {
+		order = DefaultOperationLogOrder
+	}
+	o := *order
+	return func(pager *operationlogPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultOperationLogOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithOperationLogFilter configures pagination filter.
+func WithOperationLogFilter(filter func(*OperationLogQuery) (*OperationLogQuery, error)) OperationLogPaginateOption {
+	return func(pager *operationlogPager) error {
+		if filter == nil {
+			return errors.New("OperationLogQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type operationlogPager struct {
+	reverse bool
+	order   *OperationLogOrder
+	filter  func(*OperationLogQuery) (*OperationLogQuery, error)
+}
+
+func newOperationLogPager(opts []OperationLogPaginateOption, reverse bool) (*operationlogPager, error) {
+	pager := &operationlogPager{reverse: reverse}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultOperationLogOrder
+	}
+	return pager, nil
+}
+
+func (p *operationlogPager) applyFilter(query *OperationLogQuery) (*OperationLogQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *operationlogPager) toCursor(ol *OperationLog) Cursor {
+	return p.order.Field.toCursor(ol)
+}
+
+func (p *operationlogPager) applyCursors(query *OperationLogQuery, after, before *Cursor) (*OperationLogQuery, error) {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultOperationLogOrder.Field.column, p.order.Field.column, direction) {
+		query = query.Where(predicate)
+	}
+	return query, nil
+}
+
+func (p *operationlogPager) applyOrder(query *OperationLogQuery) *OperationLogQuery {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
+	if p.order.Field != DefaultOperationLogOrder.Field {
+		query = query.Order(DefaultOperationLogOrder.Field.toTerm(direction.OrderTermOption()))
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return query
+}
+
+func (p *operationlogPager) orderExpr(query *OperationLogQuery) sql.Querier {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return sql.ExprFunc(func(b *sql.Builder) {
+		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
+		if p.order.Field != DefaultOperationLogOrder.Field {
+			b.Comma().Ident(DefaultOperationLogOrder.Field.column).Pad().WriteString(string(direction))
+		}
+	})
+}
+
+// Paginate executes the query and returns a relay based cursor connection to OperationLog.
+func (ol *OperationLogQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...OperationLogPaginateOption,
+) (*OperationLogConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newOperationLogPager(opts, last != nil)
+	if err != nil {
+		return nil, err
+	}
+	if ol, err = pager.applyFilter(ol); err != nil {
+		return nil, err
+	}
+	conn := &OperationLogConnection{Edges: []*OperationLogEdge{}}
+	ignoredEdges := !hasCollectedField(ctx, edgesField)
+	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
+		hasPagination := after != nil || first != nil || before != nil || last != nil
+		if hasPagination || ignoredEdges {
+			if conn.TotalCount, err = ol.Clone().Count(ctx); err != nil {
+				return nil, err
+			}
+			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
+			conn.PageInfo.HasPreviousPage = last != nil && conn.TotalCount > 0
+		}
+	}
+	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
+		return conn, nil
+	}
+	if ol, err = pager.applyCursors(ol, after, before); err != nil {
+		return nil, err
+	}
+	if limit := paginateLimit(first, last); limit != 0 {
+		ol.Limit(limit)
+	}
+	if field := collectedField(ctx, edgesField, nodeField); field != nil {
+		if err := ol.collectField(ctx, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+			return nil, err
+		}
+	}
+	ol = pager.applyOrder(ol)
+	nodes, err := ol.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn.build(nodes, pager, after, first, before, last)
+	return conn, nil
+}
+
+// OperationLogOrderField defines the ordering field of OperationLog.
+type OperationLogOrderField struct {
+	// Value extracts the ordering value from the given OperationLog.
+	Value    func(*OperationLog) (ent.Value, error)
+	column   string // field or computed.
+	toTerm   func(...sql.OrderTermOption) operationlog.OrderOption
+	toCursor func(*OperationLog) Cursor
+}
+
+// OperationLogOrder defines the ordering of OperationLog.
+type OperationLogOrder struct {
+	Direction OrderDirection          `json:"direction"`
+	Field     *OperationLogOrderField `json:"field"`
+}
+
+// DefaultOperationLogOrder is the default ordering of OperationLog.
+var DefaultOperationLogOrder = &OperationLogOrder{
+	Direction: entgql.OrderDirectionAsc,
+	Field: &OperationLogOrderField{
+		Value: func(ol *OperationLog) (ent.Value, error) {
+			return ol.ID, nil
+		},
+		column: operationlog.FieldID,
+		toTerm: operationlog.ByID,
+		toCursor: func(ol *OperationLog) Cursor {
+			return Cursor{ID: ol.ID}
+		},
+	},
+}
+
+// ToEdge converts OperationLog into OperationLogEdge.
+func (ol *OperationLog) ToEdge(order *OperationLogOrder) *OperationLogEdge {
+	if order == nil {
+		order = DefaultOperationLogOrder
+	}
+	return &OperationLogEdge{
+		Node:   ol,
+		Cursor: order.Field.toCursor(ol),
 	}
 }
 

@@ -72,6 +72,49 @@ func (m *MenuQuery) List(ctx context.Context, page *int, size *int, orderBy *Men
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (ol *OperationLogQuery) CustomCollectFields(ctx context.Context, path ...string) (*OperationLogQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return ol, nil
+	}
+	if field := collectedField(ctx, path...); field != nil {
+		if err := ol.collectField(ctx, graphql.GetOperationContext(ctx), *field, path); err != nil {
+			return nil, err
+		}
+	}
+	return ol, nil
+}
+
+// List executes the query and returns count and []*OperationLog.
+func (ol *OperationLogQuery) List(ctx context.Context, page *int, size *int, orderBy *OperationLogOrder) (items []*OperationLog, count int, err error) {
+	if orderBy != nil {
+		o := Asc(orderBy.Field.column)
+		if orderBy.Direction.String() == "DESC" {
+			o = Desc(orderBy.Field.column)
+		}
+		ol.Order(o)
+	}
+	if containsField(ctx, countField) {
+		count, err = ol.Count(ctx)
+		if err != nil {
+			return
+		}
+	}
+	if containsField(ctx, itemsField) {
+		ol, err = ol.CustomCollectFields(ctx, itemsField)
+		if err != nil {
+			return
+		}
+		offset, limit := offsetLimit(page, size)
+		items, err = ol.Offset(offset).Limit(limit).All(ctx)
+		if err != nil {
+			return
+		}
+	}
+	return
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (pe *PermissionQuery) CustomCollectFields(ctx context.Context, path ...string) (*PermissionQuery, error) {
 	fc := graphql.GetFieldContext(ctx)
 	if fc == nil {

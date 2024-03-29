@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/eiixy/monorepo/internal/data/account/ent"
 	"github.com/eiixy/monorepo/internal/data/account/ent/menu"
+	"github.com/eiixy/monorepo/internal/data/account/ent/operationlog"
 	"github.com/eiixy/monorepo/internal/data/account/ent/permission"
 	"github.com/eiixy/monorepo/internal/data/account/ent/predicate"
 	"github.com/eiixy/monorepo/internal/data/account/ent/role"
@@ -98,6 +99,33 @@ func (f TraverseMenu) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.MenuQuery", q)
 }
 
+// The OperationLogFunc type is an adapter to allow the use of ordinary function as a Querier.
+type OperationLogFunc func(context.Context, *ent.OperationLogQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f OperationLogFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.OperationLogQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.OperationLogQuery", q)
+}
+
+// The TraverseOperationLog type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseOperationLog func(context.Context, *ent.OperationLogQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseOperationLog) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseOperationLog) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OperationLogQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.OperationLogQuery", q)
+}
+
 // The PermissionFunc type is an adapter to allow the use of ordinary function as a Querier.
 type PermissionFunc func(context.Context, *ent.PermissionQuery) (ent.Value, error)
 
@@ -184,6 +212,8 @@ func NewQuery(q ent.Query) (Query, error) {
 	switch q := q.(type) {
 	case *ent.MenuQuery:
 		return &query[*ent.MenuQuery, predicate.Menu, menu.OrderOption]{typ: ent.TypeMenu, tq: q}, nil
+	case *ent.OperationLogQuery:
+		return &query[*ent.OperationLogQuery, predicate.OperationLog, operationlog.OrderOption]{typ: ent.TypeOperationLog, tq: q}, nil
 	case *ent.PermissionQuery:
 		return &query[*ent.PermissionQuery, predicate.Permission, permission.OrderOption]{typ: ent.TypePermission, tq: q}, nil
 	case *ent.RoleQuery:

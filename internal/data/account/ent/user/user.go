@@ -29,6 +29,8 @@ const (
 	FieldPassword = "password"
 	// EdgeRoles holds the string denoting the roles edge name in mutations.
 	EdgeRoles = "roles"
+	// EdgeOperationLogs holds the string denoting the operation_logs edge name in mutations.
+	EdgeOperationLogs = "operation_logs"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// RolesTable is the table that holds the roles relation/edge. The primary key declared below.
@@ -36,6 +38,13 @@ const (
 	// RolesInverseTable is the table name for the Role entity.
 	// It exists in this package in order to avoid circular dependency with the "role" package.
 	RolesInverseTable = "roles"
+	// OperationLogsTable is the table that holds the operation_logs relation/edge.
+	OperationLogsTable = "operation_logs"
+	// OperationLogsInverseTable is the table name for the OperationLog entity.
+	// It exists in this package in order to avoid circular dependency with the "operationlog" package.
+	OperationLogsInverseTable = "operation_logs"
+	// OperationLogsColumn is the table column denoting the operation_logs relation/edge.
+	OperationLogsColumn = "user_id"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -132,10 +141,31 @@ func ByRoles(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newRolesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByOperationLogsCount orders the results by operation_logs count.
+func ByOperationLogsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newOperationLogsStep(), opts...)
+	}
+}
+
+// ByOperationLogs orders the results by operation_logs terms.
+func ByOperationLogs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOperationLogsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newRolesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RolesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, RolesTable, RolesPrimaryKey...),
+	)
+}
+func newOperationLogsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OperationLogsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, OperationLogsTable, OperationLogsColumn),
 	)
 }

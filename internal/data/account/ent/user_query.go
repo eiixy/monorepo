@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/eiixy/monorepo/internal/data/account/ent/operationlog"
 	"github.com/eiixy/monorepo/internal/data/account/ent/predicate"
 	"github.com/eiixy/monorepo/internal/data/account/ent/role"
 	"github.com/eiixy/monorepo/internal/data/account/ent/user"
@@ -19,14 +20,16 @@ import (
 // UserQuery is the builder for querying User entities.
 type UserQuery struct {
 	config
-	ctx            *QueryContext
-	order          []user.OrderOption
-	inters         []Interceptor
-	predicates     []predicate.User
-	withRoles      *RoleQuery
-	loadTotal      []func(context.Context, []*User) error
-	modifiers      []func(*sql.Selector)
-	withNamedRoles map[string]*RoleQuery
+	ctx                    *QueryContext
+	order                  []user.OrderOption
+	inters                 []Interceptor
+	predicates             []predicate.User
+	withRoles              *RoleQuery
+	withOperationLogs      *OperationLogQuery
+	loadTotal              []func(context.Context, []*User) error
+	modifiers              []func(*sql.Selector)
+	withNamedRoles         map[string]*RoleQuery
+	withNamedOperationLogs map[string]*OperationLogQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -78,6 +81,28 @@ func (uq *UserQuery) QueryRoles() *RoleQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(role.Table, role.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, user.RolesTable, user.RolesPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryOperationLogs chains the current query on the "operation_logs" edge.
+func (uq *UserQuery) QueryOperationLogs() *OperationLogQuery {
+	query := (&OperationLogClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(operationlog.Table, operationlog.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.OperationLogsTable, user.OperationLogsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -272,12 +297,13 @@ func (uq *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:     uq.config,
-		ctx:        uq.ctx.Clone(),
-		order:      append([]user.OrderOption{}, uq.order...),
-		inters:     append([]Interceptor{}, uq.inters...),
-		predicates: append([]predicate.User{}, uq.predicates...),
-		withRoles:  uq.withRoles.Clone(),
+		config:            uq.config,
+		ctx:               uq.ctx.Clone(),
+		order:             append([]user.OrderOption{}, uq.order...),
+		inters:            append([]Interceptor{}, uq.inters...),
+		predicates:        append([]predicate.User{}, uq.predicates...),
+		withRoles:         uq.withRoles.Clone(),
+		withOperationLogs: uq.withOperationLogs.Clone(),
 		// clone intermediate query.
 		sql:  uq.sql.Clone(),
 		path: uq.path,
@@ -292,6 +318,17 @@ func (uq *UserQuery) WithRoles(opts ...func(*RoleQuery)) *UserQuery {
 		opt(query)
 	}
 	uq.withRoles = query
+	return uq
+}
+
+// WithOperationLogs tells the query-builder to eager-load the nodes that are connected to
+// the "operation_logs" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithOperationLogs(opts ...func(*OperationLogQuery)) *UserQuery {
+	query := (&OperationLogClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withOperationLogs = query
 	return uq
 }
 
@@ -373,8 +410,9 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			uq.withRoles != nil,
+			uq.withOperationLogs != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -405,10 +443,24 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			return nil, err
 		}
 	}
+	if query := uq.withOperationLogs; query != nil {
+		if err := uq.loadOperationLogs(ctx, query, nodes,
+			func(n *User) { n.Edges.OperationLogs = []*OperationLog{} },
+			func(n *User, e *OperationLog) { n.Edges.OperationLogs = append(n.Edges.OperationLogs, e) }); err != nil {
+			return nil, err
+		}
+	}
 	for name, query := range uq.withNamedRoles {
 		if err := uq.loadRoles(ctx, query, nodes,
 			func(n *User) { n.appendNamedRoles(name) },
 			func(n *User, e *Role) { n.appendNamedRoles(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range uq.withNamedOperationLogs {
+		if err := uq.loadOperationLogs(ctx, query, nodes,
+			func(n *User) { n.appendNamedOperationLogs(name) },
+			func(n *User, e *OperationLog) { n.appendNamedOperationLogs(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -478,6 +530,36 @@ func (uq *UserQuery) loadRoles(ctx context.Context, query *RoleQuery, nodes []*U
 		for kn := range nodes {
 			assign(kn, n)
 		}
+	}
+	return nil
+}
+func (uq *UserQuery) loadOperationLogs(ctx context.Context, query *OperationLogQuery, nodes []*User, init func(*User), assign func(*User, *OperationLog)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(operationlog.FieldUserID)
+	}
+	query.Where(predicate.OperationLog(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.OperationLogsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.UserID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }
@@ -586,6 +668,20 @@ func (uq *UserQuery) WithNamedRoles(name string, opts ...func(*RoleQuery)) *User
 		uq.withNamedRoles = make(map[string]*RoleQuery)
 	}
 	uq.withNamedRoles[name] = query
+	return uq
+}
+
+// WithNamedOperationLogs tells the query-builder to eager-load the nodes that are connected to the "operation_logs"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithNamedOperationLogs(name string, opts ...func(*OperationLogQuery)) *UserQuery {
+	query := (&OperationLogClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if uq.withNamedOperationLogs == nil {
+		uq.withNamedOperationLogs = make(map[string]*OperationLogQuery)
+	}
+	uq.withNamedOperationLogs[name] = query
 	return uq
 }
 

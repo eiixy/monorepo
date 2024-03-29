@@ -2,6 +2,7 @@
 schema:
   - ent.graphql
   - custom.graphql
+  - directives.graphql
 
 # Where should any generated models go?
 model:

@@ -5,6 +5,7 @@ package runtime
 import (
 	"time"
 
+	"github.com/eiixy/monorepo/internal/data/account/ent/operationlog"
 	"github.com/eiixy/monorepo/internal/data/account/ent/schema"
 	"github.com/eiixy/monorepo/internal/data/account/ent/user"
 )
@@ -13,6 +14,21 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	operationlogMixin := schema.OperationLog{}.Mixin()
+	operationlogMixinFields0 := operationlogMixin[0].Fields()
+	_ = operationlogMixinFields0
+	operationlogFields := schema.OperationLog{}.Fields()
+	_ = operationlogFields
+	// operationlogDescCreatedAt is the schema descriptor for created_at field.
+	operationlogDescCreatedAt := operationlogMixinFields0[0].Descriptor()
+	// operationlog.DefaultCreatedAt holds the default value on creation for the created_at field.
+	operationlog.DefaultCreatedAt = operationlogDescCreatedAt.Default.(func() time.Time)
+	// operationlogDescUpdatedAt is the schema descriptor for updated_at field.
+	operationlogDescUpdatedAt := operationlogMixinFields0[1].Descriptor()
+	// operationlog.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	operationlog.DefaultUpdatedAt = operationlogDescUpdatedAt.Default.(func() time.Time)
+	// operationlog.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	operationlog.UpdateDefaultUpdatedAt = operationlogDescUpdatedAt.UpdateDefault.(func() time.Time)
 	userMixin := schema.User{}.Mixin()
 	userMixinHooks1 := userMixin[1].Hooks()
 	user.Hooks[0] = userMixinHooks1[0]

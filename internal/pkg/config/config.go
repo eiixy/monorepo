@@ -1,36 +1,40 @@
 package config
 
 import (
+	"bytes"
 	"fmt"
-	"github.com/go-kratos/kratos/v2/config"
-	"github.com/go-kratos/kratos/v2/config/env"
-	"github.com/go-kratos/kratos/v2/config/file"
 	"github.com/joho/godotenv"
+	"github.com/spf13/viper"
+	"os"
+	"strings"
 )
 
-func Load(path string, cfg any, envs ...string) {
-	var fs []string
-	for _, s := range envs {
-		if s != "" {
-			fs = append(fs, ".env."+s)
-		}
+func Load[T any](path string, cfg T) (*T, error) {
+	_ = godotenv.Load(".env")
+	readFile, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
 	}
-	LoadEnv(fs...)
-	c := config.New(config.WithSource(file.NewSource(path), env.NewSource()))
-	if err := c.Load(); err != nil {
-		fmt.Printf("load config: %s\r\n", err.Error())
+	viper.SetConfigType("yaml")
+	err = viper.ReadConfig(bytes.NewBuffer(replaceEnvVariables(readFile)))
+	if err != nil {
+		return nil, err
 	}
-
-	if err := c.Scan(cfg); err != nil {
-		fmt.Printf("scan config: %s\r\n", err.Error())
+	err = viper.Unmarshal(&cfg)
+	if err != nil {
+		return nil, err
 	}
+	return &cfg, nil
 }
 
-func LoadEnv(filenames ...string) {
-	if len(filenames) == 0 {
-		filenames = append(filenames, ".env")
+func replaceEnvVariables(text []byte) []byte {
+	// 替换文本中的环境变量名
+	replacedText := string(text)
+	for _, env := range os.Environ() {
+		envPair := strings.SplitN(env, "=", 2)
+		envName := envPair[0]
+		envValue := envPair[1]
+		replacedText = strings.ReplaceAll(replacedText, fmt.Sprintf("${%s}", envName), envValue)
 	}
-	if err := godotenv.Load(filenames...); err != nil {
-		fmt.Printf("loading env file error: %s\r\n", err.Error())
-	}
+	return []byte(replacedText)
 }

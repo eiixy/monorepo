@@ -5,23 +5,15 @@ import (
 )
 
 type Config struct {
+	Key    string
 	Server struct {
 		Http config.Server
 	}
 	Data struct {
-		Database           config.Database
-		Partnership        config.Database
-		Kafka              config.Kafka
-		KafkaConsumerGroup config.KafkaConsumerGroup
+		Database config.Database
 	}
 	Trace struct {
 		Endpoint string
 	}
 	Log config.Log
-}
-
-func Load(path string) *Config {
-	var cfg Config
-	config.Load(path, &cfg)
-	return &cfg
 }

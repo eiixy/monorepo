@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql/schema"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/eiixy/monorepo/internal/data/account/ent/menu"
+	"github.com/eiixy/monorepo/internal/data/account/ent/operationlog"
 	"github.com/eiixy/monorepo/internal/data/account/ent/permission"
 	"github.com/eiixy/monorepo/internal/data/account/ent/role"
 	"github.com/eiixy/monorepo/internal/data/account/ent/user"
@@ -29,6 +30,9 @@ type Noder interface {
 
 // IsNode implements the Node interface check for GQLGen.
 func (n *Menu) IsNode() {}
+
+// IsNode implements the Node interface check for GQLGen.
+func (n *OperationLog) IsNode() {}
 
 // IsNode implements the Node interface check for GQLGen.
 func (n *Permission) IsNode() {}
@@ -101,6 +105,18 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 		query := c.Menu.Query().
 			Where(menu.ID(id))
 		query, err := query.CollectFields(ctx, "Menu")
+		if err != nil {
+			return nil, err
+		}
+		n, err := query.Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case operationlog.Table:
+		query := c.OperationLog.Query().
+			Where(operationlog.ID(id))
+		query, err := query.CollectFields(ctx, "OperationLog")
 		if err != nil {
 			return nil, err
 		}
@@ -222,6 +238,22 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 		query := c.Menu.Query().
 			Where(menu.IDIn(ids...))
 		query, err := query.CollectFields(ctx, "Menu")
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case operationlog.Table:
+		query := c.OperationLog.Query().
+			Where(operationlog.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "OperationLog")
 		if err != nil {
 			return nil, err
 		}

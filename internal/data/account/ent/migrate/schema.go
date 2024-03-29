@@ -21,6 +21,36 @@ var (
 		Columns:    MenusColumns,
 		PrimaryKey: []*schema.Column{MenusColumns[0]},
 	}
+	// OperationLogsColumns holds the columns for the "operation_logs" table.
+	OperationLogsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
+		{Name: "type", Type: field.TypeString},
+		{Name: "context", Type: field.TypeJSON},
+		{Name: "user_id", Type: field.TypeInt},
+	}
+	// OperationLogsTable holds the schema information for the "operation_logs" table.
+	OperationLogsTable = &schema.Table{
+		Name:       "operation_logs",
+		Columns:    OperationLogsColumns,
+		PrimaryKey: []*schema.Column{OperationLogsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "operation_logs_users_operation_logs",
+				Columns:    []*schema.Column{OperationLogsColumns[5]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "operationlog_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{OperationLogsColumns[1]},
+			},
+		},
+	}
 	// PermissionsColumns holds the columns for the "permissions" table.
 	PermissionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -152,6 +182,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		MenusTable,
+		OperationLogsTable,
 		PermissionsTable,
 		RolesTable,
 		UsersTable,
@@ -162,6 +193,7 @@ var (
 )
 
 func init() {
+	OperationLogsTable.ForeignKeys[0].RefTable = UsersTable
 	UsersTable.Annotation = &entsql.Annotation{}
 	RoleMenusTable.ForeignKeys[0].RefTable = RolesTable
 	RoleMenusTable.ForeignKeys[1].RefTable = MenusTable

@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -23,7 +24,7 @@ func (OperationLog) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int("user_id"),
 		field.String("type").Comment("操作类型"),
-		field.JSON("context", map[string]any{}),
+		field.JSON("context", map[string]any{}).Annotations(entgql.Type("Map")),
 	}
 }
 
