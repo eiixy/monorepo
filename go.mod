@@ -7,7 +7,6 @@ require (
 	entgo.io/ent v0.13.0
 	github.com/99designs/gqlgen v0.17.38
 	github.com/go-kratos/kratos/v2 v2.7.2
-	github.com/go-kratos/prometheus v0.0.0-20211016100343-c88f2005265f
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/gofiber/fiber/v3 v3.0.0-20240221071727-26346d690877
 	github.com/google/wire v0.6.0
@@ -59,6 +58,7 @@ require (
 	github.com/hashicorp/hcl/v2 v2.13.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jehiah/go-strftime v0.0.0-20171201141054-1d33003b3869 // indirect
+	github.com/jonboulle/clockwork v0.4.0 // indirect
 	github.com/klauspost/compress v1.17.6 // indirect
 	github.com/lestrrat/go-envload v0.0.0-20180220120943-6ed08b54a570 // indirect
 	github.com/lestrrat/go-strftime v0.0.0-20180220042222-ba3bf9c1d042 // indirect

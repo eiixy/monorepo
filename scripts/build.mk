@@ -3,6 +3,10 @@ example.build: example.build
 example.image: example.image
 example.publish: example.publish
 
+account.build: account.build
+account.image: account.image
+account.publish: account.publish
+
 
 .PHONY: generate
 generate:
@@ -32,10 +36,11 @@ test:
 %.image:
 	$(eval SERVICE:= $*)
 	@$(MAKE) $(SERVICE).build
-	sudo docker tag $(SERVICE):$(VERSION) $(REGISTRY)/$(SERVICE):$(VERSION)
-	sudo docker push $(REGISTRY)/$(SERVICE):$(VERSION)
+	sudo docker build -t $(SERVICE):$(VERSION) -f ./deploy/build/$(SERVICE)/Dockerfile .
 
 %.publish:
 	$(eval SERVICE:= $*)
 	@$(MAKE) $(SERVICE).image
-	@echo "publish golang-$(SERVICE)"
+	@echo "publish $(SERVICE)"
+	sudo docker tag $(SERVICE):$(VERSION) $(REGISTRY)/$(SERVICE):$(VERSION)
+	sudo docker push $(REGISTRY)/$(SERVICE):$(VERSION)
