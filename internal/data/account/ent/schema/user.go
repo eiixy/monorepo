@@ -27,7 +27,7 @@ func (User) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		schema.Comment("用户"),
 		entsql.WithComments(true),
-		entgql.QueryField().Directives().Description("属性值"),
+		entgql.QueryField().Directives().Description("用户"),
 		entgql.RelayConnection(),
 	}
 }
@@ -38,6 +38,7 @@ func (User) Fields() []ent.Field {
 		field.String("email").Unique().Annotations(entgql.OrderField("EMAIL")),
 		field.String("nickname"),
 		field.String("password").Sensitive(),
+		field.Enum("status").Values("normal", "freeze").Comment("状态"),
 	}
 }
 

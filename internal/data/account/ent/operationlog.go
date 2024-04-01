@@ -14,7 +14,7 @@ import (
 	"github.com/eiixy/monorepo/internal/data/account/ent/user"
 )
 
-// OperationLog is the model entity for the OperationLog schema.
+// 操作日志
 type OperationLog struct {
 	config `json:"-"`
 	// ID of the ent.

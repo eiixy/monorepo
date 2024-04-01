@@ -12,27 +12,47 @@ var (
 	// MenusColumns holds the columns for the "menus" table.
 	MenusColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "path", Type: field.TypeString},
+		{Name: "parent_id", Type: field.TypeInt, Nullable: true},
 	}
 	// MenusTable holds the schema information for the "menus" table.
 	MenusTable = &schema.Table{
 		Name:       "menus",
+		Comment:    "菜单",
 		Columns:    MenusColumns,
 		PrimaryKey: []*schema.Column{MenusColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "menus_menus_children",
+				Columns:    []*schema.Column{MenusColumns[5]},
+				RefColumns: []*schema.Column{MenusColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "menu_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{MenusColumns[1]},
+			},
+		},
 	}
 	// OperationLogsColumns holds the columns for the "operation_logs" table.
 	OperationLogsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "created_at", Type: field.TypeTime, Nullable: true},
 		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
-		{Name: "type", Type: field.TypeString},
+		{Name: "type", Type: field.TypeString, Comment: "操作类型"},
 		{Name: "context", Type: field.TypeJSON},
 		{Name: "user_id", Type: field.TypeInt},
 	}
 	// OperationLogsTable holds the schema information for the "operation_logs" table.
 	OperationLogsTable = &schema.Table{
 		Name:       "operation_logs",
+		Comment:    "操作日志",
 		Columns:    OperationLogsColumns,
 		PrimaryKey: []*schema.Column{OperationLogsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
@@ -54,26 +74,55 @@ var (
 	// PermissionsColumns holds the columns for the "permissions" table.
 	PermissionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
 		{Name: "key", Type: field.TypeString, Unique: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "desc", Type: field.TypeString, Nullable: true},
+		{Name: "parent_id", Type: field.TypeInt, Nullable: true},
 	}
 	// PermissionsTable holds the schema information for the "permissions" table.
 	PermissionsTable = &schema.Table{
 		Name:       "permissions",
+		Comment:    "操作日志",
 		Columns:    PermissionsColumns,
 		PrimaryKey: []*schema.Column{PermissionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "permissions_permissions_children",
+				Columns:    []*schema.Column{PermissionsColumns[6]},
+				RefColumns: []*schema.Column{PermissionsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "permission_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{PermissionsColumns[1]},
+			},
+		},
 	}
 	// RolesColumns holds the columns for the "roles" table.
 	RolesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
 		{Name: "name", Type: field.TypeString},
 	}
 	// RolesTable holds the schema information for the "roles" table.
 	RolesTable = &schema.Table{
 		Name:       "roles",
+		Comment:    "角色",
 		Columns:    RolesColumns,
 		PrimaryKey: []*schema.Column{RolesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "role_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{RolesColumns[1]},
+			},
+		},
 	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
@@ -84,6 +133,7 @@ var (
 		{Name: "email", Type: field.TypeString, Unique: true},
 		{Name: "nickname", Type: field.TypeString},
 		{Name: "password", Type: field.TypeString},
+		{Name: "status", Type: field.TypeEnum, Comment: "状态", Enums: []string{"normal", "freeze"}},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
@@ -193,7 +243,13 @@ var (
 )
 
 func init() {
+	MenusTable.ForeignKeys[0].RefTable = MenusTable
+	MenusTable.Annotation = &entsql.Annotation{}
 	OperationLogsTable.ForeignKeys[0].RefTable = UsersTable
+	OperationLogsTable.Annotation = &entsql.Annotation{}
+	PermissionsTable.ForeignKeys[0].RefTable = PermissionsTable
+	PermissionsTable.Annotation = &entsql.Annotation{}
+	RolesTable.Annotation = &entsql.Annotation{}
 	UsersTable.Annotation = &entsql.Annotation{}
 	RoleMenusTable.ForeignKeys[0].RefTable = RolesTable
 	RoleMenusTable.ForeignKeys[1].RefTable = MenusTable

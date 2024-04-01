@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -18,6 +19,48 @@ type MenuCreate struct {
 	config
 	mutation *MenuMutation
 	hooks    []Hook
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (mc *MenuCreate) SetCreatedAt(t time.Time) *MenuCreate {
+	mc.mutation.SetCreatedAt(t)
+	return mc
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (mc *MenuCreate) SetNillableCreatedAt(t *time.Time) *MenuCreate {
+	if t != nil {
+		mc.SetCreatedAt(*t)
+	}
+	return mc
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (mc *MenuCreate) SetUpdatedAt(t time.Time) *MenuCreate {
+	mc.mutation.SetUpdatedAt(t)
+	return mc
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (mc *MenuCreate) SetNillableUpdatedAt(t *time.Time) *MenuCreate {
+	if t != nil {
+		mc.SetUpdatedAt(*t)
+	}
+	return mc
+}
+
+// SetParentID sets the "parent_id" field.
+func (mc *MenuCreate) SetParentID(i int) *MenuCreate {
+	mc.mutation.SetParentID(i)
+	return mc
+}
+
+// SetNillableParentID sets the "parent_id" field if the given value is not nil.
+func (mc *MenuCreate) SetNillableParentID(i *int) *MenuCreate {
+	if i != nil {
+		mc.SetParentID(*i)
+	}
+	return mc
 }
 
 // SetName sets the "name" field.
@@ -47,6 +90,26 @@ func (mc *MenuCreate) AddRoles(r ...*Role) *MenuCreate {
 	return mc.AddRoleIDs(ids...)
 }
 
+// SetParent sets the "parent" edge to the Menu entity.
+func (mc *MenuCreate) SetParent(m *Menu) *MenuCreate {
+	return mc.SetParentID(m.ID)
+}
+
+// AddChildIDs adds the "children" edge to the Menu entity by IDs.
+func (mc *MenuCreate) AddChildIDs(ids ...int) *MenuCreate {
+	mc.mutation.AddChildIDs(ids...)
+	return mc
+}
+
+// AddChildren adds the "children" edges to the Menu entity.
+func (mc *MenuCreate) AddChildren(m ...*Menu) *MenuCreate {
+	ids := make([]int, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return mc.AddChildIDs(ids...)
+}
+
 // Mutation returns the MenuMutation object of the builder.
 func (mc *MenuCreate) Mutation() *MenuMutation {
 	return mc.mutation
@@ -54,6 +117,7 @@ func (mc *MenuCreate) Mutation() *MenuMutation {
 
 // Save creates the Menu in the database.
 func (mc *MenuCreate) Save(ctx context.Context) (*Menu, error) {
+	mc.defaults()
 	return withHooks(ctx, mc.sqlSave, mc.mutation, mc.hooks)
 }
 
@@ -76,6 +140,18 @@ func (mc *MenuCreate) Exec(ctx context.Context) error {
 func (mc *MenuCreate) ExecX(ctx context.Context) {
 	if err := mc.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (mc *MenuCreate) defaults() {
+	if _, ok := mc.mutation.CreatedAt(); !ok {
+		v := menu.DefaultCreatedAt()
+		mc.mutation.SetCreatedAt(v)
+	}
+	if _, ok := mc.mutation.UpdatedAt(); !ok {
+		v := menu.DefaultUpdatedAt()
+		mc.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -113,6 +189,14 @@ func (mc *MenuCreate) createSpec() (*Menu, *sqlgraph.CreateSpec) {
 		_node = &Menu{config: mc.config}
 		_spec = sqlgraph.NewCreateSpec(menu.Table, sqlgraph.NewFieldSpec(menu.FieldID, field.TypeInt))
 	)
+	if value, ok := mc.mutation.CreatedAt(); ok {
+		_spec.SetField(menu.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := mc.mutation.UpdatedAt(); ok {
+		_spec.SetField(menu.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
+	}
 	if value, ok := mc.mutation.Name(); ok {
 		_spec.SetField(menu.FieldName, field.TypeString, value)
 		_node.Name = value
@@ -130,6 +214,39 @@ func (mc *MenuCreate) createSpec() (*Menu, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(role.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := mc.mutation.ParentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   menu.ParentTable,
+			Columns: []string{menu.ParentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(menu.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.ParentID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := mc.mutation.ChildrenIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   menu.ChildrenTable,
+			Columns: []string{menu.ChildrenColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(menu.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -158,6 +275,7 @@ func (mcb *MenuCreateBulk) Save(ctx context.Context) ([]*Menu, error) {
 	for i := range mcb.builders {
 		func(i int, root context.Context) {
 			builder := mcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*MenuMutation)
 				if !ok {

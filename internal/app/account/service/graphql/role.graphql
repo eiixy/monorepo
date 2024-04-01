@@ -1,0 +1,22 @@
+extend type Mutation {
+    """创建角色"""
+    createRole(input: CreateRoleInput!): Role! @hasPermission(key: "create_role")
+    """修改角色"""
+    updateRole(id: ID!, input: UpdateRoleInput!): Role! @hasPermission(key: "update_role")
+    """删除角色"""
+    deleteRole(id: ID!): Boolean! @hasPermission(key: "delete_role")
+
+    """创建菜单"""
+    createMenu(input: CreateMenuInput!): Menu! @hasPermission(key: "create_menu")
+    """修改菜单"""
+    updateMenu(id: ID!, input: UpdateMenuInput!): Menu! @hasPermission(key: "update_menu")
+    """删除菜单"""
+    deleteMenu(id: ID!): Boolean! @hasPermission(key: "delete_menu")
+
+    """创建权限"""
+    createPermission(input: CreatePermissionInput!): Permission! @hasPermission(key: "create_permission")
+    """修改权限"""
+    updatePermission(id: ID!, input: UpdatePermissionInput!): Permission! @hasPermission(key: "update_permission")
+    """删除权限"""
+    deletePermission(id: ID!): Boolean! @hasPermission(key: "delete_permission")
+}

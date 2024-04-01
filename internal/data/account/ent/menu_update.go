@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -26,6 +27,38 @@ type MenuUpdate struct {
 // Where appends a list predicates to the MenuUpdate builder.
 func (mu *MenuUpdate) Where(ps ...predicate.Menu) *MenuUpdate {
 	mu.mutation.Where(ps...)
+	return mu
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (mu *MenuUpdate) SetUpdatedAt(t time.Time) *MenuUpdate {
+	mu.mutation.SetUpdatedAt(t)
+	return mu
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (mu *MenuUpdate) ClearUpdatedAt() *MenuUpdate {
+	mu.mutation.ClearUpdatedAt()
+	return mu
+}
+
+// SetParentID sets the "parent_id" field.
+func (mu *MenuUpdate) SetParentID(i int) *MenuUpdate {
+	mu.mutation.SetParentID(i)
+	return mu
+}
+
+// SetNillableParentID sets the "parent_id" field if the given value is not nil.
+func (mu *MenuUpdate) SetNillableParentID(i *int) *MenuUpdate {
+	if i != nil {
+		mu.SetParentID(*i)
+	}
+	return mu
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (mu *MenuUpdate) ClearParentID() *MenuUpdate {
+	mu.mutation.ClearParentID()
 	return mu
 }
 
@@ -72,6 +105,26 @@ func (mu *MenuUpdate) AddRoles(r ...*Role) *MenuUpdate {
 	return mu.AddRoleIDs(ids...)
 }
 
+// SetParent sets the "parent" edge to the Menu entity.
+func (mu *MenuUpdate) SetParent(m *Menu) *MenuUpdate {
+	return mu.SetParentID(m.ID)
+}
+
+// AddChildIDs adds the "children" edge to the Menu entity by IDs.
+func (mu *MenuUpdate) AddChildIDs(ids ...int) *MenuUpdate {
+	mu.mutation.AddChildIDs(ids...)
+	return mu
+}
+
+// AddChildren adds the "children" edges to the Menu entity.
+func (mu *MenuUpdate) AddChildren(m ...*Menu) *MenuUpdate {
+	ids := make([]int, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return mu.AddChildIDs(ids...)
+}
+
 // Mutation returns the MenuMutation object of the builder.
 func (mu *MenuUpdate) Mutation() *MenuMutation {
 	return mu.mutation
@@ -98,8 +151,36 @@ func (mu *MenuUpdate) RemoveRoles(r ...*Role) *MenuUpdate {
 	return mu.RemoveRoleIDs(ids...)
 }
 
+// ClearParent clears the "parent" edge to the Menu entity.
+func (mu *MenuUpdate) ClearParent() *MenuUpdate {
+	mu.mutation.ClearParent()
+	return mu
+}
+
+// ClearChildren clears all "children" edges to the Menu entity.
+func (mu *MenuUpdate) ClearChildren() *MenuUpdate {
+	mu.mutation.ClearChildren()
+	return mu
+}
+
+// RemoveChildIDs removes the "children" edge to Menu entities by IDs.
+func (mu *MenuUpdate) RemoveChildIDs(ids ...int) *MenuUpdate {
+	mu.mutation.RemoveChildIDs(ids...)
+	return mu
+}
+
+// RemoveChildren removes "children" edges to Menu entities.
+func (mu *MenuUpdate) RemoveChildren(m ...*Menu) *MenuUpdate {
+	ids := make([]int, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return mu.RemoveChildIDs(ids...)
+}
+
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (mu *MenuUpdate) Save(ctx context.Context) (int, error) {
+	mu.defaults()
 	return withHooks(ctx, mu.sqlSave, mu.mutation, mu.hooks)
 }
 
@@ -125,6 +206,14 @@ func (mu *MenuUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (mu *MenuUpdate) defaults() {
+	if _, ok := mu.mutation.UpdatedAt(); !ok && !mu.mutation.UpdatedAtCleared() {
+		v := menu.UpdateDefaultUpdatedAt()
+		mu.mutation.SetUpdatedAt(v)
+	}
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (mu *MenuUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *MenuUpdate {
 	mu.modifiers = append(mu.modifiers, modifiers...)
@@ -139,6 +228,15 @@ func (mu *MenuUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if mu.mutation.CreatedAtCleared() {
+		_spec.ClearField(menu.FieldCreatedAt, field.TypeTime)
+	}
+	if value, ok := mu.mutation.UpdatedAt(); ok {
+		_spec.SetField(menu.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if mu.mutation.UpdatedAtCleared() {
+		_spec.ClearField(menu.FieldUpdatedAt, field.TypeTime)
 	}
 	if value, ok := mu.mutation.Name(); ok {
 		_spec.SetField(menu.FieldName, field.TypeString, value)
@@ -191,6 +289,80 @@ func (mu *MenuUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if mu.mutation.ParentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   menu.ParentTable,
+			Columns: []string{menu.ParentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(menu.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mu.mutation.ParentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   menu.ParentTable,
+			Columns: []string{menu.ParentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(menu.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if mu.mutation.ChildrenCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   menu.ChildrenTable,
+			Columns: []string{menu.ChildrenColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(menu.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mu.mutation.RemovedChildrenIDs(); len(nodes) > 0 && !mu.mutation.ChildrenCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   menu.ChildrenTable,
+			Columns: []string{menu.ChildrenColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(menu.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mu.mutation.ChildrenIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   menu.ChildrenTable,
+			Columns: []string{menu.ChildrenColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(menu.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.AddModifiers(mu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, mu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -211,6 +383,38 @@ type MenuUpdateOne struct {
 	hooks     []Hook
 	mutation  *MenuMutation
 	modifiers []func(*sql.UpdateBuilder)
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (muo *MenuUpdateOne) SetUpdatedAt(t time.Time) *MenuUpdateOne {
+	muo.mutation.SetUpdatedAt(t)
+	return muo
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (muo *MenuUpdateOne) ClearUpdatedAt() *MenuUpdateOne {
+	muo.mutation.ClearUpdatedAt()
+	return muo
+}
+
+// SetParentID sets the "parent_id" field.
+func (muo *MenuUpdateOne) SetParentID(i int) *MenuUpdateOne {
+	muo.mutation.SetParentID(i)
+	return muo
+}
+
+// SetNillableParentID sets the "parent_id" field if the given value is not nil.
+func (muo *MenuUpdateOne) SetNillableParentID(i *int) *MenuUpdateOne {
+	if i != nil {
+		muo.SetParentID(*i)
+	}
+	return muo
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (muo *MenuUpdateOne) ClearParentID() *MenuUpdateOne {
+	muo.mutation.ClearParentID()
+	return muo
 }
 
 // SetName sets the "name" field.
@@ -256,6 +460,26 @@ func (muo *MenuUpdateOne) AddRoles(r ...*Role) *MenuUpdateOne {
 	return muo.AddRoleIDs(ids...)
 }
 
+// SetParent sets the "parent" edge to the Menu entity.
+func (muo *MenuUpdateOne) SetParent(m *Menu) *MenuUpdateOne {
+	return muo.SetParentID(m.ID)
+}
+
+// AddChildIDs adds the "children" edge to the Menu entity by IDs.
+func (muo *MenuUpdateOne) AddChildIDs(ids ...int) *MenuUpdateOne {
+	muo.mutation.AddChildIDs(ids...)
+	return muo
+}
+
+// AddChildren adds the "children" edges to the Menu entity.
+func (muo *MenuUpdateOne) AddChildren(m ...*Menu) *MenuUpdateOne {
+	ids := make([]int, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return muo.AddChildIDs(ids...)
+}
+
 // Mutation returns the MenuMutation object of the builder.
 func (muo *MenuUpdateOne) Mutation() *MenuMutation {
 	return muo.mutation
@@ -282,6 +506,33 @@ func (muo *MenuUpdateOne) RemoveRoles(r ...*Role) *MenuUpdateOne {
 	return muo.RemoveRoleIDs(ids...)
 }
 
+// ClearParent clears the "parent" edge to the Menu entity.
+func (muo *MenuUpdateOne) ClearParent() *MenuUpdateOne {
+	muo.mutation.ClearParent()
+	return muo
+}
+
+// ClearChildren clears all "children" edges to the Menu entity.
+func (muo *MenuUpdateOne) ClearChildren() *MenuUpdateOne {
+	muo.mutation.ClearChildren()
+	return muo
+}
+
+// RemoveChildIDs removes the "children" edge to Menu entities by IDs.
+func (muo *MenuUpdateOne) RemoveChildIDs(ids ...int) *MenuUpdateOne {
+	muo.mutation.RemoveChildIDs(ids...)
+	return muo
+}
+
+// RemoveChildren removes "children" edges to Menu entities.
+func (muo *MenuUpdateOne) RemoveChildren(m ...*Menu) *MenuUpdateOne {
+	ids := make([]int, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return muo.RemoveChildIDs(ids...)
+}
+
 // Where appends a list predicates to the MenuUpdate builder.
 func (muo *MenuUpdateOne) Where(ps ...predicate.Menu) *MenuUpdateOne {
 	muo.mutation.Where(ps...)
@@ -297,6 +548,7 @@ func (muo *MenuUpdateOne) Select(field string, fields ...string) *MenuUpdateOne 
 
 // Save executes the query and returns the updated Menu entity.
 func (muo *MenuUpdateOne) Save(ctx context.Context) (*Menu, error) {
+	muo.defaults()
 	return withHooks(ctx, muo.sqlSave, muo.mutation, muo.hooks)
 }
 
@@ -319,6 +571,14 @@ func (muo *MenuUpdateOne) Exec(ctx context.Context) error {
 func (muo *MenuUpdateOne) ExecX(ctx context.Context) {
 	if err := muo.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (muo *MenuUpdateOne) defaults() {
+	if _, ok := muo.mutation.UpdatedAt(); !ok && !muo.mutation.UpdatedAtCleared() {
+		v := menu.UpdateDefaultUpdatedAt()
+		muo.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -353,6 +613,15 @@ func (muo *MenuUpdateOne) sqlSave(ctx context.Context) (_node *Menu, err error) 
 				ps[i](selector)
 			}
 		}
+	}
+	if muo.mutation.CreatedAtCleared() {
+		_spec.ClearField(menu.FieldCreatedAt, field.TypeTime)
+	}
+	if value, ok := muo.mutation.UpdatedAt(); ok {
+		_spec.SetField(menu.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if muo.mutation.UpdatedAtCleared() {
+		_spec.ClearField(menu.FieldUpdatedAt, field.TypeTime)
 	}
 	if value, ok := muo.mutation.Name(); ok {
 		_spec.SetField(menu.FieldName, field.TypeString, value)
@@ -398,6 +667,80 @@ func (muo *MenuUpdateOne) sqlSave(ctx context.Context) (_node *Menu, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(role.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if muo.mutation.ParentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   menu.ParentTable,
+			Columns: []string{menu.ParentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(menu.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := muo.mutation.ParentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   menu.ParentTable,
+			Columns: []string{menu.ParentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(menu.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if muo.mutation.ChildrenCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   menu.ChildrenTable,
+			Columns: []string{menu.ChildrenColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(menu.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := muo.mutation.RemovedChildrenIDs(); len(nodes) > 0 && !muo.mutation.ChildrenCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   menu.ChildrenTable,
+			Columns: []string{menu.ChildrenColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(menu.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := muo.mutation.ChildrenIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   menu.ChildrenTable,
+			Columns: []string{menu.ChildrenColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(menu.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

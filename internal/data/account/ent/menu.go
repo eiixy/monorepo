@@ -5,17 +5,24 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/eiixy/monorepo/internal/data/account/ent/menu"
 )
 
-// Menu is the model entity for the Menu schema.
+// 菜单
 type Menu struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// ParentID holds the value of the "parent_id" field.
+	ParentID *int `json:"parent_id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Path holds the value of the "path" field.
@@ -30,13 +37,18 @@ type Menu struct {
 type MenuEdges struct {
 	// Roles holds the value of the roles edge.
 	Roles []*Role `json:"roles,omitempty"`
+	// Parent holds the value of the parent edge.
+	Parent *Menu `json:"parent,omitempty"`
+	// Children holds the value of the children edge.
+	Children []*Menu `json:"children,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [3]bool
 	// totalCount holds the count of the edges above.
-	totalCount [1]map[string]int
+	totalCount [3]map[string]int
 
-	namedRoles map[string][]*Role
+	namedRoles    map[string][]*Role
+	namedChildren map[string][]*Menu
 }
 
 // RolesOrErr returns the Roles value or an error if the edge
@@ -48,15 +60,39 @@ func (e MenuEdges) RolesOrErr() ([]*Role, error) {
 	return nil, &NotLoadedError{edge: "roles"}
 }
 
+// ParentOrErr returns the Parent value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e MenuEdges) ParentOrErr() (*Menu, error) {
+	if e.loadedTypes[1] {
+		if e.Parent == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: menu.Label}
+		}
+		return e.Parent, nil
+	}
+	return nil, &NotLoadedError{edge: "parent"}
+}
+
+// ChildrenOrErr returns the Children value or an error if the edge
+// was not loaded in eager-loading.
+func (e MenuEdges) ChildrenOrErr() ([]*Menu, error) {
+	if e.loadedTypes[2] {
+		return e.Children, nil
+	}
+	return nil, &NotLoadedError{edge: "children"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Menu) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case menu.FieldID:
+		case menu.FieldID, menu.FieldParentID:
 			values[i] = new(sql.NullInt64)
 		case menu.FieldName, menu.FieldPath:
 			values[i] = new(sql.NullString)
+		case menu.FieldCreatedAt, menu.FieldUpdatedAt:
+			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -78,6 +114,25 @@ func (m *Menu) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			m.ID = int(value.Int64)
+		case menu.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				m.CreatedAt = value.Time
+			}
+		case menu.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				m.UpdatedAt = value.Time
+			}
+		case menu.FieldParentID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field parent_id", values[i])
+			} else if value.Valid {
+				m.ParentID = new(int)
+				*m.ParentID = int(value.Int64)
+			}
 		case menu.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
@@ -108,6 +163,16 @@ func (m *Menu) QueryRoles() *RoleQuery {
 	return NewMenuClient(m.config).QueryRoles(m)
 }
 
+// QueryParent queries the "parent" edge of the Menu entity.
+func (m *Menu) QueryParent() *MenuQuery {
+	return NewMenuClient(m.config).QueryParent(m)
+}
+
+// QueryChildren queries the "children" edge of the Menu entity.
+func (m *Menu) QueryChildren() *MenuQuery {
+	return NewMenuClient(m.config).QueryChildren(m)
+}
+
 // Update returns a builder for updating this Menu.
 // Note that you need to call Menu.Unwrap() before calling this method if this Menu
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -131,6 +196,17 @@ func (m *Menu) String() string {
 	var builder strings.Builder
 	builder.WriteString("Menu(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", m.ID))
+	builder.WriteString("created_at=")
+	builder.WriteString(m.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("updated_at=")
+	builder.WriteString(m.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	if v := m.ParentID; v != nil {
+		builder.WriteString("parent_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(m.Name)
 	builder.WriteString(", ")
@@ -161,6 +237,30 @@ func (m *Menu) appendNamedRoles(name string, edges ...*Role) {
 		m.Edges.namedRoles[name] = []*Role{}
 	} else {
 		m.Edges.namedRoles[name] = append(m.Edges.namedRoles[name], edges...)
+	}
+}
+
+// NamedChildren returns the Children named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (m *Menu) NamedChildren(name string) ([]*Menu, error) {
+	if m.Edges.namedChildren == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := m.Edges.namedChildren[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (m *Menu) appendNamedChildren(name string, edges ...*Menu) {
+	if m.Edges.namedChildren == nil {
+		m.Edges.namedChildren = make(map[string][]*Menu)
+	}
+	if len(edges) == 0 {
+		m.Edges.namedChildren[name] = []*Menu{}
+	} else {
+		m.Edges.namedChildren[name] = append(m.Edges.namedChildren[name], edges...)
 	}
 }
 

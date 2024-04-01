@@ -30,8 +30,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Menu",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			menu.FieldName: {Type: field.TypeString, Column: menu.FieldName},
-			menu.FieldPath: {Type: field.TypeString, Column: menu.FieldPath},
+			menu.FieldCreatedAt: {Type: field.TypeTime, Column: menu.FieldCreatedAt},
+			menu.FieldUpdatedAt: {Type: field.TypeTime, Column: menu.FieldUpdatedAt},
+			menu.FieldParentID:  {Type: field.TypeInt, Column: menu.FieldParentID},
+			menu.FieldName:      {Type: field.TypeString, Column: menu.FieldName},
+			menu.FieldPath:      {Type: field.TypeString, Column: menu.FieldPath},
 		},
 	}
 	graph.Nodes[1] = &sqlgraph.Node{
@@ -63,9 +66,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Permission",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			permission.FieldKey:  {Type: field.TypeString, Column: permission.FieldKey},
-			permission.FieldName: {Type: field.TypeString, Column: permission.FieldName},
-			permission.FieldDesc: {Type: field.TypeString, Column: permission.FieldDesc},
+			permission.FieldCreatedAt: {Type: field.TypeTime, Column: permission.FieldCreatedAt},
+			permission.FieldUpdatedAt: {Type: field.TypeTime, Column: permission.FieldUpdatedAt},
+			permission.FieldParentID:  {Type: field.TypeInt, Column: permission.FieldParentID},
+			permission.FieldKey:       {Type: field.TypeString, Column: permission.FieldKey},
+			permission.FieldName:      {Type: field.TypeString, Column: permission.FieldName},
+			permission.FieldDesc:      {Type: field.TypeString, Column: permission.FieldDesc},
 		},
 	}
 	graph.Nodes[3] = &sqlgraph.Node{
@@ -79,7 +85,9 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Role",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			role.FieldName: {Type: field.TypeString, Column: role.FieldName},
+			role.FieldCreatedAt: {Type: field.TypeTime, Column: role.FieldCreatedAt},
+			role.FieldUpdatedAt: {Type: field.TypeTime, Column: role.FieldUpdatedAt},
+			role.FieldName:      {Type: field.TypeString, Column: role.FieldName},
 		},
 	}
 	graph.Nodes[4] = &sqlgraph.Node{
@@ -99,6 +107,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			user.FieldEmail:     {Type: field.TypeString, Column: user.FieldEmail},
 			user.FieldNickname:  {Type: field.TypeString, Column: user.FieldNickname},
 			user.FieldPassword:  {Type: field.TypeString, Column: user.FieldPassword},
+			user.FieldStatus:    {Type: field.TypeEnum, Column: user.FieldStatus},
 		},
 	}
 	graph.MustAddE(
@@ -112,6 +121,30 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"Menu",
 		"Role",
+	)
+	graph.MustAddE(
+		"parent",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   menu.ParentTable,
+			Columns: []string{menu.ParentColumn},
+			Bidi:    false,
+		},
+		"Menu",
+		"Menu",
+	)
+	graph.MustAddE(
+		"children",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   menu.ChildrenTable,
+			Columns: []string{menu.ChildrenColumn},
+			Bidi:    false,
+		},
+		"Menu",
+		"Menu",
 	)
 	graph.MustAddE(
 		"user",
@@ -136,6 +169,30 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"Permission",
 		"Role",
+	)
+	graph.MustAddE(
+		"parent",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   permission.ParentTable,
+			Columns: []string{permission.ParentColumn},
+			Bidi:    false,
+		},
+		"Permission",
+		"Permission",
+	)
+	graph.MustAddE(
+		"children",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   permission.ChildrenTable,
+			Columns: []string{permission.ChildrenColumn},
+			Bidi:    false,
+		},
+		"Permission",
+		"Permission",
 	)
 	graph.MustAddE(
 		"menus",
@@ -246,6 +303,21 @@ func (f *MenuFilter) WhereID(p entql.IntP) {
 	f.Where(p.Field(menu.FieldID))
 }
 
+// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
+func (f *MenuFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(menu.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
+func (f *MenuFilter) WhereUpdatedAt(p entql.TimeP) {
+	f.Where(p.Field(menu.FieldUpdatedAt))
+}
+
+// WhereParentID applies the entql int predicate on the parent_id field.
+func (f *MenuFilter) WhereParentID(p entql.IntP) {
+	f.Where(p.Field(menu.FieldParentID))
+}
+
 // WhereName applies the entql string predicate on the name field.
 func (f *MenuFilter) WhereName(p entql.StringP) {
 	f.Where(p.Field(menu.FieldName))
@@ -264,6 +336,34 @@ func (f *MenuFilter) WhereHasRoles() {
 // WhereHasRolesWith applies a predicate to check if query has an edge roles with a given conditions (other predicates).
 func (f *MenuFilter) WhereHasRolesWith(preds ...predicate.Role) {
 	f.Where(entql.HasEdgeWith("roles", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasParent applies a predicate to check if query has an edge parent.
+func (f *MenuFilter) WhereHasParent() {
+	f.Where(entql.HasEdge("parent"))
+}
+
+// WhereHasParentWith applies a predicate to check if query has an edge parent with a given conditions (other predicates).
+func (f *MenuFilter) WhereHasParentWith(preds ...predicate.Menu) {
+	f.Where(entql.HasEdgeWith("parent", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasChildren applies a predicate to check if query has an edge children.
+func (f *MenuFilter) WhereHasChildren() {
+	f.Where(entql.HasEdge("children"))
+}
+
+// WhereHasChildrenWith applies a predicate to check if query has an edge children with a given conditions (other predicates).
+func (f *MenuFilter) WhereHasChildrenWith(preds ...predicate.Menu) {
+	f.Where(entql.HasEdgeWith("children", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -389,6 +489,21 @@ func (f *PermissionFilter) WhereID(p entql.IntP) {
 	f.Where(p.Field(permission.FieldID))
 }
 
+// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
+func (f *PermissionFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(permission.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
+func (f *PermissionFilter) WhereUpdatedAt(p entql.TimeP) {
+	f.Where(p.Field(permission.FieldUpdatedAt))
+}
+
+// WhereParentID applies the entql int predicate on the parent_id field.
+func (f *PermissionFilter) WhereParentID(p entql.IntP) {
+	f.Where(p.Field(permission.FieldParentID))
+}
+
 // WhereKey applies the entql string predicate on the key field.
 func (f *PermissionFilter) WhereKey(p entql.StringP) {
 	f.Where(p.Field(permission.FieldKey))
@@ -412,6 +527,34 @@ func (f *PermissionFilter) WhereHasRoles() {
 // WhereHasRolesWith applies a predicate to check if query has an edge roles with a given conditions (other predicates).
 func (f *PermissionFilter) WhereHasRolesWith(preds ...predicate.Role) {
 	f.Where(entql.HasEdgeWith("roles", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasParent applies a predicate to check if query has an edge parent.
+func (f *PermissionFilter) WhereHasParent() {
+	f.Where(entql.HasEdge("parent"))
+}
+
+// WhereHasParentWith applies a predicate to check if query has an edge parent with a given conditions (other predicates).
+func (f *PermissionFilter) WhereHasParentWith(preds ...predicate.Permission) {
+	f.Where(entql.HasEdgeWith("parent", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasChildren applies a predicate to check if query has an edge children.
+func (f *PermissionFilter) WhereHasChildren() {
+	f.Where(entql.HasEdge("children"))
+}
+
+// WhereHasChildrenWith applies a predicate to check if query has an edge children with a given conditions (other predicates).
+func (f *PermissionFilter) WhereHasChildrenWith(preds ...predicate.Permission) {
+	f.Where(entql.HasEdgeWith("children", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -456,6 +599,16 @@ func (f *RoleFilter) Where(p entql.P) {
 // WhereID applies the entql int predicate on the id field.
 func (f *RoleFilter) WhereID(p entql.IntP) {
 	f.Where(p.Field(role.FieldID))
+}
+
+// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
+func (f *RoleFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(role.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
+func (f *RoleFilter) WhereUpdatedAt(p entql.TimeP) {
+	f.Where(p.Field(role.FieldUpdatedAt))
 }
 
 // WhereName applies the entql string predicate on the name field.
@@ -573,6 +726,11 @@ func (f *UserFilter) WhereNickname(p entql.StringP) {
 // WherePassword applies the entql string predicate on the password field.
 func (f *UserFilter) WherePassword(p entql.StringP) {
 	f.Where(p.Field(user.FieldPassword))
+}
+
+// WhereStatus applies the entql string predicate on the status field.
+func (f *UserFilter) WhereStatus(p entql.StringP) {
+	f.Where(p.Field(user.FieldStatus))
 }
 
 // WhereHasRoles applies a predicate to check if query has an edge roles.

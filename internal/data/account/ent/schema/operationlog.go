@@ -3,6 +3,8 @@ package schema
 import (
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/eiixy/monorepo/internal/data/account/mixin"
@@ -16,6 +18,17 @@ type OperationLog struct {
 func (OperationLog) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		mixin.TimeMixin{},
+	}
+}
+
+// Annotations of the OperationLog.
+func (OperationLog) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		schema.Comment("操作日志"),
+		entsql.WithComments(true),
+		entgql.QueryField().Directives().Description("操作日志"),
+		entgql.RelayConnection(),
+		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
 	}
 }
 

@@ -20,6 +20,26 @@ func (m *Menu) Roles(ctx context.Context) (result []*Role, err error) {
 	return result, err
 }
 
+func (m *Menu) Parent(ctx context.Context) (*Menu, error) {
+	result, err := m.Edges.ParentOrErr()
+	if IsNotLoaded(err) {
+		result, err = m.QueryParent().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (m *Menu) Children(ctx context.Context) (result []*Menu, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = m.NamedChildren(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = m.Edges.ChildrenOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = m.QueryChildren().All(ctx)
+	}
+	return result, err
+}
+
 func (ol *OperationLog) User(ctx context.Context) (*User, error) {
 	result, err := ol.Edges.UserOrErr()
 	if IsNotLoaded(err) {
@@ -36,6 +56,26 @@ func (pe *Permission) Roles(ctx context.Context) (result []*Role, err error) {
 	}
 	if IsNotLoaded(err) {
 		result, err = pe.QueryRoles().All(ctx)
+	}
+	return result, err
+}
+
+func (pe *Permission) Parent(ctx context.Context) (*Permission, error) {
+	result, err := pe.Edges.ParentOrErr()
+	if IsNotLoaded(err) {
+		result, err = pe.QueryParent().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (pe *Permission) Children(ctx context.Context) (result []*Permission, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = pe.NamedChildren(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = pe.Edges.ChildrenOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = pe.QueryChildren().All(ctx)
 	}
 	return result, err
 }

@@ -48,6 +48,47 @@ func (m *MenuQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 			m.WithNamedRoles(alias, func(wq *RoleQuery) {
 				*wq = *query
 			})
+		case "parent":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&MenuClient{config: m.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			m.withParent = query
+			if _, ok := fieldSeen[menu.FieldParentID]; !ok {
+				selectedFields = append(selectedFields, menu.FieldParentID)
+				fieldSeen[menu.FieldParentID] = struct{}{}
+			}
+		case "children":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&MenuClient{config: m.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			m.WithNamedChildren(alias, func(wq *MenuQuery) {
+				*wq = *query
+			})
+		case "createdAt":
+			if _, ok := fieldSeen[menu.FieldCreatedAt]; !ok {
+				selectedFields = append(selectedFields, menu.FieldCreatedAt)
+				fieldSeen[menu.FieldCreatedAt] = struct{}{}
+			}
+		case "updatedAt":
+			if _, ok := fieldSeen[menu.FieldUpdatedAt]; !ok {
+				selectedFields = append(selectedFields, menu.FieldUpdatedAt)
+				fieldSeen[menu.FieldUpdatedAt] = struct{}{}
+			}
+		case "parentID":
+			if _, ok := fieldSeen[menu.FieldParentID]; !ok {
+				selectedFields = append(selectedFields, menu.FieldParentID)
+				fieldSeen[menu.FieldParentID] = struct{}{}
+			}
 		case "name":
 			if _, ok := fieldSeen[menu.FieldName]; !ok {
 				selectedFields = append(selectedFields, menu.FieldName)
@@ -233,6 +274,47 @@ func (pe *PermissionQuery) collectField(ctx context.Context, opCtx *graphql.Oper
 			pe.WithNamedRoles(alias, func(wq *RoleQuery) {
 				*wq = *query
 			})
+		case "parent":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&PermissionClient{config: pe.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			pe.withParent = query
+			if _, ok := fieldSeen[permission.FieldParentID]; !ok {
+				selectedFields = append(selectedFields, permission.FieldParentID)
+				fieldSeen[permission.FieldParentID] = struct{}{}
+			}
+		case "children":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&PermissionClient{config: pe.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			pe.WithNamedChildren(alias, func(wq *PermissionQuery) {
+				*wq = *query
+			})
+		case "createdAt":
+			if _, ok := fieldSeen[permission.FieldCreatedAt]; !ok {
+				selectedFields = append(selectedFields, permission.FieldCreatedAt)
+				fieldSeen[permission.FieldCreatedAt] = struct{}{}
+			}
+		case "updatedAt":
+			if _, ok := fieldSeen[permission.FieldUpdatedAt]; !ok {
+				selectedFields = append(selectedFields, permission.FieldUpdatedAt)
+				fieldSeen[permission.FieldUpdatedAt] = struct{}{}
+			}
+		case "parentID":
+			if _, ok := fieldSeen[permission.FieldParentID]; !ok {
+				selectedFields = append(selectedFields, permission.FieldParentID)
+				fieldSeen[permission.FieldParentID] = struct{}{}
+			}
 		case "key":
 			if _, ok := fieldSeen[permission.FieldKey]; !ok {
 				selectedFields = append(selectedFields, permission.FieldKey)
@@ -346,6 +428,16 @@ func (r *RoleQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 			r.WithNamedUsers(alias, func(wq *UserQuery) {
 				*wq = *query
 			})
+		case "createdAt":
+			if _, ok := fieldSeen[role.FieldCreatedAt]; !ok {
+				selectedFields = append(selectedFields, role.FieldCreatedAt)
+				fieldSeen[role.FieldCreatedAt] = struct{}{}
+			}
+		case "updatedAt":
+			if _, ok := fieldSeen[role.FieldUpdatedAt]; !ok {
+				selectedFields = append(selectedFields, role.FieldUpdatedAt)
+				fieldSeen[role.FieldUpdatedAt] = struct{}{}
+			}
 		case "name":
 			if _, ok := fieldSeen[role.FieldName]; !ok {
 				selectedFields = append(selectedFields, role.FieldName)
@@ -456,6 +548,11 @@ func (u *UserQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 			if _, ok := fieldSeen[user.FieldNickname]; !ok {
 				selectedFields = append(selectedFields, user.FieldNickname)
 				fieldSeen[user.FieldNickname] = struct{}{}
+			}
+		case "status":
+			if _, ok := fieldSeen[user.FieldStatus]; !ok {
+				selectedFields = append(selectedFields, user.FieldStatus)
+				fieldSeen[user.FieldStatus] = struct{}{}
 			}
 		case "id":
 		case "__typename":
