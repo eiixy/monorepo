@@ -19,7 +19,11 @@ func GetUserId(ctx context.Context) int {
 }
 
 func GetUser(ctx context.Context) *ent.User {
-	return ctx.Value(userKey).(*ent.User)
+	v := ctx.Value(userKey)
+	if v == nil {
+		return nil
+	}
+	return v.(*ent.User)
 }
 
 func Middleware(key string, client *ent.Client, next http.Handler) http.Handler {
