@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/eiixy/monorepo/internal/data/admin/mixin"
+	"github.com/eiixy/monorepo/internal/data/annotations"
 )
 
 // User holds the schema definition for the User entity.
@@ -40,7 +41,10 @@ func (User) Fields() []ent.Field {
 		field.String("nickname"),
 		field.String("avatar").Optional(),
 		field.String("password").Sensitive(),
-		field.Enum("status").Values("normal", "freeze").Comment("状态"),
+		field.Enum("status").Values("normal", "freeze").Comment("状态").Annotations(annotations.Enums{
+			"normal": "正常",
+			"freeze": "冻结",
+		}),
 		field.Bool("is_admin").Default(false),
 	}
 }

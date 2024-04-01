@@ -1040,7 +1040,13 @@ enum UserOrderField {
 UserStatus is enum for the field status
 """
 enum UserStatus @goModel(model: "github.com/eiixy/monorepo/internal/data/admin/ent/user.Status") {
+  """
+  正常
+  """
   normal
+  """
+  冻结
+  """
   freeze
 }
 """
