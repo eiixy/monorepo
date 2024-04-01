@@ -29,7 +29,7 @@ func NewAccountUseCase(cfg *conf.Config) *AccountUseCase {
 }
 
 func (r AccountUseCase) GenerateToken(ctx context.Context, userId int) (string, int64, error) {
-	exp := time.Now().Add(time.Hour * 24).Unix()
+	exp := time.Now().Add(time.Hour * 24 * 7).Unix()
 	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": cast.ToString(userId),
 		"exp": exp,               // Expiration Time
