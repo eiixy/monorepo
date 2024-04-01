@@ -36,11 +36,11 @@ test:
 %.image:
 	$(eval SERVICE:= $*)
 	@$(MAKE) $(SERVICE).build
-	sudo docker build -t $(SERVICE):$(VERSION) -f ./deploy/build/$(SERVICE)/Dockerfile .
+	docker build -t $(SERVICE):$(VERSION) -f ./deploy/build/$(SERVICE)/Dockerfile .
 
 %.publish:
 	$(eval SERVICE:= $*)
 	@$(MAKE) $(SERVICE).image
 	@echo "publish $(SERVICE)"
-	sudo docker tag $(SERVICE):$(VERSION) $(REGISTRY)/$(SERVICE):$(VERSION)
-	sudo docker push $(REGISTRY)/$(SERVICE):$(VERSION)
+	docker tag $(SERVICE):$(VERSION) $(IMAGE_REGISTRY)/$(SERVICE):$(VERSION)
+	docker push $(IMAGE_REGISTRY)/$(SERVICE):$(VERSION)
