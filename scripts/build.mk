@@ -1,11 +1,6 @@
-## Example
-example.build: example.build
-example.image: example.image
-example.publish: example.publish
-
-account.build: account.build
-account.image: account.image
-account.publish: account.publish
+admin.build: admin.build
+admin.image: admin.image
+admin.publish: admin.publish
 
 
 .PHONY: generate

@@ -1,0 +1,52 @@
+extend type Query {
+    """登陆"""
+    login(email: String!, password: String!): LoginReply!
+    """个人信息"""
+    profile: User! @login
+    """刷新token"""
+    refresh: LoginReply! @login
+    """发送验证码"""
+    sendVerifyCode(email: String!, verifyType: verifyCodeType!): Boolean!
+}
+
+
+type Mutation {
+    """重置密码"""
+    resetPassword(oldPassword: String!, password: String!): Boolean! @login
+    """忘记密码"""
+    forgetPassword(email: String!, code: String!, password: String!): Boolean!
+    """修改个人信息"""
+    updateProfile(input: UpdateProfileInput!): User! @login
+}
+
+extend type User {
+    """角色数量"""
+    roleCount: Int!
+}
+
+enum verifyCodeType {
+    """忘记密码"""
+    ForgetPassword
+    """注册验证"""
+    Register
+}
+
+type LoginReply {
+    token: String!
+    """过期时间（秒）"""
+    exp: Int!,
+    user: User!
+}
+
+extend type User {
+    """权限"""
+    permissions: [Permission!]
+    """菜单"""
+    menus: [Menu!]
+}
+
+input UpdateProfileInput {
+    nickname: String
+    avatar: String
+    mobile: String
+}
