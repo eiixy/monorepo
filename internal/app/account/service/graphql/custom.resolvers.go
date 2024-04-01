@@ -6,56 +6,117 @@ package graphql
 
 import (
 	"context"
-	"fmt"
+	"errors"
 
+	"github.com/eiixy/monorepo/internal/app/account/server/auth"
 	"github.com/eiixy/monorepo/internal/app/account/service/graphql/dataloader"
 	"github.com/eiixy/monorepo/internal/app/account/service/graphql/model"
 	"github.com/eiixy/monorepo/internal/data/account/ent"
+	"github.com/eiixy/monorepo/internal/data/account/ent/menu"
+	"github.com/eiixy/monorepo/internal/data/account/ent/permission"
+	"github.com/eiixy/monorepo/internal/data/account/ent/role"
+	"github.com/eiixy/monorepo/internal/data/account/ent/user"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // ResetPassword is the resolver for the resetPassword field.
 func (r *mutationResolver) ResetPassword(ctx context.Context, oldPassword string, password string) (bool, error) {
-	panic(fmt.Errorf("not implemented: ResetPassword - resetPassword"))
+	u, err := r.client.User.Get(ctx, auth.GetUserId(ctx))
+	if err != nil {
+		return false, err
+	}
+	if !r.accountUseCase.VerifyPassword(u, oldPassword) {
+		return false, ErrAccountOrPasswordInvalid
+	}
+	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
+	if err != nil {
+		return false, errors.New("bcrypt: GenerateFromPassword Error")
+	}
+	err = u.Update().SetPassword(string(hashed)).Exec(ctx)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 // ForgetPassword is the resolver for the forgetPassword field.
 func (r *mutationResolver) ForgetPassword(ctx context.Context, email string, code string, password string) (bool, error) {
-	panic(fmt.Errorf("not implemented: ForgetPassword - forgetPassword"))
-}
-
-// CreateAccount is the resolver for the createAccount field.
-func (r *mutationResolver) CreateAccount(ctx context.Context, input model.CreateUserInput) (*ent.User, error) {
-	panic(fmt.Errorf("not implemented: CreateAccount - createAccount"))
-}
-
-// UpdateAccount is the resolver for the updateAccount field.
-func (r *mutationResolver) UpdateAccount(ctx context.Context, id int, input model.UpdateUserInput) (*ent.User, error) {
-	panic(fmt.Errorf("not implemented: UpdateAccount - updateAccount"))
+	ok := r.accountUseCase.CheckEmailVerifyCode(email, model.VerifyCodeTypeForgetPassword, code)
+	if !ok {
+		return false, ErrVerifyCodeInvalid
+	}
+	first, err := r.client.User.Query().Where(user.Email(email)).First(ctx)
+	if ent.IsNotFound(err) {
+		return false, ErrAccountOrPasswordInvalid
+	} else if err != nil {
+		return false, err
+	}
+	err = first.Update().SetPassword(r.accountUseCase.GeneratePassword(password)).Exec(ctx)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 // UpdateProfile is the resolver for the updateProfile field.
 func (r *mutationResolver) UpdateProfile(ctx context.Context, input model.UpdateProfileInput) (*ent.User, error) {
-	panic(fmt.Errorf("not implemented: UpdateProfile - updateProfile"))
+	return r.client.User.UpdateOneID(auth.GetUserId(ctx)).
+		//SetNillableAvatar(input.Avatar).
+		//SetNillableMobile(input.Mobile).
+		SetNillableNickname(input.Nickname).Save(ctx)
 }
 
 // Login is the resolver for the login field.
 func (r *queryResolver) Login(ctx context.Context, email string, password string) (*model.LoginReply, error) {
-	panic(fmt.Errorf("not implemented: Login - login"))
+	first, err := r.client.User.Query().Where(user.Email(email)).First(ctx)
+	if ent.IsNotFound(err) {
+		return nil, ErrAccountOrPasswordInvalid
+	} else if err != nil {
+		return nil, err
+	}
+	if !r.accountUseCase.VerifyPassword(first, password) {
+		return nil, ErrAccountOrPasswordInvalid
+	}
+	token, exp, err := r.accountUseCase.GenerateToken(ctx, first.ID)
+	if err != nil {
+		return nil, err
+	}
+	return &model.LoginReply{
+		Token: token,
+		Exp:   int(exp),
+		User:  first,
+	}, nil
 }
 
 // Profile is the resolver for the profile field.
 func (r *queryResolver) Profile(ctx context.Context) (*ent.User, error) {
-	panic(fmt.Errorf("not implemented: Profile - profile"))
+	return r.client.User.Get(ctx, auth.GetUserId(ctx))
 }
 
 // Refresh is the resolver for the refresh field.
 func (r *queryResolver) Refresh(ctx context.Context) (*model.LoginReply, error) {
-	panic(fmt.Errorf("not implemented: Refresh - refresh"))
+	first, err := r.client.User.Get(ctx, auth.GetUserId(ctx))
+	if err != nil {
+		return nil, err
+	}
+	token, exp, err := r.accountUseCase.GenerateToken(ctx, first.ID)
+	if err != nil {
+		return nil, err
+	}
+	return &model.LoginReply{
+		Token: token,
+		Exp:   int(exp),
+		User:  first,
+	}, nil
 }
 
 // SendVerifyCode is the resolver for the sendVerifyCode field.
 func (r *queryResolver) SendVerifyCode(ctx context.Context, email string, verifyType model.VerifyCodeType) (bool, error) {
-	panic(fmt.Errorf("not implemented: SendVerifyCode - sendVerifyCode"))
+	err := r.accountUseCase.SendEmail(email, verifyType)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 // UserList is the resolver for the userList field.
@@ -80,12 +141,12 @@ func (r *userResolver) RoleCount(ctx context.Context, obj *ent.User) (int, error
 
 // Permissions is the resolver for the permissions field.
 func (r *userResolver) Permissions(ctx context.Context, obj *ent.User) ([]*ent.Permission, error) {
-	panic(fmt.Errorf("not implemented: Permissions - permissions"))
+	return r.client.Permission.Query().Where(permission.HasRolesWith(role.HasUsersWith(user.ID(obj.ID)))).All(ctx)
 }
 
 // Menus is the resolver for the menus field.
 func (r *userResolver) Menus(ctx context.Context, obj *ent.User) ([]*ent.Menu, error) {
-	panic(fmt.Errorf("not implemented: Menus - menus"))
+	return r.client.Menu.Query().Where(menu.HasRolesWith(role.HasUsersWith(user.ID(obj.ID)))).All(ctx)
 }
 
 // Mutation returns MutationResolver implementation.

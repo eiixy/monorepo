@@ -10,14 +10,6 @@ import (
 	"github.com/eiixy/monorepo/internal/data/account/ent"
 )
 
-type CreateUserInput struct {
-	Email    string  `json:"email"`
-	Nickname string  `json:"nickname"`
-	Avatar   *string `json:"avatar,omitempty"`
-	Mobile   *string `json:"mobile,omitempty"`
-	Password string  `json:"password"`
-}
-
 type LoginReply struct {
 	Token string `json:"token"`
 	// 过期时间（秒）
@@ -29,13 +21,6 @@ type UpdateProfileInput struct {
 	Nickname *string `json:"nickname,omitempty"`
 	Avatar   *string `json:"avatar,omitempty"`
 	Mobile   *string `json:"mobile,omitempty"`
-}
-
-type UpdateUserInput struct {
-	Nickname *string `json:"nickname,omitempty"`
-	Avatar   *string `json:"avatar,omitempty"`
-	Mobile   *string `json:"mobile,omitempty"`
-	Password *string `json:"password,omitempty"`
 }
 
 type UserListReply struct {

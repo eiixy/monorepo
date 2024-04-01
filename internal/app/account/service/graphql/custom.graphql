@@ -18,10 +18,6 @@ type Mutation {
     resetPassword(oldPassword: String!, password: String!): Boolean! @login
     """忘记密码"""
     forgetPassword(email: String!, code: String!, password: String!): Boolean!
-    """创建账号"""
-    createAccount(input: CreateUserInput!): User! @hasPermission(key: "create_account")
-    """修改账号"""
-    updateAccount(id: ID!, input: UpdateUserInput!): User! @hasPermission(key: "update_account")
     """修改个人信息"""
     updateProfile(input: UpdateProfileInput!): User! @login
 }
@@ -61,19 +57,4 @@ input UpdateProfileInput {
     nickname: String
     avatar: String
     mobile: String
-}
-
-input CreateUserInput{
-    email: String!
-    nickname: String!
-    avatar: String
-    mobile: String
-    password: String!
-}
-
-input UpdateUserInput{
-    nickname: String
-    avatar: String
-    mobile: String
-    password: String
 }

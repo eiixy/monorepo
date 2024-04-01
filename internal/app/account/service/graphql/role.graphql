@@ -1,4 +1,9 @@
 extend type Mutation {
+    """创建用户"""
+    createUser(input: CreateUserInput!): User! @hasPermission(key: "create_user")
+    """修改用户"""
+    updateUser(id: ID!, input: UpdateUserInput!): User! @hasPermission(key: "update_user")
+
     """创建角色"""
     createRole(input: CreateRoleInput!): Role! @hasPermission(key: "create_role")
     """修改角色"""

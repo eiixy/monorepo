@@ -4,6 +4,7 @@
 package main
 
 import (
+	"github.com/eiixy/monorepo/internal/app/account/biz"
 	"github.com/eiixy/monorepo/internal/app/account/conf"
 	"github.com/eiixy/monorepo/internal/app/account/data"
 	"github.com/eiixy/monorepo/internal/app/account/server"
@@ -14,5 +15,5 @@ import (
 )
 
 func initApp(log.Logger, *conf.Config) (*kratos.App, func(), error) {
-	panic(wire.Build(data.ProviderSet, server.ProviderSet, service.ProviderSet, newApp))
+	panic(wire.Build(biz.ProviderSet, data.ProviderSet, server.ProviderSet, service.ProviderSet, newApp))
 }

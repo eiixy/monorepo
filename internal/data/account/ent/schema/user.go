@@ -29,6 +29,7 @@ func (User) Annotations() []schema.Annotation {
 		entsql.WithComments(true),
 		entgql.QueryField().Directives().Description("用户"),
 		entgql.RelayConnection(),
+		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
 	}
 }
 

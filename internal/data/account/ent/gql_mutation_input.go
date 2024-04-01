@@ -2,6 +2,10 @@
 
 package ent
 
+import (
+	"github.com/eiixy/monorepo/internal/data/account/ent/user"
+)
+
 // CreateMenuInput represents a mutation input for creating menus.
 type CreateMenuInput struct {
 	Name     string
@@ -332,6 +336,96 @@ func (c *RoleUpdate) SetInput(i UpdateRoleInput) *RoleUpdate {
 
 // SetInput applies the change-set in the UpdateRoleInput on the RoleUpdateOne builder.
 func (c *RoleUpdateOne) SetInput(i UpdateRoleInput) *RoleUpdateOne {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// CreateUserInput represents a mutation input for creating users.
+type CreateUserInput struct {
+	Email           string
+	Nickname        string
+	Password        string
+	Status          user.Status
+	RoleIDs         []int
+	OperationLogIDs []int
+}
+
+// Mutate applies the CreateUserInput on the UserMutation builder.
+func (i *CreateUserInput) Mutate(m *UserMutation) {
+	m.SetEmail(i.Email)
+	m.SetNickname(i.Nickname)
+	m.SetPassword(i.Password)
+	m.SetStatus(i.Status)
+	if v := i.RoleIDs; len(v) > 0 {
+		m.AddRoleIDs(v...)
+	}
+	if v := i.OperationLogIDs; len(v) > 0 {
+		m.AddOperationLogIDs(v...)
+	}
+}
+
+// SetInput applies the change-set in the CreateUserInput on the UserCreate builder.
+func (c *UserCreate) SetInput(i CreateUserInput) *UserCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// UpdateUserInput represents a mutation input for updating users.
+type UpdateUserInput struct {
+	Email                 *string
+	Nickname              *string
+	Password              *string
+	Status                *user.Status
+	ClearRoles            bool
+	AddRoleIDs            []int
+	RemoveRoleIDs         []int
+	ClearOperationLogs    bool
+	AddOperationLogIDs    []int
+	RemoveOperationLogIDs []int
+}
+
+// Mutate applies the UpdateUserInput on the UserMutation builder.
+func (i *UpdateUserInput) Mutate(m *UserMutation) {
+	if v := i.Email; v != nil {
+		m.SetEmail(*v)
+	}
+	if v := i.Nickname; v != nil {
+		m.SetNickname(*v)
+	}
+	if v := i.Password; v != nil {
+		m.SetPassword(*v)
+	}
+	if v := i.Status; v != nil {
+		m.SetStatus(*v)
+	}
+	if i.ClearRoles {
+		m.ClearRoles()
+	}
+	if v := i.AddRoleIDs; len(v) > 0 {
+		m.AddRoleIDs(v...)
+	}
+	if v := i.RemoveRoleIDs; len(v) > 0 {
+		m.RemoveRoleIDs(v...)
+	}
+	if i.ClearOperationLogs {
+		m.ClearOperationLogs()
+	}
+	if v := i.AddOperationLogIDs; len(v) > 0 {
+		m.AddOperationLogIDs(v...)
+	}
+	if v := i.RemoveOperationLogIDs; len(v) > 0 {
+		m.RemoveOperationLogIDs(v...)
+	}
+}
+
+// SetInput applies the change-set in the UpdateUserInput on the UserUpdate builder.
+func (c *UserUpdate) SetInput(i UpdateUserInput) *UserUpdate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// SetInput applies the change-set in the UpdateUserInput on the UserUpdateOne builder.
+func (c *UserUpdateOne) SetInput(i UpdateUserInput) *UserUpdateOne {
 	i.Mutate(c.Mutation())
 	return c
 }

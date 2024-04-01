@@ -12,6 +12,7 @@ type Config struct {
 	Data struct {
 		Database config.Database
 	}
+	Email config.Email
 	Trace struct {
 		Endpoint string
 	}
