@@ -12,6 +12,7 @@ input CreateMenuInput {
   roleIDs: [ID!]
   parentID: ID
   childIDs: [ID!]
+  permissionIDs: [ID!]
 }
 """
 CreateOperationLogInput is used for create OperationLog object.
@@ -35,6 +36,7 @@ input CreatePermissionInput {
   desc: String
   sort: Int
   roleIDs: [ID!]
+  menuIDs: [ID!]
   parentID: ID
   childIDs: [ID!]
 }
@@ -87,6 +89,7 @@ type Menu implements Node {
   roles: [Role!]
   parent: Menu
   children: [Menu!]
+  permissions: [Permission!]
 }
 """
 A connection to a list of items.
@@ -246,6 +249,11 @@ input MenuWhereInput {
   """
   hasChildren: Boolean
   hasChildrenWith: [MenuWhereInput!]
+  """
+  permissions edge predicates
+  """
+  hasPermissions: Boolean
+  hasPermissionsWith: [PermissionWhereInput!]
 }
 """
 An object with an ID.
@@ -418,6 +426,7 @@ type Permission implements Node {
   desc: String
   sort: Int!
   roles: [Role!]
+  menus: [Menu!]
   parent: Permission
   children: [Permission!]
 }
@@ -571,6 +580,11 @@ input PermissionWhereInput {
   """
   hasRoles: Boolean
   hasRolesWith: [RoleWhereInput!]
+  """
+  menus edge predicates
+  """
+  hasMenus: Boolean
+  hasMenusWith: [MenuWhereInput!]
   """
   parent edge predicates
   """
@@ -901,6 +915,9 @@ input UpdateMenuInput {
   addChildIDs: [ID!]
   removeChildIDs: [ID!]
   clearChildren: Boolean
+  addPermissionIDs: [ID!]
+  removePermissionIDs: [ID!]
+  clearPermissions: Boolean
 }
 """
 UpdateOperationLogInput is used for update OperationLog object.
@@ -927,6 +944,9 @@ input UpdatePermissionInput {
   addRoleIDs: [ID!]
   removeRoleIDs: [ID!]
   clearRoles: Boolean
+  addMenuIDs: [ID!]
+  removeMenuIDs: [ID!]
+  clearMenus: Boolean
   parentID: ID
   clearParent: Boolean
   addChildIDs: [ID!]

@@ -51,5 +51,6 @@ func (Menu) Edges() []ent.Edge {
 			From("parent").
 			Field("parent_id").
 			Unique(),
+		edge.To("permissions", Permission.Type),
 	}
 }

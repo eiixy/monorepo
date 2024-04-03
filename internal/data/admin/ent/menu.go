@@ -45,14 +45,17 @@ type MenuEdges struct {
 	Parent *Menu `json:"parent,omitempty"`
 	// Children holds the value of the children edge.
 	Children []*Menu `json:"children,omitempty"`
+	// Permissions holds the value of the permissions edge.
+	Permissions []*Permission `json:"permissions,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 	// totalCount holds the count of the edges above.
-	totalCount [3]map[string]int
+	totalCount [4]map[string]int
 
-	namedRoles    map[string][]*Role
-	namedChildren map[string][]*Menu
+	namedRoles       map[string][]*Role
+	namedChildren    map[string][]*Menu
+	namedPermissions map[string][]*Permission
 }
 
 // RolesOrErr returns the Roles value or an error if the edge
@@ -84,6 +87,15 @@ func (e MenuEdges) ChildrenOrErr() ([]*Menu, error) {
 		return e.Children, nil
 	}
 	return nil, &NotLoadedError{edge: "children"}
+}
+
+// PermissionsOrErr returns the Permissions value or an error if the edge
+// was not loaded in eager-loading.
+func (e MenuEdges) PermissionsOrErr() ([]*Permission, error) {
+	if e.loadedTypes[3] {
+		return e.Permissions, nil
+	}
+	return nil, &NotLoadedError{edge: "permissions"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -189,6 +201,11 @@ func (m *Menu) QueryChildren() *MenuQuery {
 	return NewMenuClient(m.config).QueryChildren(m)
 }
 
+// QueryPermissions queries the "permissions" edge of the Menu entity.
+func (m *Menu) QueryPermissions() *PermissionQuery {
+	return NewMenuClient(m.config).QueryPermissions(m)
+}
+
 // Update returns a builder for updating this Menu.
 // Note that you need to call Menu.Unwrap() before calling this method if this Menu
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -283,6 +300,30 @@ func (m *Menu) appendNamedChildren(name string, edges ...*Menu) {
 		m.Edges.namedChildren[name] = []*Menu{}
 	} else {
 		m.Edges.namedChildren[name] = append(m.Edges.namedChildren[name], edges...)
+	}
+}
+
+// NamedPermissions returns the Permissions named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (m *Menu) NamedPermissions(name string) ([]*Permission, error) {
+	if m.Edges.namedPermissions == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := m.Edges.namedPermissions[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (m *Menu) appendNamedPermissions(name string, edges ...*Permission) {
+	if m.Edges.namedPermissions == nil {
+		m.Edges.namedPermissions = make(map[string][]*Permission)
+	}
+	if len(edges) == 0 {
+		m.Edges.namedPermissions[name] = []*Permission{}
+	} else {
+		m.Edges.namedPermissions[name] = append(m.Edges.namedPermissions[name], edges...)
 	}
 }
 

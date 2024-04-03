@@ -41,7 +41,7 @@ func (m *Menu) Node(ctx context.Context) (node *Node, err error) {
 		ID:     m.ID,
 		Type:   "Menu",
 		Fields: make([]*Field, 7),
-		Edges:  make([]*Edge, 3),
+		Edges:  make([]*Edge, 4),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(m.CreatedAt); err != nil {
@@ -130,6 +130,16 @@ func (m *Menu) Node(ctx context.Context) (node *Node, err error) {
 	if err != nil {
 		return nil, err
 	}
+	node.Edges[3] = &Edge{
+		Type: "Permission",
+		Name: "permissions",
+	}
+	err = m.QueryPermissions().
+		Select(permission.FieldID).
+		Scan(ctx, &node.Edges[3].IDs)
+	if err != nil {
+		return nil, err
+	}
 	return node, nil
 }
 
@@ -201,7 +211,7 @@ func (pe *Permission) Node(ctx context.Context) (node *Node, err error) {
 		ID:     pe.ID,
 		Type:   "Permission",
 		Fields: make([]*Field, 7),
-		Edges:  make([]*Edge, 3),
+		Edges:  make([]*Edge, 4),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(pe.CreatedAt); err != nil {
@@ -271,22 +281,32 @@ func (pe *Permission) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Edges[1] = &Edge{
-		Type: "Permission",
-		Name: "parent",
+		Type: "Menu",
+		Name: "menus",
 	}
-	err = pe.QueryParent().
-		Select(permission.FieldID).
+	err = pe.QueryMenus().
+		Select(menu.FieldID).
 		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
 	node.Edges[2] = &Edge{
 		Type: "Permission",
+		Name: "parent",
+	}
+	err = pe.QueryParent().
+		Select(permission.FieldID).
+		Scan(ctx, &node.Edges[2].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[3] = &Edge{
+		Type: "Permission",
 		Name: "children",
 	}
 	err = pe.QueryChildren().
 		Select(permission.FieldID).
-		Scan(ctx, &node.Edges[2].IDs)
+		Scan(ctx, &node.Edges[3].IDs)
 	if err != nil {
 		return nil, err
 	}

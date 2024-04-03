@@ -130,6 +130,10 @@ type MenuWhereInput struct {
 	// "children" edge predicates.
 	HasChildren     *bool             `json:"hasChildren,omitempty"`
 	HasChildrenWith []*MenuWhereInput `json:"hasChildrenWith,omitempty"`
+
+	// "permissions" edge predicates.
+	HasPermissions     *bool                   `json:"hasPermissions,omitempty"`
+	HasPermissionsWith []*PermissionWhereInput `json:"hasPermissionsWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -500,6 +504,24 @@ func (i *MenuWhereInput) P() (predicate.Menu, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, menu.HasChildrenWith(with...))
+	}
+	if i.HasPermissions != nil {
+		p := menu.HasPermissions()
+		if !*i.HasPermissions {
+			p = menu.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasPermissionsWith) > 0 {
+		with := make([]predicate.Permission, 0, len(i.HasPermissionsWith))
+		for _, w := range i.HasPermissionsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasPermissionsWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, menu.HasPermissionsWith(with...))
 	}
 	switch len(predicates) {
 	case 0:
@@ -923,6 +945,10 @@ type PermissionWhereInput struct {
 	HasRoles     *bool             `json:"hasRoles,omitempty"`
 	HasRolesWith []*RoleWhereInput `json:"hasRolesWith,omitempty"`
 
+	// "menus" edge predicates.
+	HasMenus     *bool             `json:"hasMenus,omitempty"`
+	HasMenusWith []*MenuWhereInput `json:"hasMenusWith,omitempty"`
+
 	// "parent" edge predicates.
 	HasParent     *bool                   `json:"hasParent,omitempty"`
 	HasParentWith []*PermissionWhereInput `json:"hasParentWith,omitempty"`
@@ -1270,6 +1296,24 @@ func (i *PermissionWhereInput) P() (predicate.Permission, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, permission.HasRolesWith(with...))
+	}
+	if i.HasMenus != nil {
+		p := permission.HasMenus()
+		if !*i.HasMenus {
+			p = permission.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasMenusWith) > 0 {
+		with := make([]predicate.Menu, 0, len(i.HasMenusWith))
+		for _, w := range i.HasMenusWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasMenusWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, permission.HasMenusWith(with...))
 	}
 	if i.HasParent != nil {
 		p := permission.HasParent()

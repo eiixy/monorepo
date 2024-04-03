@@ -8,13 +8,14 @@ import (
 
 // CreateMenuInput represents a mutation input for creating menus.
 type CreateMenuInput struct {
-	Icon     string
-	Name     string
-	Path     string
-	Sort     *int
-	RoleIDs  []int
-	ParentID *int
-	ChildIDs []int
+	Icon          string
+	Name          string
+	Path          string
+	Sort          *int
+	RoleIDs       []int
+	ParentID      *int
+	ChildIDs      []int
+	PermissionIDs []int
 }
 
 // Mutate applies the CreateMenuInput on the MenuMutation builder.
@@ -34,6 +35,9 @@ func (i *CreateMenuInput) Mutate(m *MenuMutation) {
 	if v := i.ChildIDs; len(v) > 0 {
 		m.AddChildIDs(v...)
 	}
+	if v := i.PermissionIDs; len(v) > 0 {
+		m.AddPermissionIDs(v...)
+	}
 }
 
 // SetInput applies the change-set in the CreateMenuInput on the MenuCreate builder.
@@ -44,18 +48,21 @@ func (c *MenuCreate) SetInput(i CreateMenuInput) *MenuCreate {
 
 // UpdateMenuInput represents a mutation input for updating menus.
 type UpdateMenuInput struct {
-	Icon           *string
-	Name           *string
-	Path           *string
-	Sort           *int
-	ClearRoles     bool
-	AddRoleIDs     []int
-	RemoveRoleIDs  []int
-	ClearParent    bool
-	ParentID       *int
-	ClearChildren  bool
-	AddChildIDs    []int
-	RemoveChildIDs []int
+	Icon                *string
+	Name                *string
+	Path                *string
+	Sort                *int
+	ClearRoles          bool
+	AddRoleIDs          []int
+	RemoveRoleIDs       []int
+	ClearParent         bool
+	ParentID            *int
+	ClearChildren       bool
+	AddChildIDs         []int
+	RemoveChildIDs      []int
+	ClearPermissions    bool
+	AddPermissionIDs    []int
+	RemovePermissionIDs []int
 }
 
 // Mutate applies the UpdateMenuInput on the MenuMutation builder.
@@ -95,6 +102,15 @@ func (i *UpdateMenuInput) Mutate(m *MenuMutation) {
 	}
 	if v := i.RemoveChildIDs; len(v) > 0 {
 		m.RemoveChildIDs(v...)
+	}
+	if i.ClearPermissions {
+		m.ClearPermissions()
+	}
+	if v := i.AddPermissionIDs; len(v) > 0 {
+		m.AddPermissionIDs(v...)
+	}
+	if v := i.RemovePermissionIDs; len(v) > 0 {
+		m.RemovePermissionIDs(v...)
 	}
 }
 
@@ -171,6 +187,7 @@ type CreatePermissionInput struct {
 	Desc     *string
 	Sort     *int
 	RoleIDs  []int
+	MenuIDs  []int
 	ParentID *int
 	ChildIDs []int
 }
@@ -187,6 +204,9 @@ func (i *CreatePermissionInput) Mutate(m *PermissionMutation) {
 	}
 	if v := i.RoleIDs; len(v) > 0 {
 		m.AddRoleIDs(v...)
+	}
+	if v := i.MenuIDs; len(v) > 0 {
+		m.AddMenuIDs(v...)
 	}
 	if v := i.ParentID; v != nil {
 		m.SetParentID(*v)
@@ -212,6 +232,9 @@ type UpdatePermissionInput struct {
 	ClearRoles     bool
 	AddRoleIDs     []int
 	RemoveRoleIDs  []int
+	ClearMenus     bool
+	AddMenuIDs     []int
+	RemoveMenuIDs  []int
 	ClearParent    bool
 	ParentID       *int
 	ClearChildren  bool
@@ -244,6 +267,15 @@ func (i *UpdatePermissionInput) Mutate(m *PermissionMutation) {
 	}
 	if v := i.RemoveRoleIDs; len(v) > 0 {
 		m.RemoveRoleIDs(v...)
+	}
+	if i.ClearMenus {
+		m.ClearMenus()
+	}
+	if v := i.AddMenuIDs; len(v) > 0 {
+		m.AddMenuIDs(v...)
+	}
+	if v := i.RemoveMenuIDs; len(v) > 0 {
+		m.RemoveMenuIDs(v...)
 	}
 	if i.ClearParent {
 		m.ClearParent()

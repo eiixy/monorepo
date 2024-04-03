@@ -74,6 +74,18 @@ func (m *MenuQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 			m.WithNamedChildren(alias, func(wq *MenuQuery) {
 				*wq = *query
 			})
+		case "permissions":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&PermissionClient{config: m.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			m.WithNamedPermissions(alias, func(wq *PermissionQuery) {
+				*wq = *query
+			})
 		case "createdAt":
 			if _, ok := fieldSeen[menu.FieldCreatedAt]; !ok {
 				selectedFields = append(selectedFields, menu.FieldCreatedAt)
@@ -282,6 +294,18 @@ func (pe *PermissionQuery) collectField(ctx context.Context, opCtx *graphql.Oper
 				return err
 			}
 			pe.WithNamedRoles(alias, func(wq *RoleQuery) {
+				*wq = *query
+			})
+		case "menus":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&MenuClient{config: pe.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			pe.WithNamedMenus(alias, func(wq *MenuQuery) {
 				*wq = *query
 			})
 		case "parent":

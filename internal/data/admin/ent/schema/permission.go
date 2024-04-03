@@ -47,6 +47,7 @@ func (Permission) Fields() []ent.Field {
 func (Permission) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("roles", Role.Type).Ref("permissions"),
+		edge.From("menus", Menu.Type).Ref("permissions"),
 		edge.To("children", Permission.Type).
 			From("parent").
 			Field("parent_id").

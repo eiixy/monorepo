@@ -41,17 +41,20 @@ type Permission struct {
 type PermissionEdges struct {
 	// Roles holds the value of the roles edge.
 	Roles []*Role `json:"roles,omitempty"`
+	// Menus holds the value of the menus edge.
+	Menus []*Menu `json:"menus,omitempty"`
 	// Parent holds the value of the parent edge.
 	Parent *Permission `json:"parent,omitempty"`
 	// Children holds the value of the children edge.
 	Children []*Permission `json:"children,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 	// totalCount holds the count of the edges above.
-	totalCount [3]map[string]int
+	totalCount [4]map[string]int
 
 	namedRoles    map[string][]*Role
+	namedMenus    map[string][]*Menu
 	namedChildren map[string][]*Permission
 }
 
@@ -64,10 +67,19 @@ func (e PermissionEdges) RolesOrErr() ([]*Role, error) {
 	return nil, &NotLoadedError{edge: "roles"}
 }
 
+// MenusOrErr returns the Menus value or an error if the edge
+// was not loaded in eager-loading.
+func (e PermissionEdges) MenusOrErr() ([]*Menu, error) {
+	if e.loadedTypes[1] {
+		return e.Menus, nil
+	}
+	return nil, &NotLoadedError{edge: "menus"}
+}
+
 // ParentOrErr returns the Parent value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e PermissionEdges) ParentOrErr() (*Permission, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		if e.Parent == nil {
 			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: permission.Label}
@@ -80,7 +92,7 @@ func (e PermissionEdges) ParentOrErr() (*Permission, error) {
 // ChildrenOrErr returns the Children value or an error if the edge
 // was not loaded in eager-loading.
 func (e PermissionEdges) ChildrenOrErr() ([]*Permission, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.Children, nil
 	}
 	return nil, &NotLoadedError{edge: "children"}
@@ -179,6 +191,11 @@ func (pe *Permission) QueryRoles() *RoleQuery {
 	return NewPermissionClient(pe.config).QueryRoles(pe)
 }
 
+// QueryMenus queries the "menus" edge of the Permission entity.
+func (pe *Permission) QueryMenus() *MenuQuery {
+	return NewPermissionClient(pe.config).QueryMenus(pe)
+}
+
 // QueryParent queries the "parent" edge of the Permission entity.
 func (pe *Permission) QueryParent() *PermissionQuery {
 	return NewPermissionClient(pe.config).QueryParent(pe)
@@ -259,6 +276,30 @@ func (pe *Permission) appendNamedRoles(name string, edges ...*Role) {
 		pe.Edges.namedRoles[name] = []*Role{}
 	} else {
 		pe.Edges.namedRoles[name] = append(pe.Edges.namedRoles[name], edges...)
+	}
+}
+
+// NamedMenus returns the Menus named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (pe *Permission) NamedMenus(name string) ([]*Menu, error) {
+	if pe.Edges.namedMenus == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := pe.Edges.namedMenus[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (pe *Permission) appendNamedMenus(name string, edges ...*Menu) {
+	if pe.Edges.namedMenus == nil {
+		pe.Edges.namedMenus = make(map[string][]*Menu)
+	}
+	if len(edges) == 0 {
+		pe.Edges.namedMenus[name] = []*Menu{}
+	} else {
+		pe.Edges.namedMenus[name] = append(pe.Edges.namedMenus[name], edges...)
 	}
 }
 

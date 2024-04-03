@@ -153,6 +153,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Menu",
 	)
 	graph.MustAddE(
+		"permissions",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   menu.PermissionsTable,
+			Columns: menu.PermissionsPrimaryKey,
+			Bidi:    false,
+		},
+		"Menu",
+		"Permission",
+	)
+	graph.MustAddE(
 		"user",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -175,6 +187,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"Permission",
 		"Role",
+	)
+	graph.MustAddE(
+		"menus",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   permission.MenusTable,
+			Columns: permission.MenusPrimaryKey,
+			Bidi:    false,
+		},
+		"Permission",
+		"Menu",
 	)
 	graph.MustAddE(
 		"parent",
@@ -386,6 +410,20 @@ func (f *MenuFilter) WhereHasChildrenWith(preds ...predicate.Menu) {
 	})))
 }
 
+// WhereHasPermissions applies a predicate to check if query has an edge permissions.
+func (f *MenuFilter) WhereHasPermissions() {
+	f.Where(entql.HasEdge("permissions"))
+}
+
+// WhereHasPermissionsWith applies a predicate to check if query has an edge permissions with a given conditions (other predicates).
+func (f *MenuFilter) WhereHasPermissionsWith(preds ...predicate.Permission) {
+	f.Where(entql.HasEdgeWith("permissions", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
 // addPredicate implements the predicateAdder interface.
 func (olq *OperationLogQuery) addPredicate(pred func(s *sql.Selector)) {
 	olq.predicates = append(olq.predicates, pred)
@@ -548,6 +586,20 @@ func (f *PermissionFilter) WhereHasRoles() {
 // WhereHasRolesWith applies a predicate to check if query has an edge roles with a given conditions (other predicates).
 func (f *PermissionFilter) WhereHasRolesWith(preds ...predicate.Role) {
 	f.Where(entql.HasEdgeWith("roles", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasMenus applies a predicate to check if query has an edge menus.
+func (f *PermissionFilter) WhereHasMenus() {
+	f.Where(entql.HasEdge("menus"))
+}
+
+// WhereHasMenusWith applies a predicate to check if query has an edge menus with a given conditions (other predicates).
+func (f *PermissionFilter) WhereHasMenusWith(preds ...predicate.Menu) {
+	f.Where(entql.HasEdgeWith("menus", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

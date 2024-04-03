@@ -40,6 +40,18 @@ func (m *Menu) Children(ctx context.Context) (result []*Menu, err error) {
 	return result, err
 }
 
+func (m *Menu) Permissions(ctx context.Context) (result []*Permission, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = m.NamedPermissions(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = m.Edges.PermissionsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = m.QueryPermissions().All(ctx)
+	}
+	return result, err
+}
+
 func (ol *OperationLog) User(ctx context.Context) (*User, error) {
 	result, err := ol.Edges.UserOrErr()
 	if IsNotLoaded(err) {
@@ -56,6 +68,18 @@ func (pe *Permission) Roles(ctx context.Context) (result []*Role, err error) {
 	}
 	if IsNotLoaded(err) {
 		result, err = pe.QueryRoles().All(ctx)
+	}
+	return result, err
+}
+
+func (pe *Permission) Menus(ctx context.Context) (result []*Menu, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = pe.NamedMenus(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = pe.Edges.MenusOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = pe.QueryMenus().All(ctx)
 	}
 	return result, err
 }

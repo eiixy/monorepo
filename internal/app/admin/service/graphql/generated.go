@@ -60,17 +60,18 @@ type ComplexityRoot struct {
 	}
 
 	Menu struct {
-		Children  func(childComplexity int) int
-		CreatedAt func(childComplexity int) int
-		ID        func(childComplexity int) int
-		Icon      func(childComplexity int) int
-		Name      func(childComplexity int) int
-		Parent    func(childComplexity int) int
-		ParentID  func(childComplexity int) int
-		Path      func(childComplexity int) int
-		Roles     func(childComplexity int) int
-		Sort      func(childComplexity int) int
-		UpdatedAt func(childComplexity int) int
+		Children    func(childComplexity int) int
+		CreatedAt   func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Icon        func(childComplexity int) int
+		Name        func(childComplexity int) int
+		Parent      func(childComplexity int) int
+		ParentID    func(childComplexity int) int
+		Path        func(childComplexity int) int
+		Permissions func(childComplexity int) int
+		Roles       func(childComplexity int) int
+		Sort        func(childComplexity int) int
+		UpdatedAt   func(childComplexity int) int
 	}
 
 	MenuConnection struct {
@@ -135,6 +136,7 @@ type ComplexityRoot struct {
 		Desc      func(childComplexity int) int
 		ID        func(childComplexity int) int
 		Key       func(childComplexity int) int
+		Menus     func(childComplexity int) int
 		Name      func(childComplexity int) int
 		Parent    func(childComplexity int) int
 		ParentID  func(childComplexity int) int
@@ -344,6 +346,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Menu.Path(childComplexity), true
+
+	case "Menu.permissions":
+		if e.complexity.Menu.Permissions == nil {
+			break
+		}
+
+		return e.complexity.Menu.Permissions(childComplexity), true
 
 	case "Menu.roles":
 		if e.complexity.Menu.Roles == nil {
@@ -715,6 +724,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Permission.Key(childComplexity), true
+
+	case "Permission.menus":
+		if e.complexity.Permission.Menus == nil {
+			break
+		}
+
+		return e.complexity.Permission.Menus(childComplexity), true
 
 	case "Permission.name":
 		if e.complexity.Permission.Name == nil {
@@ -2579,6 +2595,8 @@ func (ec *executionContext) fieldContext_Menu_parent(ctx context.Context, field 
 				return ec.fieldContext_Menu_parent(ctx, field)
 			case "children":
 				return ec.fieldContext_Menu_children(ctx, field)
+			case "permissions":
+				return ec.fieldContext_Menu_permissions(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Menu", field.Name)
 		},
@@ -2644,8 +2662,77 @@ func (ec *executionContext) fieldContext_Menu_children(ctx context.Context, fiel
 				return ec.fieldContext_Menu_parent(ctx, field)
 			case "children":
 				return ec.fieldContext_Menu_children(ctx, field)
+			case "permissions":
+				return ec.fieldContext_Menu_permissions(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Menu", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Menu_permissions(ctx context.Context, field graphql.CollectedField, obj *ent.Menu) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Menu_permissions(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Permissions(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Permission)
+	fc.Result = res
+	return ec.marshalOPermission2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐPermissionᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Menu_permissions(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Menu",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Permission_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Permission_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Permission_updatedAt(ctx, field)
+			case "parentID":
+				return ec.fieldContext_Permission_parentID(ctx, field)
+			case "key":
+				return ec.fieldContext_Permission_key(ctx, field)
+			case "name":
+				return ec.fieldContext_Permission_name(ctx, field)
+			case "desc":
+				return ec.fieldContext_Permission_desc(ctx, field)
+			case "sort":
+				return ec.fieldContext_Permission_sort(ctx, field)
+			case "roles":
+				return ec.fieldContext_Permission_roles(ctx, field)
+			case "menus":
+				return ec.fieldContext_Permission_menus(ctx, field)
+			case "parent":
+				return ec.fieldContext_Permission_parent(ctx, field)
+			case "children":
+				return ec.fieldContext_Permission_children(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Permission", field.Name)
 		},
 	}
 	return fc, nil
@@ -2854,6 +2941,8 @@ func (ec *executionContext) fieldContext_MenuEdge_node(ctx context.Context, fiel
 				return ec.fieldContext_Menu_parent(ctx, field)
 			case "children":
 				return ec.fieldContext_Menu_children(ctx, field)
+			case "permissions":
+				return ec.fieldContext_Menu_permissions(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Menu", field.Name)
 		},
@@ -3710,6 +3799,8 @@ func (ec *executionContext) fieldContext_Mutation_createMenu(ctx context.Context
 				return ec.fieldContext_Menu_parent(ctx, field)
 			case "children":
 				return ec.fieldContext_Menu_children(ctx, field)
+			case "permissions":
+				return ec.fieldContext_Menu_permissions(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Menu", field.Name)
 		},
@@ -3813,6 +3904,8 @@ func (ec *executionContext) fieldContext_Mutation_updateMenu(ctx context.Context
 				return ec.fieldContext_Menu_parent(ctx, field)
 			case "children":
 				return ec.fieldContext_Menu_children(ctx, field)
+			case "permissions":
+				return ec.fieldContext_Menu_permissions(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Menu", field.Name)
 		},
@@ -3991,6 +4084,8 @@ func (ec *executionContext) fieldContext_Mutation_createPermission(ctx context.C
 				return ec.fieldContext_Permission_sort(ctx, field)
 			case "roles":
 				return ec.fieldContext_Permission_roles(ctx, field)
+			case "menus":
+				return ec.fieldContext_Permission_menus(ctx, field)
 			case "parent":
 				return ec.fieldContext_Permission_parent(ctx, field)
 			case "children":
@@ -4094,6 +4189,8 @@ func (ec *executionContext) fieldContext_Mutation_updatePermission(ctx context.C
 				return ec.fieldContext_Permission_sort(ctx, field)
 			case "roles":
 				return ec.fieldContext_Permission_roles(ctx, field)
+			case "menus":
+				return ec.fieldContext_Permission_menus(ctx, field)
 			case "parent":
 				return ec.fieldContext_Permission_parent(ctx, field)
 			case "children":
@@ -5340,6 +5437,73 @@ func (ec *executionContext) fieldContext_Permission_roles(ctx context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _Permission_menus(ctx context.Context, field graphql.CollectedField, obj *ent.Permission) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Permission_menus(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Menus(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Menu)
+	fc.Result = res
+	return ec.marshalOMenu2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenuᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Permission_menus(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Permission",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Menu_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Menu_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Menu_updatedAt(ctx, field)
+			case "parentID":
+				return ec.fieldContext_Menu_parentID(ctx, field)
+			case "icon":
+				return ec.fieldContext_Menu_icon(ctx, field)
+			case "name":
+				return ec.fieldContext_Menu_name(ctx, field)
+			case "path":
+				return ec.fieldContext_Menu_path(ctx, field)
+			case "sort":
+				return ec.fieldContext_Menu_sort(ctx, field)
+			case "roles":
+				return ec.fieldContext_Menu_roles(ctx, field)
+			case "parent":
+				return ec.fieldContext_Menu_parent(ctx, field)
+			case "children":
+				return ec.fieldContext_Menu_children(ctx, field)
+			case "permissions":
+				return ec.fieldContext_Menu_permissions(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Menu", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Permission_parent(ctx context.Context, field graphql.CollectedField, obj *ent.Permission) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Permission_parent(ctx, field)
 	if err != nil {
@@ -5394,6 +5558,8 @@ func (ec *executionContext) fieldContext_Permission_parent(ctx context.Context, 
 				return ec.fieldContext_Permission_sort(ctx, field)
 			case "roles":
 				return ec.fieldContext_Permission_roles(ctx, field)
+			case "menus":
+				return ec.fieldContext_Permission_menus(ctx, field)
 			case "parent":
 				return ec.fieldContext_Permission_parent(ctx, field)
 			case "children":
@@ -5459,6 +5625,8 @@ func (ec *executionContext) fieldContext_Permission_children(ctx context.Context
 				return ec.fieldContext_Permission_sort(ctx, field)
 			case "roles":
 				return ec.fieldContext_Permission_roles(ctx, field)
+			case "menus":
+				return ec.fieldContext_Permission_menus(ctx, field)
 			case "parent":
 				return ec.fieldContext_Permission_parent(ctx, field)
 			case "children":
@@ -5669,6 +5837,8 @@ func (ec *executionContext) fieldContext_PermissionEdge_node(ctx context.Context
 				return ec.fieldContext_Permission_sort(ctx, field)
 			case "roles":
 				return ec.fieldContext_Permission_roles(ctx, field)
+			case "menus":
+				return ec.fieldContext_Permission_menus(ctx, field)
 			case "parent":
 				return ec.fieldContext_Permission_parent(ctx, field)
 			case "children":
@@ -6829,6 +6999,8 @@ func (ec *executionContext) fieldContext_Role_menus(ctx context.Context, field g
 				return ec.fieldContext_Menu_parent(ctx, field)
 			case "children":
 				return ec.fieldContext_Menu_children(ctx, field)
+			case "permissions":
+				return ec.fieldContext_Menu_permissions(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Menu", field.Name)
 		},
@@ -6890,6 +7062,8 @@ func (ec *executionContext) fieldContext_Role_permissions(ctx context.Context, f
 				return ec.fieldContext_Permission_sort(ctx, field)
 			case "roles":
 				return ec.fieldContext_Permission_roles(ctx, field)
+			case "menus":
+				return ec.fieldContext_Permission_menus(ctx, field)
 			case "parent":
 				return ec.fieldContext_Permission_parent(ctx, field)
 			case "children":
@@ -7775,6 +7949,8 @@ func (ec *executionContext) fieldContext_User_permissions(ctx context.Context, f
 				return ec.fieldContext_Permission_sort(ctx, field)
 			case "roles":
 				return ec.fieldContext_Permission_roles(ctx, field)
+			case "menus":
+				return ec.fieldContext_Permission_menus(ctx, field)
 			case "parent":
 				return ec.fieldContext_Permission_parent(ctx, field)
 			case "children":
@@ -7844,6 +8020,8 @@ func (ec *executionContext) fieldContext_User_menus(ctx context.Context, field g
 				return ec.fieldContext_Menu_parent(ctx, field)
 			case "children":
 				return ec.fieldContext_Menu_children(ctx, field)
+			case "permissions":
+				return ec.fieldContext_Menu_permissions(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Menu", field.Name)
 		},
@@ -9889,7 +10067,7 @@ func (ec *executionContext) unmarshalInputCreateMenuInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"icon", "name", "path", "sort", "roleIDs", "parentID", "childIDs"}
+	fieldsInOrder := [...]string{"icon", "name", "path", "sort", "roleIDs", "parentID", "childIDs", "permissionIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -9959,6 +10137,15 @@ func (ec *executionContext) unmarshalInputCreateMenuInput(ctx context.Context, o
 				return it, err
 			}
 			it.ChildIDs = data
+		case "permissionIDs":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("permissionIDs"))
+			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PermissionIDs = data
 		}
 	}
 
@@ -10019,7 +10206,7 @@ func (ec *executionContext) unmarshalInputCreatePermissionInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"key", "name", "desc", "sort", "roleIDs", "parentID", "childIDs"}
+	fieldsInOrder := [...]string{"key", "name", "desc", "sort", "roleIDs", "menuIDs", "parentID", "childIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -10071,6 +10258,15 @@ func (ec *executionContext) unmarshalInputCreatePermissionInput(ctx context.Cont
 				return it, err
 			}
 			it.RoleIDs = data
+		case "menuIDs":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("menuIDs"))
+			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MenuIDs = data
 		case "parentID":
 			var err error
 
@@ -10259,7 +10455,7 @@ func (ec *executionContext) unmarshalInputMenuWhereInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "createdAtIsNil", "createdAtNotNil", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "updatedAtIsNil", "updatedAtNotNil", "parentID", "parentIDNEQ", "parentIDIn", "parentIDNotIn", "parentIDIsNil", "parentIDNotNil", "icon", "iconNEQ", "iconIn", "iconNotIn", "iconGT", "iconGTE", "iconLT", "iconLTE", "iconContains", "iconHasPrefix", "iconHasSuffix", "iconEqualFold", "iconContainsFold", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "path", "pathNEQ", "pathIn", "pathNotIn", "pathGT", "pathGTE", "pathLT", "pathLTE", "pathContains", "pathHasPrefix", "pathHasSuffix", "pathEqualFold", "pathContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "hasRoles", "hasRolesWith", "hasParent", "hasParentWith", "hasChildren", "hasChildrenWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "createdAtIsNil", "createdAtNotNil", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "updatedAtIsNil", "updatedAtNotNil", "parentID", "parentIDNEQ", "parentIDIn", "parentIDNotIn", "parentIDIsNil", "parentIDNotNil", "icon", "iconNEQ", "iconIn", "iconNotIn", "iconGT", "iconGTE", "iconLT", "iconLTE", "iconContains", "iconHasPrefix", "iconHasSuffix", "iconEqualFold", "iconContainsFold", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "path", "pathNEQ", "pathIn", "pathNotIn", "pathGT", "pathGTE", "pathLT", "pathLTE", "pathContains", "pathHasPrefix", "pathHasSuffix", "pathEqualFold", "pathContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "hasRoles", "hasRolesWith", "hasParent", "hasParentWith", "hasChildren", "hasChildrenWith", "hasPermissions", "hasPermissionsWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -11076,6 +11272,24 @@ func (ec *executionContext) unmarshalInputMenuWhereInput(ctx context.Context, ob
 				return it, err
 			}
 			it.HasChildrenWith = data
+		case "hasPermissions":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasPermissions"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasPermissions = data
+		case "hasPermissionsWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasPermissionsWith"))
+			data, err := ec.unmarshalOPermissionWhereInput2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐPermissionWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasPermissionsWith = data
 		}
 	}
 
@@ -11559,7 +11773,7 @@ func (ec *executionContext) unmarshalInputPermissionWhereInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "createdAtIsNil", "createdAtNotNil", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "updatedAtIsNil", "updatedAtNotNil", "parentID", "parentIDNEQ", "parentIDIn", "parentIDNotIn", "parentIDIsNil", "parentIDNotNil", "key", "keyNEQ", "keyIn", "keyNotIn", "keyGT", "keyGTE", "keyLT", "keyLTE", "keyContains", "keyHasPrefix", "keyHasSuffix", "keyEqualFold", "keyContainsFold", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "desc", "descNEQ", "descIn", "descNotIn", "descGT", "descGTE", "descLT", "descLTE", "descContains", "descHasPrefix", "descHasSuffix", "descIsNil", "descNotNil", "descEqualFold", "descContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "hasRoles", "hasRolesWith", "hasParent", "hasParentWith", "hasChildren", "hasChildrenWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "createdAtIsNil", "createdAtNotNil", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "updatedAtIsNil", "updatedAtNotNil", "parentID", "parentIDNEQ", "parentIDIn", "parentIDNotIn", "parentIDIsNil", "parentIDNotNil", "key", "keyNEQ", "keyIn", "keyNotIn", "keyGT", "keyGTE", "keyLT", "keyLTE", "keyContains", "keyHasPrefix", "keyHasSuffix", "keyEqualFold", "keyContainsFold", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "desc", "descNEQ", "descIn", "descNotIn", "descGT", "descGTE", "descLT", "descLTE", "descContains", "descHasPrefix", "descHasSuffix", "descIsNil", "descNotNil", "descEqualFold", "descContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "hasRoles", "hasRolesWith", "hasMenus", "hasMenusWith", "hasParent", "hasParentWith", "hasChildren", "hasChildrenWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -12358,6 +12572,24 @@ func (ec *executionContext) unmarshalInputPermissionWhereInput(ctx context.Conte
 				return it, err
 			}
 			it.HasRolesWith = data
+		case "hasMenus":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasMenus"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasMenus = data
+		case "hasMenusWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasMenusWith"))
+			data, err := ec.unmarshalOMenuWhereInput2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenuWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasMenusWith = data
 		case "hasParent":
 			var err error
 
@@ -12949,7 +13181,7 @@ func (ec *executionContext) unmarshalInputUpdateMenuInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"icon", "name", "path", "sort", "addRoleIDs", "removeRoleIDs", "clearRoles", "parentID", "clearParent", "addChildIDs", "removeChildIDs", "clearChildren"}
+	fieldsInOrder := [...]string{"icon", "name", "path", "sort", "addRoleIDs", "removeRoleIDs", "clearRoles", "parentID", "clearParent", "addChildIDs", "removeChildIDs", "clearChildren", "addPermissionIDs", "removePermissionIDs", "clearPermissions"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -13064,6 +13296,33 @@ func (ec *executionContext) unmarshalInputUpdateMenuInput(ctx context.Context, o
 				return it, err
 			}
 			it.ClearChildren = data
+		case "addPermissionIDs":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addPermissionIDs"))
+			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AddPermissionIDs = data
+		case "removePermissionIDs":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removePermissionIDs"))
+			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RemovePermissionIDs = data
+		case "clearPermissions":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearPermissions"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearPermissions = data
 		}
 	}
 
@@ -13124,7 +13383,7 @@ func (ec *executionContext) unmarshalInputUpdatePermissionInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"key", "name", "desc", "clearDesc", "sort", "addRoleIDs", "removeRoleIDs", "clearRoles", "parentID", "clearParent", "addChildIDs", "removeChildIDs", "clearChildren"}
+	fieldsInOrder := [...]string{"key", "name", "desc", "clearDesc", "sort", "addRoleIDs", "removeRoleIDs", "clearRoles", "addMenuIDs", "removeMenuIDs", "clearMenus", "parentID", "clearParent", "addChildIDs", "removeChildIDs", "clearChildren"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -13203,6 +13462,33 @@ func (ec *executionContext) unmarshalInputUpdatePermissionInput(ctx context.Cont
 				return it, err
 			}
 			it.ClearRoles = data
+		case "addMenuIDs":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addMenuIDs"))
+			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AddMenuIDs = data
+		case "removeMenuIDs":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeMenuIDs"))
+			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RemoveMenuIDs = data
+		case "clearMenus":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearMenus"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearMenus = data
 		case "parentID":
 			var err error
 
@@ -14589,6 +14875,39 @@ func (ec *executionContext) _Menu(ctx context.Context, sel ast.SelectionSet, obj
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "permissions":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Menu_permissions(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -15117,6 +15436,39 @@ func (ec *executionContext) _Permission(ctx context.Context, sel ast.SelectionSe
 					}
 				}()
 				res = ec._Permission_roles(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "menus":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Permission_menus(ctx, field, obj)
 				return res
 			}
 

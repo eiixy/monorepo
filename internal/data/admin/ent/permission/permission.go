@@ -30,6 +30,8 @@ const (
 	FieldSort = "sort"
 	// EdgeRoles holds the string denoting the roles edge name in mutations.
 	EdgeRoles = "roles"
+	// EdgeMenus holds the string denoting the menus edge name in mutations.
+	EdgeMenus = "menus"
 	// EdgeParent holds the string denoting the parent edge name in mutations.
 	EdgeParent = "parent"
 	// EdgeChildren holds the string denoting the children edge name in mutations.
@@ -41,6 +43,11 @@ const (
 	// RolesInverseTable is the table name for the Role entity.
 	// It exists in this package in order to avoid circular dependency with the "role" package.
 	RolesInverseTable = "roles"
+	// MenusTable is the table that holds the menus relation/edge. The primary key declared below.
+	MenusTable = "menu_permissions"
+	// MenusInverseTable is the table name for the Menu entity.
+	// It exists in this package in order to avoid circular dependency with the "menu" package.
+	MenusInverseTable = "menus"
 	// ParentTable is the table that holds the parent relation/edge.
 	ParentTable = "permissions"
 	// ParentColumn is the table column denoting the parent relation/edge.
@@ -67,6 +74,9 @@ var (
 	// RolesPrimaryKey and RolesColumn2 are the table columns denoting the
 	// primary key for the roles relation (M2M).
 	RolesPrimaryKey = []string{"role_id", "permission_id"}
+	// MenusPrimaryKey and MenusColumn2 are the table columns denoting the
+	// primary key for the menus relation (M2M).
+	MenusPrimaryKey = []string{"menu_id", "permission_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -147,6 +157,20 @@ func ByRoles(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByMenusCount orders the results by menus count.
+func ByMenusCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newMenusStep(), opts...)
+	}
+}
+
+// ByMenus orders the results by menus terms.
+func ByMenus(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newMenusStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByParentField orders the results by parent field.
 func ByParentField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -172,6 +196,13 @@ func newRolesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RolesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, true, RolesTable, RolesPrimaryKey...),
+	)
+}
+func newMenusStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(MenusInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, MenusTable, MenusPrimaryKey...),
 	)
 }
 func newParentStep() *sqlgraph.Step {

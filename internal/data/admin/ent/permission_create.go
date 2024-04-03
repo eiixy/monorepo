@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/eiixy/monorepo/internal/data/admin/ent/menu"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/permission"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/role"
 )
@@ -116,6 +117,21 @@ func (pc *PermissionCreate) AddRoles(r ...*Role) *PermissionCreate {
 		ids[i] = r[i].ID
 	}
 	return pc.AddRoleIDs(ids...)
+}
+
+// AddMenuIDs adds the "menus" edge to the Menu entity by IDs.
+func (pc *PermissionCreate) AddMenuIDs(ids ...int) *PermissionCreate {
+	pc.mutation.AddMenuIDs(ids...)
+	return pc
+}
+
+// AddMenus adds the "menus" edges to the Menu entity.
+func (pc *PermissionCreate) AddMenus(m ...*Menu) *PermissionCreate {
+	ids := make([]int, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return pc.AddMenuIDs(ids...)
 }
 
 // SetParent sets the "parent" edge to the Permission entity.
@@ -257,6 +273,22 @@ func (pc *PermissionCreate) createSpec() (*Permission, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(role.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pc.mutation.MenusIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   permission.MenusTable,
+			Columns: permission.MenusPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(menu.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
