@@ -1,7 +1,6 @@
 package config
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
@@ -9,17 +8,18 @@ import (
 	"strings"
 )
 
-func Load[T any](path string, cfg T) (*T, error) {
+func Load[T any](path string) (*T, error) {
 	_ = godotenv.Load(".env")
 	readFile, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
 	viper.SetConfigType("yaml")
-	err = viper.ReadConfig(bytes.NewBuffer(replaceEnvVariables(readFile)))
+	err = viper.ReadConfig(strings.NewReader(replaceEnvVariables(readFile)))
 	if err != nil {
 		return nil, err
 	}
+	var cfg T
 	err = viper.Unmarshal(&cfg)
 	if err != nil {
 		return nil, err
@@ -27,14 +27,11 @@ func Load[T any](path string, cfg T) (*T, error) {
 	return &cfg, nil
 }
 
-func replaceEnvVariables(text []byte) []byte {
-	// 替换文本中的环境变量名
-	replacedText := string(text)
+func replaceEnvVariables(text []byte) string {
+	var words []string
 	for _, env := range os.Environ() {
 		envPair := strings.SplitN(env, "=", 2)
-		envName := envPair[0]
-		envValue := envPair[1]
-		replacedText = strings.ReplaceAll(replacedText, fmt.Sprintf("${%s}", envName), envValue)
+		words = append(words, fmt.Sprintf("${%s}", envPair[0]), envPair[1])
 	}
-	return []byte(replacedText)
+	return strings.NewReplacer(words...).Replace(string(text))
 }

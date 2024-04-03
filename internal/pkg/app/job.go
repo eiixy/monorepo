@@ -69,7 +69,7 @@ func (j Job) exec(ctx context.Context, work *Worker) {
 	for {
 		if work.limiter.Allow() {
 			if os.Getenv("JOB_ENABLE") != "false" {
-				fmt.Println("start job:", work.name)
+				j.log.Info("start job:", work.name)
 				j.run(ctx, work)
 			}
 		} else {

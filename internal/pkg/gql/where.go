@@ -27,7 +27,7 @@ func (w *Where) AppendOr(p ...*sql.Predicate) {
 	}
 }
 
-func (w *Where) Where() *sql.Predicate {
+func (w *Where) Predicate() *sql.Predicate {
 	if len(w.ws) > 0 {
 		return sql.And(w.ws...)
 	}

@@ -6,6 +6,7 @@ import (
 
 type Config struct {
 	Key    string
+	Name   string
 	Server struct {
 		Http config.Server
 	}

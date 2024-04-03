@@ -37,7 +37,7 @@ func init() {
 func main() {
 	rootCmd.Run = func(cmd *cobra.Command, args []string) {
 		confPath, _ := cmd.Flags().GetString("conf")
-		cfg, err := config.Load(confPath, conf.Config{})
+		cfg, err := config.Load[conf.Config](confPath)
 		if err != nil {
 			panic(err)
 		}

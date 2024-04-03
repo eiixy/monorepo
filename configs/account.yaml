@@ -1,4 +1,5 @@
 key: "${APP_KEY}"
+name: "${ADMIN_APP_NAME}"
 trace:
   endpoint: ""
 server:

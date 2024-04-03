@@ -58,10 +58,10 @@ func (r AccountUseCase) SendEmail(email string, emailType model.VerifyCodeType) 
 	m.SetHeader("To", email)
 	switch emailType {
 	case model.VerifyCodeTypeRegister:
-		m.SetHeader("Subject", "Smart Register")
+		m.SetHeader("Subject", fmt.Sprintf("Register - %s", r.cfg.Name))
 		m.SetBody("text/html", fmt.Sprintf("verify code: %s", code))
 	case model.VerifyCodeTypeForgetPassword:
-		m.SetHeader("Subject", "Smart Forget Password")
+		m.SetHeader("Subject", fmt.Sprintf("Forget Password - %s", r.cfg.Name))
 		m.SetBody("text/html", fmt.Sprintf("verify code: %s", code))
 	}
 	return r.dialer.DialAndSend(m)

@@ -14,10 +14,12 @@ import (
 var Cmd = &cobra.Command{
 	Use: "migrate",
 	Run: func(cmd *cobra.Command, args []string) {
-		var cfg conf.Config
 		path, _ := cmd.Flags().GetString("conf")
-		config.Load(path, &cfg)
-		client, err := data.NewEntClient(&cfg)
+		cfg, err := config.Load[conf.Config](path)
+		if err != nil {
+			panic(err)
+		}
+		client, err := data.NewEntClient(cfg)
 		if err != nil {
 			panic(err)
 		}
