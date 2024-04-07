@@ -36,18 +36,18 @@ func NewEntDriver(database config.Database) (dialect.Driver, error) {
 		db.SetMaxIdleConns(mic)
 	}
 	if database.ConnMaxIdleTime != "" {
-		cmt, err := strconv.Atoi(database.ConnMaxIdleTime)
+		duration, err := time.ParseDuration(database.ConnMaxIdleTime)
 		if err != nil {
 			return nil, err
 		}
-		db.SetConnMaxIdleTime(time.Duration(cmt) * time.Second)
+		db.SetConnMaxIdleTime(duration)
 	}
 	if database.ConnMaxLifetime != "" {
-		cml, err := strconv.Atoi(database.ConnMaxLifetime)
+		duration, err := time.ParseDuration(database.ConnMaxIdleTime)
 		if err != nil {
 			return nil, err
 		}
-		db.SetConnMaxLifetime(time.Duration(cml) * time.Second)
+		db.SetConnMaxLifetime(duration)
 	}
 	drv := entsql.OpenDB(driver, db)
 	return drv, nil

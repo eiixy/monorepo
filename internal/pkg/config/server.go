@@ -13,7 +13,7 @@ import (
 type Server struct {
 	Network  string
 	Addr     string
-	Timeout  int // 毫秒
+	Timeout  string
 	Metadata map[string]string
 }
 
@@ -28,8 +28,11 @@ func (s Server) GrpcOptions(logger log.Logger, opts ...grpc.ServerOption) []grpc
 	if s.Addr != "" {
 		opts = append(opts, grpc.Address(s.Addr))
 	}
-	if s.Timeout != 0 {
-		opts = append(opts, grpc.Timeout(time.Duration(s.Timeout)*time.Millisecond))
+	if s.Timeout != "" {
+		duration, err := time.ParseDuration(s.Timeout)
+		if err == nil {
+			opts = append(opts, grpc.Timeout(duration))
+		}
 	}
 	return opts
 }
@@ -47,8 +50,11 @@ func (s Server) HttpOptions(logger log.Logger, opts ...http.ServerOption) []http
 	if s.Addr != "" {
 		opts = append(opts, http.Address(s.Addr))
 	}
-	if s.Timeout != 0 {
-		opts = append(opts, http.Timeout(time.Duration(s.Timeout)*time.Millisecond))
+	if s.Timeout != "" {
+		duration, err := time.ParseDuration(s.Timeout)
+		if err == nil {
+			opts = append(opts, http.Timeout(duration))
+		}
 	}
 	return opts
 }

@@ -5,7 +5,7 @@ trace:
 server:
   http:
     addr: 0.0.0.0:8080
-    timeout: 30000
+    timeout: 30s
 data:
   database:
     driver: "${ACCOUNT_DB_DRIVER}"

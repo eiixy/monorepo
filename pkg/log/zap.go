@@ -2,7 +2,7 @@ package log
 
 import (
 	"fmt"
-	rotatelogs "github.com/lestrrat/go-file-rotatelogs"
+	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"io"
@@ -43,11 +43,7 @@ func NewZapLog(options *ZapOptions) *zap.Logger {
 	})
 
 	// 获取 info、error日志文件的io.Writer 抽象 getWriter() 在下方实现
-	writer := writer(options)
-
-	core := zapcore.NewTee(
-		zapcore.NewCore(encoder, zapcore.AddSync(writer), level),
-	)
+	core := zapcore.NewTee(zapcore.NewCore(encoder, zapcore.AddSync(writer(options)), level))
 	return zap.New(core, zap.AddCaller())
 }
 
