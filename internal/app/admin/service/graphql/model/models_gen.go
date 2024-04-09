@@ -23,6 +23,11 @@ type UpdateProfileInput struct {
 	Mobile   *string `json:"mobile,omitempty"`
 }
 
+type CaptchaReply struct {
+	ID      string `json:"id"`
+	Captcha string `json:"captcha"`
+}
+
 type VerifyCodeType string
 
 const (

@@ -12,7 +12,9 @@ import (
 	"github.com/eiixy/monorepo/internal/data/admin/ent/user"
 	"github.com/eiixy/monorepo/pkg/cache"
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/mojocn/base64Captcha"
 	"golang.org/x/exp/slices"
+	"image/color"
 	"time"
 )
 
@@ -24,6 +26,7 @@ type Resolver struct {
 	log            *log.Helper
 	client         *ent.Client
 	accountUseCase *biz.AccountUseCase
+	captcha        *base64Captcha.Captcha
 }
 
 // NewSchema creates a graphql executable schema.
@@ -33,6 +36,7 @@ func NewSchema(logger log.Logger, client *ent.Client, accountUseCase *biz.Accoun
 			log:            log.NewHelper(log.With(logger, "module", "service/graphql")),
 			client:         client,
 			accountUseCase: accountUseCase,
+			captcha:        base64Captcha.NewCaptcha(base64Captcha.NewDriverString(40, 140, 0, 0, 4, "1234567890abcdefghijklmnopqrktuvwxyz", &color.RGBA{}, base64Captcha.DefaultEmbeddedFonts, nil), base64Captcha.DefaultMemStore),
 		},
 		Directives: DirectiveRoot{
 			Disabled: func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error) {

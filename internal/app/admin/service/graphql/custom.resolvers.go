@@ -67,7 +67,13 @@ func (r *mutationResolver) UpdateProfile(ctx context.Context, input model.Update
 }
 
 // Login is the resolver for the login field.
-func (r *queryResolver) Login(ctx context.Context, email string, password string) (*model.LoginReply, error) {
+func (r *queryResolver) Login(ctx context.Context, email string, password string, captchaID *string, captchaValue *string) (*model.LoginReply, error) {
+	if captchaID != nil && captchaValue != nil {
+		matched := r.captcha.Verify(*captchaID, *captchaValue, true)
+		if *captchaID == "" || *captchaValue == "" || !matched {
+			return nil, errors.New("captcha verify failed")
+		}
+	}
 	first, err := r.client.User.Query().Where(user.Email(email)).First(ctx)
 	if ent.IsNotFound(err) {
 		return nil, ErrAccountOrPasswordInvalid
@@ -117,6 +123,18 @@ func (r *queryResolver) SendVerifyCode(ctx context.Context, email string, verify
 		return false, err
 	}
 	return true, nil
+}
+
+// Captcha is the resolver for the captcha field.
+func (r *queryResolver) Captcha(ctx context.Context) (*model.CaptchaReply, error) {
+	id, data, _, err := r.captcha.Generate()
+	if err != nil {
+		return nil, err
+	}
+	return &model.CaptchaReply{
+		ID:      id,
+		Captcha: data,
+	}, nil
 }
 
 // RoleCount is the resolver for the roleCount field.

@@ -1,12 +1,15 @@
 extend type Query {
     """登陆"""
-    login(email: String!, password: String!): LoginReply!
+    login(email: String!, password: String!, captchaId: String, captchaValue: String): LoginReply!
     """个人信息"""
     profile: User! @login
     """刷新token"""
     refresh: LoginReply! @login
     """发送验证码"""
     sendVerifyCode(email: String!, verifyType: verifyCodeType!): Boolean!
+
+    """获取验证码"""
+    captcha: captchaReply!
 }
 
 
@@ -49,4 +52,9 @@ input UpdateProfileInput {
     nickname: String
     avatar: String
     mobile: String
+}
+
+type captchaReply{
+    id: String!
+    captcha: String!
 }

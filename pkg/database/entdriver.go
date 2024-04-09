@@ -43,7 +43,7 @@ func NewEntDriver(database config.Database) (dialect.Driver, error) {
 		db.SetConnMaxIdleTime(duration)
 	}
 	if database.ConnMaxLifetime != "" {
-		duration, err := time.ParseDuration(database.ConnMaxIdleTime)
+		duration, err := time.ParseDuration(database.ConnMaxLifetime)
 		if err != nil {
 			return nil, err
 		}
