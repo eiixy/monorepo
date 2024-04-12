@@ -3,7 +3,6 @@
 package ent
 
 import (
-	"github.com/eiixy/monorepo/internal/data/admin/ent/menu"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/operationlog"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/permission"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/predicate"
@@ -18,28 +17,8 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 5)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 4)}
 	graph.Nodes[0] = &sqlgraph.Node{
-		NodeSpec: sqlgraph.NodeSpec{
-			Table:   menu.Table,
-			Columns: menu.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
-				Column: menu.FieldID,
-			},
-		},
-		Type: "Menu",
-		Fields: map[string]*sqlgraph.FieldSpec{
-			menu.FieldCreatedAt: {Type: field.TypeTime, Column: menu.FieldCreatedAt},
-			menu.FieldUpdatedAt: {Type: field.TypeTime, Column: menu.FieldUpdatedAt},
-			menu.FieldParentID:  {Type: field.TypeInt, Column: menu.FieldParentID},
-			menu.FieldIcon:      {Type: field.TypeString, Column: menu.FieldIcon},
-			menu.FieldName:      {Type: field.TypeString, Column: menu.FieldName},
-			menu.FieldPath:      {Type: field.TypeString, Column: menu.FieldPath},
-			menu.FieldSort:      {Type: field.TypeInt, Column: menu.FieldSort},
-		},
-	}
-	graph.Nodes[1] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   operationlog.Table,
 			Columns: operationlog.Columns,
@@ -57,7 +36,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			operationlog.FieldContext:   {Type: field.TypeJSON, Column: operationlog.FieldContext},
 		},
 	}
-	graph.Nodes[2] = &sqlgraph.Node{
+	graph.Nodes[1] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   permission.Table,
 			Columns: permission.Columns,
@@ -70,14 +49,17 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Fields: map[string]*sqlgraph.FieldSpec{
 			permission.FieldCreatedAt: {Type: field.TypeTime, Column: permission.FieldCreatedAt},
 			permission.FieldUpdatedAt: {Type: field.TypeTime, Column: permission.FieldUpdatedAt},
-			permission.FieldParentID:  {Type: field.TypeInt, Column: permission.FieldParentID},
-			permission.FieldKey:       {Type: field.TypeString, Column: permission.FieldKey},
+			permission.FieldParentID:  {Type: field.TypeInt64, Column: permission.FieldParentID},
 			permission.FieldName:      {Type: field.TypeString, Column: permission.FieldName},
+			permission.FieldKey:       {Type: field.TypeString, Column: permission.FieldKey},
+			permission.FieldType:      {Type: field.TypeEnum, Column: permission.FieldType},
+			permission.FieldPath:      {Type: field.TypeString, Column: permission.FieldPath},
 			permission.FieldDesc:      {Type: field.TypeString, Column: permission.FieldDesc},
 			permission.FieldSort:      {Type: field.TypeInt, Column: permission.FieldSort},
+			permission.FieldAttrs:     {Type: field.TypeJSON, Column: permission.FieldAttrs},
 		},
 	}
-	graph.Nodes[3] = &sqlgraph.Node{
+	graph.Nodes[2] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   role.Table,
 			Columns: role.Columns,
@@ -94,7 +76,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			role.FieldSort:      {Type: field.TypeInt, Column: role.FieldSort},
 		},
 	}
-	graph.Nodes[4] = &sqlgraph.Node{
+	graph.Nodes[3] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   user.Table,
 			Columns: user.Columns,
@@ -116,54 +98,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 			user.FieldIsAdmin:   {Type: field.TypeBool, Column: user.FieldIsAdmin},
 		},
 	}
-	graph.MustAddE(
-		"roles",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   menu.RolesTable,
-			Columns: menu.RolesPrimaryKey,
-			Bidi:    false,
-		},
-		"Menu",
-		"Role",
-	)
-	graph.MustAddE(
-		"parent",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   menu.ParentTable,
-			Columns: []string{menu.ParentColumn},
-			Bidi:    false,
-		},
-		"Menu",
-		"Menu",
-	)
-	graph.MustAddE(
-		"children",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   menu.ChildrenTable,
-			Columns: []string{menu.ChildrenColumn},
-			Bidi:    false,
-		},
-		"Menu",
-		"Menu",
-	)
-	graph.MustAddE(
-		"permissions",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   menu.PermissionsTable,
-			Columns: menu.PermissionsPrimaryKey,
-			Bidi:    false,
-		},
-		"Menu",
-		"Permission",
-	)
 	graph.MustAddE(
 		"user",
 		&sqlgraph.EdgeSpec{
@@ -187,54 +121,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"Permission",
 		"Role",
-	)
-	graph.MustAddE(
-		"menus",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   permission.MenusTable,
-			Columns: permission.MenusPrimaryKey,
-			Bidi:    false,
-		},
-		"Permission",
-		"Menu",
-	)
-	graph.MustAddE(
-		"parent",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   permission.ParentTable,
-			Columns: []string{permission.ParentColumn},
-			Bidi:    false,
-		},
-		"Permission",
-		"Permission",
-	)
-	graph.MustAddE(
-		"children",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   permission.ChildrenTable,
-			Columns: []string{permission.ChildrenColumn},
-			Bidi:    false,
-		},
-		"Permission",
-		"Permission",
-	)
-	graph.MustAddE(
-		"menus",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   role.MenusTable,
-			Columns: role.MenusPrimaryKey,
-			Bidi:    false,
-		},
-		"Role",
-		"Menu",
 	)
 	graph.MustAddE(
 		"permissions",
@@ -294,137 +180,6 @@ type predicateAdder interface {
 }
 
 // addPredicate implements the predicateAdder interface.
-func (mq *MenuQuery) addPredicate(pred func(s *sql.Selector)) {
-	mq.predicates = append(mq.predicates, pred)
-}
-
-// Filter returns a Filter implementation to apply filters on the MenuQuery builder.
-func (mq *MenuQuery) Filter() *MenuFilter {
-	return &MenuFilter{config: mq.config, predicateAdder: mq}
-}
-
-// addPredicate implements the predicateAdder interface.
-func (m *MenuMutation) addPredicate(pred func(s *sql.Selector)) {
-	m.predicates = append(m.predicates, pred)
-}
-
-// Filter returns an entql.Where implementation to apply filters on the MenuMutation builder.
-func (m *MenuMutation) Filter() *MenuFilter {
-	return &MenuFilter{config: m.config, predicateAdder: m}
-}
-
-// MenuFilter provides a generic filtering capability at runtime for MenuQuery.
-type MenuFilter struct {
-	predicateAdder
-	config
-}
-
-// Where applies the entql predicate on the query filter.
-func (f *MenuFilter) Where(p entql.P) {
-	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[0].Type, p, s); err != nil {
-			s.AddError(err)
-		}
-	})
-}
-
-// WhereID applies the entql int predicate on the id field.
-func (f *MenuFilter) WhereID(p entql.IntP) {
-	f.Where(p.Field(menu.FieldID))
-}
-
-// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
-func (f *MenuFilter) WhereCreatedAt(p entql.TimeP) {
-	f.Where(p.Field(menu.FieldCreatedAt))
-}
-
-// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
-func (f *MenuFilter) WhereUpdatedAt(p entql.TimeP) {
-	f.Where(p.Field(menu.FieldUpdatedAt))
-}
-
-// WhereParentID applies the entql int predicate on the parent_id field.
-func (f *MenuFilter) WhereParentID(p entql.IntP) {
-	f.Where(p.Field(menu.FieldParentID))
-}
-
-// WhereIcon applies the entql string predicate on the icon field.
-func (f *MenuFilter) WhereIcon(p entql.StringP) {
-	f.Where(p.Field(menu.FieldIcon))
-}
-
-// WhereName applies the entql string predicate on the name field.
-func (f *MenuFilter) WhereName(p entql.StringP) {
-	f.Where(p.Field(menu.FieldName))
-}
-
-// WherePath applies the entql string predicate on the path field.
-func (f *MenuFilter) WherePath(p entql.StringP) {
-	f.Where(p.Field(menu.FieldPath))
-}
-
-// WhereSort applies the entql int predicate on the sort field.
-func (f *MenuFilter) WhereSort(p entql.IntP) {
-	f.Where(p.Field(menu.FieldSort))
-}
-
-// WhereHasRoles applies a predicate to check if query has an edge roles.
-func (f *MenuFilter) WhereHasRoles() {
-	f.Where(entql.HasEdge("roles"))
-}
-
-// WhereHasRolesWith applies a predicate to check if query has an edge roles with a given conditions (other predicates).
-func (f *MenuFilter) WhereHasRolesWith(preds ...predicate.Role) {
-	f.Where(entql.HasEdgeWith("roles", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasParent applies a predicate to check if query has an edge parent.
-func (f *MenuFilter) WhereHasParent() {
-	f.Where(entql.HasEdge("parent"))
-}
-
-// WhereHasParentWith applies a predicate to check if query has an edge parent with a given conditions (other predicates).
-func (f *MenuFilter) WhereHasParentWith(preds ...predicate.Menu) {
-	f.Where(entql.HasEdgeWith("parent", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasChildren applies a predicate to check if query has an edge children.
-func (f *MenuFilter) WhereHasChildren() {
-	f.Where(entql.HasEdge("children"))
-}
-
-// WhereHasChildrenWith applies a predicate to check if query has an edge children with a given conditions (other predicates).
-func (f *MenuFilter) WhereHasChildrenWith(preds ...predicate.Menu) {
-	f.Where(entql.HasEdgeWith("children", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasPermissions applies a predicate to check if query has an edge permissions.
-func (f *MenuFilter) WhereHasPermissions() {
-	f.Where(entql.HasEdge("permissions"))
-}
-
-// WhereHasPermissionsWith applies a predicate to check if query has an edge permissions with a given conditions (other predicates).
-func (f *MenuFilter) WhereHasPermissionsWith(preds ...predicate.Permission) {
-	f.Where(entql.HasEdgeWith("permissions", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// addPredicate implements the predicateAdder interface.
 func (olq *OperationLogQuery) addPredicate(pred func(s *sql.Selector)) {
 	olq.predicates = append(olq.predicates, pred)
 }
@@ -453,7 +208,7 @@ type OperationLogFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OperationLogFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[1].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[0].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -532,7 +287,7 @@ type PermissionFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *PermissionFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[2].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[1].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -553,9 +308,14 @@ func (f *PermissionFilter) WhereUpdatedAt(p entql.TimeP) {
 	f.Where(p.Field(permission.FieldUpdatedAt))
 }
 
-// WhereParentID applies the entql int predicate on the parent_id field.
-func (f *PermissionFilter) WhereParentID(p entql.IntP) {
+// WhereParentID applies the entql int64 predicate on the parent_id field.
+func (f *PermissionFilter) WhereParentID(p entql.Int64P) {
 	f.Where(p.Field(permission.FieldParentID))
+}
+
+// WhereName applies the entql string predicate on the name field.
+func (f *PermissionFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(permission.FieldName))
 }
 
 // WhereKey applies the entql string predicate on the key field.
@@ -563,9 +323,14 @@ func (f *PermissionFilter) WhereKey(p entql.StringP) {
 	f.Where(p.Field(permission.FieldKey))
 }
 
-// WhereName applies the entql string predicate on the name field.
-func (f *PermissionFilter) WhereName(p entql.StringP) {
-	f.Where(p.Field(permission.FieldName))
+// WhereType applies the entql string predicate on the type field.
+func (f *PermissionFilter) WhereType(p entql.StringP) {
+	f.Where(p.Field(permission.FieldType))
+}
+
+// WherePath applies the entql string predicate on the path field.
+func (f *PermissionFilter) WherePath(p entql.StringP) {
+	f.Where(p.Field(permission.FieldPath))
 }
 
 // WhereDesc applies the entql string predicate on the desc field.
@@ -578,6 +343,11 @@ func (f *PermissionFilter) WhereSort(p entql.IntP) {
 	f.Where(p.Field(permission.FieldSort))
 }
 
+// WhereAttrs applies the entql json.RawMessage predicate on the attrs field.
+func (f *PermissionFilter) WhereAttrs(p entql.BytesP) {
+	f.Where(p.Field(permission.FieldAttrs))
+}
+
 // WhereHasRoles applies a predicate to check if query has an edge roles.
 func (f *PermissionFilter) WhereHasRoles() {
 	f.Where(entql.HasEdge("roles"))
@@ -586,48 +356,6 @@ func (f *PermissionFilter) WhereHasRoles() {
 // WhereHasRolesWith applies a predicate to check if query has an edge roles with a given conditions (other predicates).
 func (f *PermissionFilter) WhereHasRolesWith(preds ...predicate.Role) {
 	f.Where(entql.HasEdgeWith("roles", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasMenus applies a predicate to check if query has an edge menus.
-func (f *PermissionFilter) WhereHasMenus() {
-	f.Where(entql.HasEdge("menus"))
-}
-
-// WhereHasMenusWith applies a predicate to check if query has an edge menus with a given conditions (other predicates).
-func (f *PermissionFilter) WhereHasMenusWith(preds ...predicate.Menu) {
-	f.Where(entql.HasEdgeWith("menus", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasParent applies a predicate to check if query has an edge parent.
-func (f *PermissionFilter) WhereHasParent() {
-	f.Where(entql.HasEdge("parent"))
-}
-
-// WhereHasParentWith applies a predicate to check if query has an edge parent with a given conditions (other predicates).
-func (f *PermissionFilter) WhereHasParentWith(preds ...predicate.Permission) {
-	f.Where(entql.HasEdgeWith("parent", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasChildren applies a predicate to check if query has an edge children.
-func (f *PermissionFilter) WhereHasChildren() {
-	f.Where(entql.HasEdge("children"))
-}
-
-// WhereHasChildrenWith applies a predicate to check if query has an edge children with a given conditions (other predicates).
-func (f *PermissionFilter) WhereHasChildrenWith(preds ...predicate.Permission) {
-	f.Where(entql.HasEdgeWith("children", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -663,7 +391,7 @@ type RoleFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *RoleFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[3].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[2].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -692,20 +420,6 @@ func (f *RoleFilter) WhereName(p entql.StringP) {
 // WhereSort applies the entql int predicate on the sort field.
 func (f *RoleFilter) WhereSort(p entql.IntP) {
 	f.Where(p.Field(role.FieldSort))
-}
-
-// WhereHasMenus applies a predicate to check if query has an edge menus.
-func (f *RoleFilter) WhereHasMenus() {
-	f.Where(entql.HasEdge("menus"))
-}
-
-// WhereHasMenusWith applies a predicate to check if query has an edge menus with a given conditions (other predicates).
-func (f *RoleFilter) WhereHasMenusWith(preds ...predicate.Menu) {
-	f.Where(entql.HasEdgeWith("menus", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
 }
 
 // WhereHasPermissions applies a predicate to check if query has an edge permissions.
@@ -765,7 +479,7 @@ type UserFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[4].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[3].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})

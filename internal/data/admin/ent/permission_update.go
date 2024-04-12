@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/eiixy/monorepo/internal/data/admin/ent/menu"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/permission"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/predicate"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/role"
@@ -44,22 +43,43 @@ func (pu *PermissionUpdate) ClearUpdatedAt() *PermissionUpdate {
 }
 
 // SetParentID sets the "parent_id" field.
-func (pu *PermissionUpdate) SetParentID(i int) *PermissionUpdate {
+func (pu *PermissionUpdate) SetParentID(i int64) *PermissionUpdate {
+	pu.mutation.ResetParentID()
 	pu.mutation.SetParentID(i)
 	return pu
 }
 
 // SetNillableParentID sets the "parent_id" field if the given value is not nil.
-func (pu *PermissionUpdate) SetNillableParentID(i *int) *PermissionUpdate {
+func (pu *PermissionUpdate) SetNillableParentID(i *int64) *PermissionUpdate {
 	if i != nil {
 		pu.SetParentID(*i)
 	}
 	return pu
 }
 
+// AddParentID adds i to the "parent_id" field.
+func (pu *PermissionUpdate) AddParentID(i int64) *PermissionUpdate {
+	pu.mutation.AddParentID(i)
+	return pu
+}
+
 // ClearParentID clears the value of the "parent_id" field.
 func (pu *PermissionUpdate) ClearParentID() *PermissionUpdate {
 	pu.mutation.ClearParentID()
+	return pu
+}
+
+// SetName sets the "name" field.
+func (pu *PermissionUpdate) SetName(s string) *PermissionUpdate {
+	pu.mutation.SetName(s)
+	return pu
+}
+
+// SetNillableName sets the "name" field if the given value is not nil.
+func (pu *PermissionUpdate) SetNillableName(s *string) *PermissionUpdate {
+	if s != nil {
+		pu.SetName(*s)
+	}
 	return pu
 }
 
@@ -77,17 +97,43 @@ func (pu *PermissionUpdate) SetNillableKey(s *string) *PermissionUpdate {
 	return pu
 }
 
-// SetName sets the "name" field.
-func (pu *PermissionUpdate) SetName(s string) *PermissionUpdate {
-	pu.mutation.SetName(s)
+// ClearKey clears the value of the "key" field.
+func (pu *PermissionUpdate) ClearKey() *PermissionUpdate {
+	pu.mutation.ClearKey()
 	return pu
 }
 
-// SetNillableName sets the "name" field if the given value is not nil.
-func (pu *PermissionUpdate) SetNillableName(s *string) *PermissionUpdate {
-	if s != nil {
-		pu.SetName(*s)
+// SetType sets the "type" field.
+func (pu *PermissionUpdate) SetType(pe permission.Type) *PermissionUpdate {
+	pu.mutation.SetType(pe)
+	return pu
+}
+
+// SetNillableType sets the "type" field if the given value is not nil.
+func (pu *PermissionUpdate) SetNillableType(pe *permission.Type) *PermissionUpdate {
+	if pe != nil {
+		pu.SetType(*pe)
 	}
+	return pu
+}
+
+// SetPath sets the "path" field.
+func (pu *PermissionUpdate) SetPath(s string) *PermissionUpdate {
+	pu.mutation.SetPath(s)
+	return pu
+}
+
+// SetNillablePath sets the "path" field if the given value is not nil.
+func (pu *PermissionUpdate) SetNillablePath(s *string) *PermissionUpdate {
+	if s != nil {
+		pu.SetPath(*s)
+	}
+	return pu
+}
+
+// ClearPath clears the value of the "path" field.
+func (pu *PermissionUpdate) ClearPath() *PermissionUpdate {
+	pu.mutation.ClearPath()
 	return pu
 }
 
@@ -132,6 +178,18 @@ func (pu *PermissionUpdate) AddSort(i int) *PermissionUpdate {
 	return pu
 }
 
+// SetAttrs sets the "attrs" field.
+func (pu *PermissionUpdate) SetAttrs(m map[string]interface{}) *PermissionUpdate {
+	pu.mutation.SetAttrs(m)
+	return pu
+}
+
+// ClearAttrs clears the value of the "attrs" field.
+func (pu *PermissionUpdate) ClearAttrs() *PermissionUpdate {
+	pu.mutation.ClearAttrs()
+	return pu
+}
+
 // AddRoleIDs adds the "roles" edge to the Role entity by IDs.
 func (pu *PermissionUpdate) AddRoleIDs(ids ...int) *PermissionUpdate {
 	pu.mutation.AddRoleIDs(ids...)
@@ -145,41 +203,6 @@ func (pu *PermissionUpdate) AddRoles(r ...*Role) *PermissionUpdate {
 		ids[i] = r[i].ID
 	}
 	return pu.AddRoleIDs(ids...)
-}
-
-// AddMenuIDs adds the "menus" edge to the Menu entity by IDs.
-func (pu *PermissionUpdate) AddMenuIDs(ids ...int) *PermissionUpdate {
-	pu.mutation.AddMenuIDs(ids...)
-	return pu
-}
-
-// AddMenus adds the "menus" edges to the Menu entity.
-func (pu *PermissionUpdate) AddMenus(m ...*Menu) *PermissionUpdate {
-	ids := make([]int, len(m))
-	for i := range m {
-		ids[i] = m[i].ID
-	}
-	return pu.AddMenuIDs(ids...)
-}
-
-// SetParent sets the "parent" edge to the Permission entity.
-func (pu *PermissionUpdate) SetParent(p *Permission) *PermissionUpdate {
-	return pu.SetParentID(p.ID)
-}
-
-// AddChildIDs adds the "children" edge to the Permission entity by IDs.
-func (pu *PermissionUpdate) AddChildIDs(ids ...int) *PermissionUpdate {
-	pu.mutation.AddChildIDs(ids...)
-	return pu
-}
-
-// AddChildren adds the "children" edges to the Permission entity.
-func (pu *PermissionUpdate) AddChildren(p ...*Permission) *PermissionUpdate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return pu.AddChildIDs(ids...)
 }
 
 // Mutation returns the PermissionMutation object of the builder.
@@ -206,54 +229,6 @@ func (pu *PermissionUpdate) RemoveRoles(r ...*Role) *PermissionUpdate {
 		ids[i] = r[i].ID
 	}
 	return pu.RemoveRoleIDs(ids...)
-}
-
-// ClearMenus clears all "menus" edges to the Menu entity.
-func (pu *PermissionUpdate) ClearMenus() *PermissionUpdate {
-	pu.mutation.ClearMenus()
-	return pu
-}
-
-// RemoveMenuIDs removes the "menus" edge to Menu entities by IDs.
-func (pu *PermissionUpdate) RemoveMenuIDs(ids ...int) *PermissionUpdate {
-	pu.mutation.RemoveMenuIDs(ids...)
-	return pu
-}
-
-// RemoveMenus removes "menus" edges to Menu entities.
-func (pu *PermissionUpdate) RemoveMenus(m ...*Menu) *PermissionUpdate {
-	ids := make([]int, len(m))
-	for i := range m {
-		ids[i] = m[i].ID
-	}
-	return pu.RemoveMenuIDs(ids...)
-}
-
-// ClearParent clears the "parent" edge to the Permission entity.
-func (pu *PermissionUpdate) ClearParent() *PermissionUpdate {
-	pu.mutation.ClearParent()
-	return pu
-}
-
-// ClearChildren clears all "children" edges to the Permission entity.
-func (pu *PermissionUpdate) ClearChildren() *PermissionUpdate {
-	pu.mutation.ClearChildren()
-	return pu
-}
-
-// RemoveChildIDs removes the "children" edge to Permission entities by IDs.
-func (pu *PermissionUpdate) RemoveChildIDs(ids ...int) *PermissionUpdate {
-	pu.mutation.RemoveChildIDs(ids...)
-	return pu
-}
-
-// RemoveChildren removes "children" edges to Permission entities.
-func (pu *PermissionUpdate) RemoveChildren(p ...*Permission) *PermissionUpdate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return pu.RemoveChildIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -292,6 +267,16 @@ func (pu *PermissionUpdate) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (pu *PermissionUpdate) check() error {
+	if v, ok := pu.mutation.GetType(); ok {
+		if err := permission.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Permission.type": %w`, err)}
+		}
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (pu *PermissionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *PermissionUpdate {
 	pu.modifiers = append(pu.modifiers, modifiers...)
@@ -299,6 +284,9 @@ func (pu *PermissionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *Per
 }
 
 func (pu *PermissionUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := pu.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(permission.Table, permission.Columns, sqlgraph.NewFieldSpec(permission.FieldID, field.TypeInt))
 	if ps := pu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -316,11 +304,32 @@ func (pu *PermissionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if pu.mutation.UpdatedAtCleared() {
 		_spec.ClearField(permission.FieldUpdatedAt, field.TypeTime)
 	}
-	if value, ok := pu.mutation.Key(); ok {
-		_spec.SetField(permission.FieldKey, field.TypeString, value)
+	if value, ok := pu.mutation.ParentID(); ok {
+		_spec.SetField(permission.FieldParentID, field.TypeInt64, value)
+	}
+	if value, ok := pu.mutation.AddedParentID(); ok {
+		_spec.AddField(permission.FieldParentID, field.TypeInt64, value)
+	}
+	if pu.mutation.ParentIDCleared() {
+		_spec.ClearField(permission.FieldParentID, field.TypeInt64)
 	}
 	if value, ok := pu.mutation.Name(); ok {
 		_spec.SetField(permission.FieldName, field.TypeString, value)
+	}
+	if value, ok := pu.mutation.Key(); ok {
+		_spec.SetField(permission.FieldKey, field.TypeString, value)
+	}
+	if pu.mutation.KeyCleared() {
+		_spec.ClearField(permission.FieldKey, field.TypeString)
+	}
+	if value, ok := pu.mutation.GetType(); ok {
+		_spec.SetField(permission.FieldType, field.TypeEnum, value)
+	}
+	if value, ok := pu.mutation.Path(); ok {
+		_spec.SetField(permission.FieldPath, field.TypeString, value)
+	}
+	if pu.mutation.PathCleared() {
+		_spec.ClearField(permission.FieldPath, field.TypeString)
 	}
 	if value, ok := pu.mutation.Desc(); ok {
 		_spec.SetField(permission.FieldDesc, field.TypeString, value)
@@ -333,6 +342,12 @@ func (pu *PermissionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := pu.mutation.AddedSort(); ok {
 		_spec.AddField(permission.FieldSort, field.TypeInt, value)
+	}
+	if value, ok := pu.mutation.Attrs(); ok {
+		_spec.SetField(permission.FieldAttrs, field.TypeJSON, value)
+	}
+	if pu.mutation.AttrsCleared() {
+		_spec.ClearField(permission.FieldAttrs, field.TypeJSON)
 	}
 	if pu.mutation.RolesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -379,125 +394,6 @@ func (pu *PermissionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if pu.mutation.MenusCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   permission.MenusTable,
-			Columns: permission.MenusPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(menu.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := pu.mutation.RemovedMenusIDs(); len(nodes) > 0 && !pu.mutation.MenusCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   permission.MenusTable,
-			Columns: permission.MenusPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(menu.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := pu.mutation.MenusIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   permission.MenusTable,
-			Columns: permission.MenusPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(menu.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if pu.mutation.ParentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   permission.ParentTable,
-			Columns: []string{permission.ParentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(permission.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := pu.mutation.ParentIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   permission.ParentTable,
-			Columns: []string{permission.ParentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(permission.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if pu.mutation.ChildrenCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   permission.ChildrenTable,
-			Columns: []string{permission.ChildrenColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(permission.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := pu.mutation.RemovedChildrenIDs(); len(nodes) > 0 && !pu.mutation.ChildrenCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   permission.ChildrenTable,
-			Columns: []string{permission.ChildrenColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(permission.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := pu.mutation.ChildrenIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   permission.ChildrenTable,
-			Columns: []string{permission.ChildrenColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(permission.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	_spec.AddModifiers(pu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, pu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -533,22 +429,43 @@ func (puo *PermissionUpdateOne) ClearUpdatedAt() *PermissionUpdateOne {
 }
 
 // SetParentID sets the "parent_id" field.
-func (puo *PermissionUpdateOne) SetParentID(i int) *PermissionUpdateOne {
+func (puo *PermissionUpdateOne) SetParentID(i int64) *PermissionUpdateOne {
+	puo.mutation.ResetParentID()
 	puo.mutation.SetParentID(i)
 	return puo
 }
 
 // SetNillableParentID sets the "parent_id" field if the given value is not nil.
-func (puo *PermissionUpdateOne) SetNillableParentID(i *int) *PermissionUpdateOne {
+func (puo *PermissionUpdateOne) SetNillableParentID(i *int64) *PermissionUpdateOne {
 	if i != nil {
 		puo.SetParentID(*i)
 	}
 	return puo
 }
 
+// AddParentID adds i to the "parent_id" field.
+func (puo *PermissionUpdateOne) AddParentID(i int64) *PermissionUpdateOne {
+	puo.mutation.AddParentID(i)
+	return puo
+}
+
 // ClearParentID clears the value of the "parent_id" field.
 func (puo *PermissionUpdateOne) ClearParentID() *PermissionUpdateOne {
 	puo.mutation.ClearParentID()
+	return puo
+}
+
+// SetName sets the "name" field.
+func (puo *PermissionUpdateOne) SetName(s string) *PermissionUpdateOne {
+	puo.mutation.SetName(s)
+	return puo
+}
+
+// SetNillableName sets the "name" field if the given value is not nil.
+func (puo *PermissionUpdateOne) SetNillableName(s *string) *PermissionUpdateOne {
+	if s != nil {
+		puo.SetName(*s)
+	}
 	return puo
 }
 
@@ -566,17 +483,43 @@ func (puo *PermissionUpdateOne) SetNillableKey(s *string) *PermissionUpdateOne {
 	return puo
 }
 
-// SetName sets the "name" field.
-func (puo *PermissionUpdateOne) SetName(s string) *PermissionUpdateOne {
-	puo.mutation.SetName(s)
+// ClearKey clears the value of the "key" field.
+func (puo *PermissionUpdateOne) ClearKey() *PermissionUpdateOne {
+	puo.mutation.ClearKey()
 	return puo
 }
 
-// SetNillableName sets the "name" field if the given value is not nil.
-func (puo *PermissionUpdateOne) SetNillableName(s *string) *PermissionUpdateOne {
-	if s != nil {
-		puo.SetName(*s)
+// SetType sets the "type" field.
+func (puo *PermissionUpdateOne) SetType(pe permission.Type) *PermissionUpdateOne {
+	puo.mutation.SetType(pe)
+	return puo
+}
+
+// SetNillableType sets the "type" field if the given value is not nil.
+func (puo *PermissionUpdateOne) SetNillableType(pe *permission.Type) *PermissionUpdateOne {
+	if pe != nil {
+		puo.SetType(*pe)
 	}
+	return puo
+}
+
+// SetPath sets the "path" field.
+func (puo *PermissionUpdateOne) SetPath(s string) *PermissionUpdateOne {
+	puo.mutation.SetPath(s)
+	return puo
+}
+
+// SetNillablePath sets the "path" field if the given value is not nil.
+func (puo *PermissionUpdateOne) SetNillablePath(s *string) *PermissionUpdateOne {
+	if s != nil {
+		puo.SetPath(*s)
+	}
+	return puo
+}
+
+// ClearPath clears the value of the "path" field.
+func (puo *PermissionUpdateOne) ClearPath() *PermissionUpdateOne {
+	puo.mutation.ClearPath()
 	return puo
 }
 
@@ -621,6 +564,18 @@ func (puo *PermissionUpdateOne) AddSort(i int) *PermissionUpdateOne {
 	return puo
 }
 
+// SetAttrs sets the "attrs" field.
+func (puo *PermissionUpdateOne) SetAttrs(m map[string]interface{}) *PermissionUpdateOne {
+	puo.mutation.SetAttrs(m)
+	return puo
+}
+
+// ClearAttrs clears the value of the "attrs" field.
+func (puo *PermissionUpdateOne) ClearAttrs() *PermissionUpdateOne {
+	puo.mutation.ClearAttrs()
+	return puo
+}
+
 // AddRoleIDs adds the "roles" edge to the Role entity by IDs.
 func (puo *PermissionUpdateOne) AddRoleIDs(ids ...int) *PermissionUpdateOne {
 	puo.mutation.AddRoleIDs(ids...)
@@ -634,41 +589,6 @@ func (puo *PermissionUpdateOne) AddRoles(r ...*Role) *PermissionUpdateOne {
 		ids[i] = r[i].ID
 	}
 	return puo.AddRoleIDs(ids...)
-}
-
-// AddMenuIDs adds the "menus" edge to the Menu entity by IDs.
-func (puo *PermissionUpdateOne) AddMenuIDs(ids ...int) *PermissionUpdateOne {
-	puo.mutation.AddMenuIDs(ids...)
-	return puo
-}
-
-// AddMenus adds the "menus" edges to the Menu entity.
-func (puo *PermissionUpdateOne) AddMenus(m ...*Menu) *PermissionUpdateOne {
-	ids := make([]int, len(m))
-	for i := range m {
-		ids[i] = m[i].ID
-	}
-	return puo.AddMenuIDs(ids...)
-}
-
-// SetParent sets the "parent" edge to the Permission entity.
-func (puo *PermissionUpdateOne) SetParent(p *Permission) *PermissionUpdateOne {
-	return puo.SetParentID(p.ID)
-}
-
-// AddChildIDs adds the "children" edge to the Permission entity by IDs.
-func (puo *PermissionUpdateOne) AddChildIDs(ids ...int) *PermissionUpdateOne {
-	puo.mutation.AddChildIDs(ids...)
-	return puo
-}
-
-// AddChildren adds the "children" edges to the Permission entity.
-func (puo *PermissionUpdateOne) AddChildren(p ...*Permission) *PermissionUpdateOne {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return puo.AddChildIDs(ids...)
 }
 
 // Mutation returns the PermissionMutation object of the builder.
@@ -695,54 +615,6 @@ func (puo *PermissionUpdateOne) RemoveRoles(r ...*Role) *PermissionUpdateOne {
 		ids[i] = r[i].ID
 	}
 	return puo.RemoveRoleIDs(ids...)
-}
-
-// ClearMenus clears all "menus" edges to the Menu entity.
-func (puo *PermissionUpdateOne) ClearMenus() *PermissionUpdateOne {
-	puo.mutation.ClearMenus()
-	return puo
-}
-
-// RemoveMenuIDs removes the "menus" edge to Menu entities by IDs.
-func (puo *PermissionUpdateOne) RemoveMenuIDs(ids ...int) *PermissionUpdateOne {
-	puo.mutation.RemoveMenuIDs(ids...)
-	return puo
-}
-
-// RemoveMenus removes "menus" edges to Menu entities.
-func (puo *PermissionUpdateOne) RemoveMenus(m ...*Menu) *PermissionUpdateOne {
-	ids := make([]int, len(m))
-	for i := range m {
-		ids[i] = m[i].ID
-	}
-	return puo.RemoveMenuIDs(ids...)
-}
-
-// ClearParent clears the "parent" edge to the Permission entity.
-func (puo *PermissionUpdateOne) ClearParent() *PermissionUpdateOne {
-	puo.mutation.ClearParent()
-	return puo
-}
-
-// ClearChildren clears all "children" edges to the Permission entity.
-func (puo *PermissionUpdateOne) ClearChildren() *PermissionUpdateOne {
-	puo.mutation.ClearChildren()
-	return puo
-}
-
-// RemoveChildIDs removes the "children" edge to Permission entities by IDs.
-func (puo *PermissionUpdateOne) RemoveChildIDs(ids ...int) *PermissionUpdateOne {
-	puo.mutation.RemoveChildIDs(ids...)
-	return puo
-}
-
-// RemoveChildren removes "children" edges to Permission entities.
-func (puo *PermissionUpdateOne) RemoveChildren(p ...*Permission) *PermissionUpdateOne {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return puo.RemoveChildIDs(ids...)
 }
 
 // Where appends a list predicates to the PermissionUpdate builder.
@@ -794,6 +666,16 @@ func (puo *PermissionUpdateOne) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (puo *PermissionUpdateOne) check() error {
+	if v, ok := puo.mutation.GetType(); ok {
+		if err := permission.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Permission.type": %w`, err)}
+		}
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (puo *PermissionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *PermissionUpdateOne {
 	puo.modifiers = append(puo.modifiers, modifiers...)
@@ -801,6 +683,9 @@ func (puo *PermissionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) 
 }
 
 func (puo *PermissionUpdateOne) sqlSave(ctx context.Context) (_node *Permission, err error) {
+	if err := puo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(permission.Table, permission.Columns, sqlgraph.NewFieldSpec(permission.FieldID, field.TypeInt))
 	id, ok := puo.mutation.ID()
 	if !ok {
@@ -835,11 +720,32 @@ func (puo *PermissionUpdateOne) sqlSave(ctx context.Context) (_node *Permission,
 	if puo.mutation.UpdatedAtCleared() {
 		_spec.ClearField(permission.FieldUpdatedAt, field.TypeTime)
 	}
-	if value, ok := puo.mutation.Key(); ok {
-		_spec.SetField(permission.FieldKey, field.TypeString, value)
+	if value, ok := puo.mutation.ParentID(); ok {
+		_spec.SetField(permission.FieldParentID, field.TypeInt64, value)
+	}
+	if value, ok := puo.mutation.AddedParentID(); ok {
+		_spec.AddField(permission.FieldParentID, field.TypeInt64, value)
+	}
+	if puo.mutation.ParentIDCleared() {
+		_spec.ClearField(permission.FieldParentID, field.TypeInt64)
 	}
 	if value, ok := puo.mutation.Name(); ok {
 		_spec.SetField(permission.FieldName, field.TypeString, value)
+	}
+	if value, ok := puo.mutation.Key(); ok {
+		_spec.SetField(permission.FieldKey, field.TypeString, value)
+	}
+	if puo.mutation.KeyCleared() {
+		_spec.ClearField(permission.FieldKey, field.TypeString)
+	}
+	if value, ok := puo.mutation.GetType(); ok {
+		_spec.SetField(permission.FieldType, field.TypeEnum, value)
+	}
+	if value, ok := puo.mutation.Path(); ok {
+		_spec.SetField(permission.FieldPath, field.TypeString, value)
+	}
+	if puo.mutation.PathCleared() {
+		_spec.ClearField(permission.FieldPath, field.TypeString)
 	}
 	if value, ok := puo.mutation.Desc(); ok {
 		_spec.SetField(permission.FieldDesc, field.TypeString, value)
@@ -852,6 +758,12 @@ func (puo *PermissionUpdateOne) sqlSave(ctx context.Context) (_node *Permission,
 	}
 	if value, ok := puo.mutation.AddedSort(); ok {
 		_spec.AddField(permission.FieldSort, field.TypeInt, value)
+	}
+	if value, ok := puo.mutation.Attrs(); ok {
+		_spec.SetField(permission.FieldAttrs, field.TypeJSON, value)
+	}
+	if puo.mutation.AttrsCleared() {
+		_spec.ClearField(permission.FieldAttrs, field.TypeJSON)
 	}
 	if puo.mutation.RolesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -891,125 +803,6 @@ func (puo *PermissionUpdateOne) sqlSave(ctx context.Context) (_node *Permission,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(role.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if puo.mutation.MenusCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   permission.MenusTable,
-			Columns: permission.MenusPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(menu.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := puo.mutation.RemovedMenusIDs(); len(nodes) > 0 && !puo.mutation.MenusCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   permission.MenusTable,
-			Columns: permission.MenusPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(menu.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := puo.mutation.MenusIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   permission.MenusTable,
-			Columns: permission.MenusPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(menu.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if puo.mutation.ParentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   permission.ParentTable,
-			Columns: []string{permission.ParentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(permission.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := puo.mutation.ParentIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   permission.ParentTable,
-			Columns: []string{permission.ParentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(permission.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if puo.mutation.ChildrenCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   permission.ChildrenTable,
-			Columns: []string{permission.ChildrenColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(permission.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := puo.mutation.RemovedChildrenIDs(); len(nodes) > 0 && !puo.mutation.ChildrenCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   permission.ChildrenTable,
-			Columns: []string{permission.ChildrenColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(permission.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := puo.mutation.ChildrenIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   permission.ChildrenTable,
-			Columns: []string{permission.ChildrenColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(permission.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

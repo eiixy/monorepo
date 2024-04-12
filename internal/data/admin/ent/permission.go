@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -12,7 +13,7 @@ import (
 	"github.com/eiixy/monorepo/internal/data/admin/ent/permission"
 )
 
-// 操作日志
+// 权限
 type Permission struct {
 	config `json:"-"`
 	// ID of the ent.
@@ -22,15 +23,21 @@ type Permission struct {
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// ParentID holds the value of the "parent_id" field.
-	ParentID *int `json:"parent_id,omitempty"`
-	// Key holds the value of the "key" field.
-	Key string `json:"key,omitempty"`
+	ParentID *int64 `json:"parent_id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
+	// Key holds the value of the "key" field.
+	Key string `json:"key,omitempty"`
+	// Type holds the value of the "type" field.
+	Type permission.Type `json:"type,omitempty"`
+	// Path holds the value of the "path" field.
+	Path string `json:"path,omitempty"`
 	// Desc holds the value of the "desc" field.
 	Desc string `json:"desc,omitempty"`
 	// Sort holds the value of the "sort" field.
 	Sort int `json:"sort,omitempty"`
+	// Attrs holds the value of the "attrs" field.
+	Attrs map[string]interface{} `json:"attrs,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the PermissionQuery when eager-loading is set.
 	Edges        PermissionEdges `json:"edges"`
@@ -41,21 +48,11 @@ type Permission struct {
 type PermissionEdges struct {
 	// Roles holds the value of the roles edge.
 	Roles []*Role `json:"roles,omitempty"`
-	// Menus holds the value of the menus edge.
-	Menus []*Menu `json:"menus,omitempty"`
-	// Parent holds the value of the parent edge.
-	Parent *Permission `json:"parent,omitempty"`
-	// Children holds the value of the children edge.
-	Children []*Permission `json:"children,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
-	// totalCount holds the count of the edges above.
-	totalCount [4]map[string]int
+	loadedTypes [1]bool
 
-	namedRoles    map[string][]*Role
-	namedMenus    map[string][]*Menu
-	namedChildren map[string][]*Permission
+	namedRoles map[string][]*Role
 }
 
 // RolesOrErr returns the Roles value or an error if the edge
@@ -67,45 +64,16 @@ func (e PermissionEdges) RolesOrErr() ([]*Role, error) {
 	return nil, &NotLoadedError{edge: "roles"}
 }
 
-// MenusOrErr returns the Menus value or an error if the edge
-// was not loaded in eager-loading.
-func (e PermissionEdges) MenusOrErr() ([]*Menu, error) {
-	if e.loadedTypes[1] {
-		return e.Menus, nil
-	}
-	return nil, &NotLoadedError{edge: "menus"}
-}
-
-// ParentOrErr returns the Parent value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e PermissionEdges) ParentOrErr() (*Permission, error) {
-	if e.loadedTypes[2] {
-		if e.Parent == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: permission.Label}
-		}
-		return e.Parent, nil
-	}
-	return nil, &NotLoadedError{edge: "parent"}
-}
-
-// ChildrenOrErr returns the Children value or an error if the edge
-// was not loaded in eager-loading.
-func (e PermissionEdges) ChildrenOrErr() ([]*Permission, error) {
-	if e.loadedTypes[3] {
-		return e.Children, nil
-	}
-	return nil, &NotLoadedError{edge: "children"}
-}
-
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Permission) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case permission.FieldAttrs:
+			values[i] = new([]byte)
 		case permission.FieldID, permission.FieldParentID, permission.FieldSort:
 			values[i] = new(sql.NullInt64)
-		case permission.FieldKey, permission.FieldName, permission.FieldDesc:
+		case permission.FieldName, permission.FieldKey, permission.FieldType, permission.FieldPath, permission.FieldDesc:
 			values[i] = new(sql.NullString)
 		case permission.FieldCreatedAt, permission.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -146,8 +114,14 @@ func (pe *Permission) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field parent_id", values[i])
 			} else if value.Valid {
-				pe.ParentID = new(int)
-				*pe.ParentID = int(value.Int64)
+				pe.ParentID = new(int64)
+				*pe.ParentID = value.Int64
+			}
+		case permission.FieldName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field name", values[i])
+			} else if value.Valid {
+				pe.Name = value.String
 			}
 		case permission.FieldKey:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -155,11 +129,17 @@ func (pe *Permission) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				pe.Key = value.String
 			}
-		case permission.FieldName:
+		case permission.FieldType:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field name", values[i])
+				return fmt.Errorf("unexpected type %T for field type", values[i])
 			} else if value.Valid {
-				pe.Name = value.String
+				pe.Type = permission.Type(value.String)
+			}
+		case permission.FieldPath:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field path", values[i])
+			} else if value.Valid {
+				pe.Path = value.String
 			}
 		case permission.FieldDesc:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -172,6 +152,14 @@ func (pe *Permission) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field sort", values[i])
 			} else if value.Valid {
 				pe.Sort = int(value.Int64)
+			}
+		case permission.FieldAttrs:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field attrs", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &pe.Attrs); err != nil {
+					return fmt.Errorf("unmarshal field attrs: %w", err)
+				}
 			}
 		default:
 			pe.selectValues.Set(columns[i], values[i])
@@ -189,21 +177,6 @@ func (pe *Permission) Value(name string) (ent.Value, error) {
 // QueryRoles queries the "roles" edge of the Permission entity.
 func (pe *Permission) QueryRoles() *RoleQuery {
 	return NewPermissionClient(pe.config).QueryRoles(pe)
-}
-
-// QueryMenus queries the "menus" edge of the Permission entity.
-func (pe *Permission) QueryMenus() *MenuQuery {
-	return NewPermissionClient(pe.config).QueryMenus(pe)
-}
-
-// QueryParent queries the "parent" edge of the Permission entity.
-func (pe *Permission) QueryParent() *PermissionQuery {
-	return NewPermissionClient(pe.config).QueryParent(pe)
-}
-
-// QueryChildren queries the "children" edge of the Permission entity.
-func (pe *Permission) QueryChildren() *PermissionQuery {
-	return NewPermissionClient(pe.config).QueryChildren(pe)
 }
 
 // Update returns a builder for updating this Permission.
@@ -240,17 +213,26 @@ func (pe *Permission) String() string {
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
+	builder.WriteString("name=")
+	builder.WriteString(pe.Name)
+	builder.WriteString(", ")
 	builder.WriteString("key=")
 	builder.WriteString(pe.Key)
 	builder.WriteString(", ")
-	builder.WriteString("name=")
-	builder.WriteString(pe.Name)
+	builder.WriteString("type=")
+	builder.WriteString(fmt.Sprintf("%v", pe.Type))
+	builder.WriteString(", ")
+	builder.WriteString("path=")
+	builder.WriteString(pe.Path)
 	builder.WriteString(", ")
 	builder.WriteString("desc=")
 	builder.WriteString(pe.Desc)
 	builder.WriteString(", ")
 	builder.WriteString("sort=")
 	builder.WriteString(fmt.Sprintf("%v", pe.Sort))
+	builder.WriteString(", ")
+	builder.WriteString("attrs=")
+	builder.WriteString(fmt.Sprintf("%v", pe.Attrs))
 	builder.WriteByte(')')
 	return builder.String()
 }
@@ -276,54 +258,6 @@ func (pe *Permission) appendNamedRoles(name string, edges ...*Role) {
 		pe.Edges.namedRoles[name] = []*Role{}
 	} else {
 		pe.Edges.namedRoles[name] = append(pe.Edges.namedRoles[name], edges...)
-	}
-}
-
-// NamedMenus returns the Menus named value or an error if the edge was not
-// loaded in eager-loading with this name.
-func (pe *Permission) NamedMenus(name string) ([]*Menu, error) {
-	if pe.Edges.namedMenus == nil {
-		return nil, &NotLoadedError{edge: name}
-	}
-	nodes, ok := pe.Edges.namedMenus[name]
-	if !ok {
-		return nil, &NotLoadedError{edge: name}
-	}
-	return nodes, nil
-}
-
-func (pe *Permission) appendNamedMenus(name string, edges ...*Menu) {
-	if pe.Edges.namedMenus == nil {
-		pe.Edges.namedMenus = make(map[string][]*Menu)
-	}
-	if len(edges) == 0 {
-		pe.Edges.namedMenus[name] = []*Menu{}
-	} else {
-		pe.Edges.namedMenus[name] = append(pe.Edges.namedMenus[name], edges...)
-	}
-}
-
-// NamedChildren returns the Children named value or an error if the edge was not
-// loaded in eager-loading with this name.
-func (pe *Permission) NamedChildren(name string) ([]*Permission, error) {
-	if pe.Edges.namedChildren == nil {
-		return nil, &NotLoadedError{edge: name}
-	}
-	nodes, ok := pe.Edges.namedChildren[name]
-	if !ok {
-		return nil, &NotLoadedError{edge: name}
-	}
-	return nodes, nil
-}
-
-func (pe *Permission) appendNamedChildren(name string, edges ...*Permission) {
-	if pe.Edges.namedChildren == nil {
-		pe.Edges.namedChildren = make(map[string][]*Permission)
-	}
-	if len(edges) == 0 {
-		pe.Edges.namedChildren[name] = []*Permission{}
-	} else {
-		pe.Edges.namedChildren[name] = append(pe.Edges.namedChildren[name], edges...)
 	}
 }
 

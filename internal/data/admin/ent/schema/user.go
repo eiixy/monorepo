@@ -53,6 +53,6 @@ func (User) Fields() []ent.Field {
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("roles", Role.Type),
-		edge.To("operation_logs", OperationLog.Type),
+		edge.To("operation_logs", OperationLog.Type).Annotations(entgql.Skip()),
 	}
 }

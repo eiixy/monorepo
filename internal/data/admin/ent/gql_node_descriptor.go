@@ -6,8 +6,6 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/eiixy/monorepo/internal/data/admin/ent/menu"
-	"github.com/eiixy/monorepo/internal/data/admin/ent/operationlog"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/permission"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/role"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/user"
@@ -33,114 +31,6 @@ type Edge struct {
 	Type string `json:"type,omitempty"` // edge type.
 	Name string `json:"name,omitempty"` // edge name.
 	IDs  []int  `json:"ids,omitempty"`  // node ids (where this edge point to).
-}
-
-// Node implements Noder interface
-func (m *Menu) Node(ctx context.Context) (node *Node, err error) {
-	node = &Node{
-		ID:     m.ID,
-		Type:   "Menu",
-		Fields: make([]*Field, 7),
-		Edges:  make([]*Edge, 4),
-	}
-	var buf []byte
-	if buf, err = json.Marshal(m.CreatedAt); err != nil {
-		return nil, err
-	}
-	node.Fields[0] = &Field{
-		Type:  "time.Time",
-		Name:  "created_at",
-		Value: string(buf),
-	}
-	if buf, err = json.Marshal(m.UpdatedAt); err != nil {
-		return nil, err
-	}
-	node.Fields[1] = &Field{
-		Type:  "time.Time",
-		Name:  "updated_at",
-		Value: string(buf),
-	}
-	if buf, err = json.Marshal(m.ParentID); err != nil {
-		return nil, err
-	}
-	node.Fields[2] = &Field{
-		Type:  "int",
-		Name:  "parent_id",
-		Value: string(buf),
-	}
-	if buf, err = json.Marshal(m.Icon); err != nil {
-		return nil, err
-	}
-	node.Fields[3] = &Field{
-		Type:  "string",
-		Name:  "icon",
-		Value: string(buf),
-	}
-	if buf, err = json.Marshal(m.Name); err != nil {
-		return nil, err
-	}
-	node.Fields[4] = &Field{
-		Type:  "string",
-		Name:  "name",
-		Value: string(buf),
-	}
-	if buf, err = json.Marshal(m.Path); err != nil {
-		return nil, err
-	}
-	node.Fields[5] = &Field{
-		Type:  "string",
-		Name:  "path",
-		Value: string(buf),
-	}
-	if buf, err = json.Marshal(m.Sort); err != nil {
-		return nil, err
-	}
-	node.Fields[6] = &Field{
-		Type:  "int",
-		Name:  "sort",
-		Value: string(buf),
-	}
-	node.Edges[0] = &Edge{
-		Type: "Role",
-		Name: "roles",
-	}
-	err = m.QueryRoles().
-		Select(role.FieldID).
-		Scan(ctx, &node.Edges[0].IDs)
-	if err != nil {
-		return nil, err
-	}
-	node.Edges[1] = &Edge{
-		Type: "Menu",
-		Name: "parent",
-	}
-	err = m.QueryParent().
-		Select(menu.FieldID).
-		Scan(ctx, &node.Edges[1].IDs)
-	if err != nil {
-		return nil, err
-	}
-	node.Edges[2] = &Edge{
-		Type: "Menu",
-		Name: "children",
-	}
-	err = m.QueryChildren().
-		Select(menu.FieldID).
-		Scan(ctx, &node.Edges[2].IDs)
-	if err != nil {
-		return nil, err
-	}
-	node.Edges[3] = &Edge{
-		Type: "Permission",
-		Name: "permissions",
-	}
-	err = m.QueryPermissions().
-		Select(permission.FieldID).
-		Scan(ctx, &node.Edges[3].IDs)
-	if err != nil {
-		return nil, err
-	}
-	return node, nil
 }
 
 // Node implements Noder interface
@@ -210,8 +100,8 @@ func (pe *Permission) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     pe.ID,
 		Type:   "Permission",
-		Fields: make([]*Field, 7),
-		Edges:  make([]*Edge, 4),
+		Fields: make([]*Field, 10),
+		Edges:  make([]*Edge, 0),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(pe.CreatedAt); err != nil {
@@ -234,30 +124,46 @@ func (pe *Permission) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Fields[2] = &Field{
-		Type:  "int",
+		Type:  "int64",
 		Name:  "parent_id",
-		Value: string(buf),
-	}
-	if buf, err = json.Marshal(pe.Key); err != nil {
-		return nil, err
-	}
-	node.Fields[3] = &Field{
-		Type:  "string",
-		Name:  "key",
 		Value: string(buf),
 	}
 	if buf, err = json.Marshal(pe.Name); err != nil {
 		return nil, err
 	}
-	node.Fields[4] = &Field{
+	node.Fields[3] = &Field{
 		Type:  "string",
 		Name:  "name",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(pe.Key); err != nil {
+		return nil, err
+	}
+	node.Fields[4] = &Field{
+		Type:  "string",
+		Name:  "key",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(pe.Type); err != nil {
+		return nil, err
+	}
+	node.Fields[5] = &Field{
+		Type:  "permission.Type",
+		Name:  "type",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(pe.Path); err != nil {
+		return nil, err
+	}
+	node.Fields[6] = &Field{
+		Type:  "string",
+		Name:  "path",
 		Value: string(buf),
 	}
 	if buf, err = json.Marshal(pe.Desc); err != nil {
 		return nil, err
 	}
-	node.Fields[5] = &Field{
+	node.Fields[7] = &Field{
 		Type:  "string",
 		Name:  "desc",
 		Value: string(buf),
@@ -265,50 +171,18 @@ func (pe *Permission) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(pe.Sort); err != nil {
 		return nil, err
 	}
-	node.Fields[6] = &Field{
+	node.Fields[8] = &Field{
 		Type:  "int",
 		Name:  "sort",
 		Value: string(buf),
 	}
-	node.Edges[0] = &Edge{
-		Type: "Role",
-		Name: "roles",
-	}
-	err = pe.QueryRoles().
-		Select(role.FieldID).
-		Scan(ctx, &node.Edges[0].IDs)
-	if err != nil {
+	if buf, err = json.Marshal(pe.Attrs); err != nil {
 		return nil, err
 	}
-	node.Edges[1] = &Edge{
-		Type: "Menu",
-		Name: "menus",
-	}
-	err = pe.QueryMenus().
-		Select(menu.FieldID).
-		Scan(ctx, &node.Edges[1].IDs)
-	if err != nil {
-		return nil, err
-	}
-	node.Edges[2] = &Edge{
-		Type: "Permission",
-		Name: "parent",
-	}
-	err = pe.QueryParent().
-		Select(permission.FieldID).
-		Scan(ctx, &node.Edges[2].IDs)
-	if err != nil {
-		return nil, err
-	}
-	node.Edges[3] = &Edge{
-		Type: "Permission",
-		Name: "children",
-	}
-	err = pe.QueryChildren().
-		Select(permission.FieldID).
-		Scan(ctx, &node.Edges[3].IDs)
-	if err != nil {
-		return nil, err
+	node.Fields[9] = &Field{
+		Type:  "map[string]interface {}",
+		Name:  "attrs",
+		Value: string(buf),
 	}
 	return node, nil
 }
@@ -319,7 +193,7 @@ func (r *Role) Node(ctx context.Context) (node *Node, err error) {
 		ID:     r.ID,
 		Type:   "Role",
 		Fields: make([]*Field, 4),
-		Edges:  make([]*Edge, 3),
+		Edges:  make([]*Edge, 1),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(r.CreatedAt); err != nil {
@@ -355,32 +229,12 @@ func (r *Role) Node(ctx context.Context) (node *Node, err error) {
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{
-		Type: "Menu",
-		Name: "menus",
-	}
-	err = r.QueryMenus().
-		Select(menu.FieldID).
-		Scan(ctx, &node.Edges[0].IDs)
-	if err != nil {
-		return nil, err
-	}
-	node.Edges[1] = &Edge{
 		Type: "Permission",
 		Name: "permissions",
 	}
 	err = r.QueryPermissions().
 		Select(permission.FieldID).
-		Scan(ctx, &node.Edges[1].IDs)
-	if err != nil {
-		return nil, err
-	}
-	node.Edges[2] = &Edge{
-		Type: "User",
-		Name: "users",
-	}
-	err = r.QueryUsers().
-		Select(user.FieldID).
-		Scan(ctx, &node.Edges[2].IDs)
+		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -393,7 +247,7 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 		ID:     u.ID,
 		Type:   "User",
 		Fields: make([]*Field, 8),
-		Edges:  make([]*Edge, 2),
+		Edges:  make([]*Edge, 1),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(u.CreatedAt); err != nil {
@@ -467,16 +321,6 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	err = u.QueryRoles().
 		Select(role.FieldID).
 		Scan(ctx, &node.Edges[0].IDs)
-	if err != nil {
-		return nil, err
-	}
-	node.Edges[1] = &Edge{
-		Type: "OperationLog",
-		Name: "operation_logs",
-	}
-	err = u.QueryOperationLogs().
-		Select(operationlog.FieldID).
-		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}

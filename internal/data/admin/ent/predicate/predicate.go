@@ -6,9 +6,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
-// Menu is the predicate function for menu builders.
-type Menu func(*sql.Selector)
-
 // OperationLog is the predicate function for operationlog builders.
 type OperationLog func(*sql.Selector)
 

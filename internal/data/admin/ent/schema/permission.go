@@ -24,33 +24,31 @@ func (Permission) Mixin() []ent.Mixin {
 // Annotations of the Permission.
 func (Permission) Annotations() []schema.Annotation {
 	return []schema.Annotation{
-		schema.Comment("操作日志"),
+		schema.Comment("权限"),
 		entsql.WithComments(true),
-		entgql.QueryField().Directives().Description("操作日志"),
+		entgql.QueryField().Directives().Description("权限"),
 		entgql.RelayConnection(),
-		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
+		entgql.Mutations(),
 	}
 }
 
 // Fields of the Permission.
 func (Permission) Fields() []ent.Field {
 	return []ent.Field{
-		field.Int("parent_id").Optional().Nillable(),
-		field.String("key").Unique(),
+		field.Int64("parent_id").Optional().Nillable().Annotations(entgql.Skip(entgql.SkipMutationUpdateInput)),
 		field.String("name"),
+		field.String("key").Optional().Unique(),
+		field.Enum("type").Values("menu", "page", "element"),
+		field.String("path").Optional(),
 		field.String("desc").Optional(),
 		field.Int("sort").Default(1000),
+		field.JSON("attrs", map[string]any{}).Optional(),
 	}
 }
 
 // Edges of the Permission.
 func (Permission) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("roles", Role.Type).Ref("permissions"),
-		edge.From("menus", Menu.Type).Ref("permissions"),
-		edge.To("children", Permission.Type).
-			From("parent").
-			Field("parent_id").
-			Unique(),
+		edge.From("roles", Role.Type).Ref("permissions").Annotations(entgql.Skip()),
 	}
 }

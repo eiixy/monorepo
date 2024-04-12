@@ -5,7 +5,6 @@ package runtime
 import (
 	"time"
 
-	"github.com/eiixy/monorepo/internal/data/admin/ent/menu"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/operationlog"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/permission"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/role"
@@ -17,25 +16,6 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
-	menuMixin := schema.Menu{}.Mixin()
-	menuMixinFields0 := menuMixin[0].Fields()
-	_ = menuMixinFields0
-	menuFields := schema.Menu{}.Fields()
-	_ = menuFields
-	// menuDescCreatedAt is the schema descriptor for created_at field.
-	menuDescCreatedAt := menuMixinFields0[0].Descriptor()
-	// menu.DefaultCreatedAt holds the default value on creation for the created_at field.
-	menu.DefaultCreatedAt = menuDescCreatedAt.Default.(func() time.Time)
-	// menuDescUpdatedAt is the schema descriptor for updated_at field.
-	menuDescUpdatedAt := menuMixinFields0[1].Descriptor()
-	// menu.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	menu.DefaultUpdatedAt = menuDescUpdatedAt.Default.(func() time.Time)
-	// menu.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	menu.UpdateDefaultUpdatedAt = menuDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// menuDescSort is the schema descriptor for sort field.
-	menuDescSort := menuFields[4].Descriptor()
-	// menu.DefaultSort holds the default value on creation for the sort field.
-	menu.DefaultSort = menuDescSort.Default.(int)
 	operationlogMixin := schema.OperationLog{}.Mixin()
 	operationlogMixinFields0 := operationlogMixin[0].Fields()
 	_ = operationlogMixinFields0
@@ -67,7 +47,7 @@ func init() {
 	// permission.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	permission.UpdateDefaultUpdatedAt = permissionDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// permissionDescSort is the schema descriptor for sort field.
-	permissionDescSort := permissionFields[4].Descriptor()
+	permissionDescSort := permissionFields[6].Descriptor()
 	// permission.DefaultSort holds the default value on creation for the sort field.
 	permission.DefaultSort = permissionDescSort.Default.(int)
 	roleMixin := schema.Role{}.Mixin()
@@ -115,6 +95,6 @@ func init() {
 }
 
 const (
-	Version = "v0.13.0"                                         // Version of ent codegen.
-	Sum     = "h1:DclxWczaCpyiKn6ZWVcJjq1zIKtJ11iNKy+08lNYsJE=" // Sum of ent codegen.
+	Version = "v0.13.1"                                         // Version of ent codegen.
+	Sum     = "h1:uD8QwN1h6SNphdCCzmkMN3feSUzNnVvV/WIkHKMbzOE=" // Sum of ent codegen.
 )

@@ -44,8 +44,6 @@ type LoginReply {
 extend type User {
     """权限"""
     permissions: [Permission!]
-    """菜单"""
-    menus: [Menu!]
 }
 
 input UpdateProfileInput {

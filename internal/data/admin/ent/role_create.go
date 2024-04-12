@@ -10,7 +10,6 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/eiixy/monorepo/internal/data/admin/ent/menu"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/permission"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/role"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/user"
@@ -69,21 +68,6 @@ func (rc *RoleCreate) SetNillableSort(i *int) *RoleCreate {
 		rc.SetSort(*i)
 	}
 	return rc
-}
-
-// AddMenuIDs adds the "menus" edge to the Menu entity by IDs.
-func (rc *RoleCreate) AddMenuIDs(ids ...int) *RoleCreate {
-	rc.mutation.AddMenuIDs(ids...)
-	return rc
-}
-
-// AddMenus adds the "menus" edges to the Menu entity.
-func (rc *RoleCreate) AddMenus(m ...*Menu) *RoleCreate {
-	ids := make([]int, len(m))
-	for i := range m {
-		ids[i] = m[i].ID
-	}
-	return rc.AddMenuIDs(ids...)
 }
 
 // AddPermissionIDs adds the "permissions" edge to the Permission entity by IDs.
@@ -214,22 +198,6 @@ func (rc *RoleCreate) createSpec() (*Role, *sqlgraph.CreateSpec) {
 	if value, ok := rc.mutation.Sort(); ok {
 		_spec.SetField(role.FieldSort, field.TypeInt, value)
 		_node.Sort = value
-	}
-	if nodes := rc.mutation.MenusIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   role.MenusTable,
-			Columns: role.MenusPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(menu.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := rc.mutation.PermissionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

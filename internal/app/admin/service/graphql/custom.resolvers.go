@@ -12,7 +12,6 @@ import (
 	"github.com/eiixy/monorepo/internal/app/admin/service/graphql/dataloader"
 	"github.com/eiixy/monorepo/internal/app/admin/service/graphql/model"
 	"github.com/eiixy/monorepo/internal/data/admin/ent"
-	"github.com/eiixy/monorepo/internal/data/admin/ent/menu"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/permission"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/role"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/user"
@@ -145,11 +144,6 @@ func (r *userResolver) RoleCount(ctx context.Context, obj *ent.User) (int, error
 // Permissions is the resolver for the permissions field.
 func (r *userResolver) Permissions(ctx context.Context, obj *ent.User) ([]*ent.Permission, error) {
 	return r.client.Permission.Query().Where(permission.HasRolesWith(role.HasUsersWith(user.ID(obj.ID)))).All(ctx)
-}
-
-// Menus is the resolver for the menus field.
-func (r *userResolver) Menus(ctx context.Context, obj *ent.User) ([]*ent.Menu, error) {
-	return r.client.Menu.Query().Where(menu.HasRolesWith(role.HasUsersWith(user.ID(obj.ID)))).All(ctx)
 }
 
 // Mutation returns MutationResolver implementation.

@@ -33,36 +33,24 @@ type Role struct {
 
 // RoleEdges holds the relations/edges for other nodes in the graph.
 type RoleEdges struct {
-	// Menus holds the value of the menus edge.
-	Menus []*Menu `json:"menus,omitempty"`
 	// Permissions holds the value of the permissions edge.
 	Permissions []*Permission `json:"permissions,omitempty"`
 	// Users holds the value of the users edge.
 	Users []*User `json:"users,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [2]bool
 	// totalCount holds the count of the edges above.
-	totalCount [3]map[string]int
+	totalCount [1]map[string]int
 
-	namedMenus       map[string][]*Menu
 	namedPermissions map[string][]*Permission
 	namedUsers       map[string][]*User
-}
-
-// MenusOrErr returns the Menus value or an error if the edge
-// was not loaded in eager-loading.
-func (e RoleEdges) MenusOrErr() ([]*Menu, error) {
-	if e.loadedTypes[0] {
-		return e.Menus, nil
-	}
-	return nil, &NotLoadedError{edge: "menus"}
 }
 
 // PermissionsOrErr returns the Permissions value or an error if the edge
 // was not loaded in eager-loading.
 func (e RoleEdges) PermissionsOrErr() ([]*Permission, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[0] {
 		return e.Permissions, nil
 	}
 	return nil, &NotLoadedError{edge: "permissions"}
@@ -71,7 +59,7 @@ func (e RoleEdges) PermissionsOrErr() ([]*Permission, error) {
 // UsersOrErr returns the Users value or an error if the edge
 // was not loaded in eager-loading.
 func (e RoleEdges) UsersOrErr() ([]*User, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		return e.Users, nil
 	}
 	return nil, &NotLoadedError{edge: "users"}
@@ -146,11 +134,6 @@ func (r *Role) Value(name string) (ent.Value, error) {
 	return r.selectValues.Get(name)
 }
 
-// QueryMenus queries the "menus" edge of the Role entity.
-func (r *Role) QueryMenus() *MenuQuery {
-	return NewRoleClient(r.config).QueryMenus(r)
-}
-
 // QueryPermissions queries the "permissions" edge of the Role entity.
 func (r *Role) QueryPermissions() *PermissionQuery {
 	return NewRoleClient(r.config).QueryPermissions(r)
@@ -197,30 +180,6 @@ func (r *Role) String() string {
 	builder.WriteString(fmt.Sprintf("%v", r.Sort))
 	builder.WriteByte(')')
 	return builder.String()
-}
-
-// NamedMenus returns the Menus named value or an error if the edge was not
-// loaded in eager-loading with this name.
-func (r *Role) NamedMenus(name string) ([]*Menu, error) {
-	if r.Edges.namedMenus == nil {
-		return nil, &NotLoadedError{edge: name}
-	}
-	nodes, ok := r.Edges.namedMenus[name]
-	if !ok {
-		return nil, &NotLoadedError{edge: name}
-	}
-	return nodes, nil
-}
-
-func (r *Role) appendNamedMenus(name string, edges ...*Menu) {
-	if r.Edges.namedMenus == nil {
-		r.Edges.namedMenus = make(map[string][]*Menu)
-	}
-	if len(edges) == 0 {
-		r.Edges.namedMenus[name] = []*Menu{}
-	} else {
-		r.Edges.namedMenus[name] = append(r.Edges.namedMenus[name], edges...)
-	}
 }
 
 // NamedPermissions returns the Permissions named value or an error if the edge was not

@@ -9,39 +9,6 @@ import (
 )
 
 var (
-	// MenusColumns holds the columns for the "menus" table.
-	MenusColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "created_at", Type: field.TypeTime, Nullable: true},
-		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
-		{Name: "icon", Type: field.TypeString},
-		{Name: "name", Type: field.TypeString},
-		{Name: "path", Type: field.TypeString},
-		{Name: "sort", Type: field.TypeInt, Default: 1000},
-		{Name: "parent_id", Type: field.TypeInt, Nullable: true},
-	}
-	// MenusTable holds the schema information for the "menus" table.
-	MenusTable = &schema.Table{
-		Name:       "menus",
-		Comment:    "菜单",
-		Columns:    MenusColumns,
-		PrimaryKey: []*schema.Column{MenusColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "menus_menus_children",
-				Columns:    []*schema.Column{MenusColumns[7]},
-				RefColumns: []*schema.Column{MenusColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "menu_created_at",
-				Unique:  false,
-				Columns: []*schema.Column{MenusColumns[1]},
-			},
-		},
-	}
 	// OperationLogsColumns holds the columns for the "operation_logs" table.
 	OperationLogsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -78,26 +45,21 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "created_at", Type: field.TypeTime, Nullable: true},
 		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
-		{Name: "key", Type: field.TypeString, Unique: true},
+		{Name: "parent_id", Type: field.TypeInt64, Nullable: true},
 		{Name: "name", Type: field.TypeString},
+		{Name: "key", Type: field.TypeString, Unique: true, Nullable: true},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"menu", "page", "element"}},
+		{Name: "path", Type: field.TypeString, Nullable: true},
 		{Name: "desc", Type: field.TypeString, Nullable: true},
 		{Name: "sort", Type: field.TypeInt, Default: 1000},
-		{Name: "parent_id", Type: field.TypeInt, Nullable: true},
+		{Name: "attrs", Type: field.TypeJSON, Nullable: true},
 	}
 	// PermissionsTable holds the schema information for the "permissions" table.
 	PermissionsTable = &schema.Table{
 		Name:       "permissions",
-		Comment:    "操作日志",
+		Comment:    "权限",
 		Columns:    PermissionsColumns,
 		PrimaryKey: []*schema.Column{PermissionsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "permissions_permissions_children",
-				Columns:    []*schema.Column{PermissionsColumns[7]},
-				RefColumns: []*schema.Column{PermissionsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "permission_created_at",
@@ -160,56 +122,6 @@ var (
 			},
 		},
 	}
-	// MenuPermissionsColumns holds the columns for the "menu_permissions" table.
-	MenuPermissionsColumns = []*schema.Column{
-		{Name: "menu_id", Type: field.TypeInt},
-		{Name: "permission_id", Type: field.TypeInt},
-	}
-	// MenuPermissionsTable holds the schema information for the "menu_permissions" table.
-	MenuPermissionsTable = &schema.Table{
-		Name:       "menu_permissions",
-		Columns:    MenuPermissionsColumns,
-		PrimaryKey: []*schema.Column{MenuPermissionsColumns[0], MenuPermissionsColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "menu_permissions_menu_id",
-				Columns:    []*schema.Column{MenuPermissionsColumns[0]},
-				RefColumns: []*schema.Column{MenusColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "menu_permissions_permission_id",
-				Columns:    []*schema.Column{MenuPermissionsColumns[1]},
-				RefColumns: []*schema.Column{PermissionsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// RoleMenusColumns holds the columns for the "role_menus" table.
-	RoleMenusColumns = []*schema.Column{
-		{Name: "role_id", Type: field.TypeInt},
-		{Name: "menu_id", Type: field.TypeInt},
-	}
-	// RoleMenusTable holds the schema information for the "role_menus" table.
-	RoleMenusTable = &schema.Table{
-		Name:       "role_menus",
-		Columns:    RoleMenusColumns,
-		PrimaryKey: []*schema.Column{RoleMenusColumns[0], RoleMenusColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "role_menus_role_id",
-				Columns:    []*schema.Column{RoleMenusColumns[0]},
-				RefColumns: []*schema.Column{RolesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "role_menus_menu_id",
-				Columns:    []*schema.Column{RoleMenusColumns[1]},
-				RefColumns: []*schema.Column{MenusColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
 	// RolePermissionsColumns holds the columns for the "role_permissions" table.
 	RolePermissionsColumns = []*schema.Column{
 		{Name: "role_id", Type: field.TypeInt},
@@ -262,31 +174,21 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
-		MenusTable,
 		OperationLogsTable,
 		PermissionsTable,
 		RolesTable,
 		UsersTable,
-		MenuPermissionsTable,
-		RoleMenusTable,
 		RolePermissionsTable,
 		UserRolesTable,
 	}
 )
 
 func init() {
-	MenusTable.ForeignKeys[0].RefTable = MenusTable
-	MenusTable.Annotation = &entsql.Annotation{}
 	OperationLogsTable.ForeignKeys[0].RefTable = UsersTable
 	OperationLogsTable.Annotation = &entsql.Annotation{}
-	PermissionsTable.ForeignKeys[0].RefTable = PermissionsTable
 	PermissionsTable.Annotation = &entsql.Annotation{}
 	RolesTable.Annotation = &entsql.Annotation{}
 	UsersTable.Annotation = &entsql.Annotation{}
-	MenuPermissionsTable.ForeignKeys[0].RefTable = MenusTable
-	MenuPermissionsTable.ForeignKeys[1].RefTable = PermissionsTable
-	RoleMenusTable.ForeignKeys[0].RefTable = RolesTable
-	RoleMenusTable.ForeignKeys[1].RefTable = MenusTable
 	RolePermissionsTable.ForeignKeys[0].RefTable = RolesTable
 	RolePermissionsTable.ForeignKeys[1].RefTable = PermissionsTable
 	UserRolesTable.ForeignKeys[0].RefTable = UsersTable

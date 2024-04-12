@@ -28,7 +28,7 @@ func (Role) Annotations() []schema.Annotation {
 		entsql.WithComments(true),
 		entgql.QueryField().Directives().Description("角色"),
 		entgql.RelayConnection(),
-		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
+		entgql.Mutations(),
 	}
 }
 
@@ -43,8 +43,7 @@ func (Role) Fields() []ent.Field {
 // Edges of the Role.
 func (Role) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("menus", Menu.Type),
 		edge.To("permissions", Permission.Type),
-		edge.From("users", User.Type).Ref("roles"),
+		edge.From("users", User.Type).Ref("roles").Annotations(entgql.Skip()),
 	}
 }

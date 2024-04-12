@@ -8,159 +8,11 @@ import (
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent/dialect/sql"
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/eiixy/monorepo/internal/data/admin/ent/menu"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/operationlog"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/permission"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/role"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/user"
 )
-
-// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
-func (m *MenuQuery) CollectFields(ctx context.Context, satisfies ...string) (*MenuQuery, error) {
-	fc := graphql.GetFieldContext(ctx)
-	if fc == nil {
-		return m, nil
-	}
-	if err := m.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (m *MenuQuery) collectField(ctx context.Context, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
-	path = append([]string(nil), path...)
-	var (
-		unknownSeen    bool
-		fieldSeen      = make(map[string]struct{}, len(menu.Columns))
-		selectedFields = []string{menu.FieldID}
-	)
-	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
-		switch field.Name {
-		case "roles":
-			var (
-				alias = field.Alias
-				path  = append(path, alias)
-				query = (&RoleClient{config: m.config}).Query()
-			)
-			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
-				return err
-			}
-			m.WithNamedRoles(alias, func(wq *RoleQuery) {
-				*wq = *query
-			})
-		case "parent":
-			var (
-				alias = field.Alias
-				path  = append(path, alias)
-				query = (&MenuClient{config: m.config}).Query()
-			)
-			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
-				return err
-			}
-			m.withParent = query
-			if _, ok := fieldSeen[menu.FieldParentID]; !ok {
-				selectedFields = append(selectedFields, menu.FieldParentID)
-				fieldSeen[menu.FieldParentID] = struct{}{}
-			}
-		case "children":
-			var (
-				alias = field.Alias
-				path  = append(path, alias)
-				query = (&MenuClient{config: m.config}).Query()
-			)
-			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
-				return err
-			}
-			m.WithNamedChildren(alias, func(wq *MenuQuery) {
-				*wq = *query
-			})
-		case "permissions":
-			var (
-				alias = field.Alias
-				path  = append(path, alias)
-				query = (&PermissionClient{config: m.config}).Query()
-			)
-			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
-				return err
-			}
-			m.WithNamedPermissions(alias, func(wq *PermissionQuery) {
-				*wq = *query
-			})
-		case "createdAt":
-			if _, ok := fieldSeen[menu.FieldCreatedAt]; !ok {
-				selectedFields = append(selectedFields, menu.FieldCreatedAt)
-				fieldSeen[menu.FieldCreatedAt] = struct{}{}
-			}
-		case "updatedAt":
-			if _, ok := fieldSeen[menu.FieldUpdatedAt]; !ok {
-				selectedFields = append(selectedFields, menu.FieldUpdatedAt)
-				fieldSeen[menu.FieldUpdatedAt] = struct{}{}
-			}
-		case "parentID":
-			if _, ok := fieldSeen[menu.FieldParentID]; !ok {
-				selectedFields = append(selectedFields, menu.FieldParentID)
-				fieldSeen[menu.FieldParentID] = struct{}{}
-			}
-		case "icon":
-			if _, ok := fieldSeen[menu.FieldIcon]; !ok {
-				selectedFields = append(selectedFields, menu.FieldIcon)
-				fieldSeen[menu.FieldIcon] = struct{}{}
-			}
-		case "name":
-			if _, ok := fieldSeen[menu.FieldName]; !ok {
-				selectedFields = append(selectedFields, menu.FieldName)
-				fieldSeen[menu.FieldName] = struct{}{}
-			}
-		case "path":
-			if _, ok := fieldSeen[menu.FieldPath]; !ok {
-				selectedFields = append(selectedFields, menu.FieldPath)
-				fieldSeen[menu.FieldPath] = struct{}{}
-			}
-		case "sort":
-			if _, ok := fieldSeen[menu.FieldSort]; !ok {
-				selectedFields = append(selectedFields, menu.FieldSort)
-				fieldSeen[menu.FieldSort] = struct{}{}
-			}
-		case "id":
-		case "__typename":
-		default:
-			unknownSeen = true
-		}
-	}
-	if !unknownSeen {
-		m.Select(selectedFields...)
-	}
-	return nil
-}
-
-type menuPaginateArgs struct {
-	first, last   *int
-	after, before *Cursor
-	opts          []MenuPaginateOption
-}
-
-func newMenuPaginateArgs(rv map[string]any) *menuPaginateArgs {
-	args := &menuPaginateArgs{}
-	if rv == nil {
-		return args
-	}
-	if v := rv[firstField]; v != nil {
-		args.first = v.(*int)
-	}
-	if v := rv[lastField]; v != nil {
-		args.last = v.(*int)
-	}
-	if v := rv[afterField]; v != nil {
-		args.after = v.(*Cursor)
-	}
-	if v := rv[beforeField]; v != nil {
-		args.before = v.(*Cursor)
-	}
-	if v, ok := rv[whereField].(*MenuWhereInput); ok {
-		args.opts = append(args.opts, WithMenuFilter(v.Filter))
-	}
-	return args
-}
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (ol *OperationLogQuery) CollectFields(ctx context.Context, satisfies ...string) (*OperationLogQuery, error) {
@@ -284,56 +136,6 @@ func (pe *PermissionQuery) collectField(ctx context.Context, opCtx *graphql.Oper
 	)
 	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
 		switch field.Name {
-		case "roles":
-			var (
-				alias = field.Alias
-				path  = append(path, alias)
-				query = (&RoleClient{config: pe.config}).Query()
-			)
-			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
-				return err
-			}
-			pe.WithNamedRoles(alias, func(wq *RoleQuery) {
-				*wq = *query
-			})
-		case "menus":
-			var (
-				alias = field.Alias
-				path  = append(path, alias)
-				query = (&MenuClient{config: pe.config}).Query()
-			)
-			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
-				return err
-			}
-			pe.WithNamedMenus(alias, func(wq *MenuQuery) {
-				*wq = *query
-			})
-		case "parent":
-			var (
-				alias = field.Alias
-				path  = append(path, alias)
-				query = (&PermissionClient{config: pe.config}).Query()
-			)
-			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
-				return err
-			}
-			pe.withParent = query
-			if _, ok := fieldSeen[permission.FieldParentID]; !ok {
-				selectedFields = append(selectedFields, permission.FieldParentID)
-				fieldSeen[permission.FieldParentID] = struct{}{}
-			}
-		case "children":
-			var (
-				alias = field.Alias
-				path  = append(path, alias)
-				query = (&PermissionClient{config: pe.config}).Query()
-			)
-			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
-				return err
-			}
-			pe.WithNamedChildren(alias, func(wq *PermissionQuery) {
-				*wq = *query
-			})
 		case "createdAt":
 			if _, ok := fieldSeen[permission.FieldCreatedAt]; !ok {
 				selectedFields = append(selectedFields, permission.FieldCreatedAt)
@@ -349,15 +151,25 @@ func (pe *PermissionQuery) collectField(ctx context.Context, opCtx *graphql.Oper
 				selectedFields = append(selectedFields, permission.FieldParentID)
 				fieldSeen[permission.FieldParentID] = struct{}{}
 			}
+		case "name":
+			if _, ok := fieldSeen[permission.FieldName]; !ok {
+				selectedFields = append(selectedFields, permission.FieldName)
+				fieldSeen[permission.FieldName] = struct{}{}
+			}
 		case "key":
 			if _, ok := fieldSeen[permission.FieldKey]; !ok {
 				selectedFields = append(selectedFields, permission.FieldKey)
 				fieldSeen[permission.FieldKey] = struct{}{}
 			}
-		case "name":
-			if _, ok := fieldSeen[permission.FieldName]; !ok {
-				selectedFields = append(selectedFields, permission.FieldName)
-				fieldSeen[permission.FieldName] = struct{}{}
+		case "type":
+			if _, ok := fieldSeen[permission.FieldType]; !ok {
+				selectedFields = append(selectedFields, permission.FieldType)
+				fieldSeen[permission.FieldType] = struct{}{}
+			}
+		case "path":
+			if _, ok := fieldSeen[permission.FieldPath]; !ok {
+				selectedFields = append(selectedFields, permission.FieldPath)
+				fieldSeen[permission.FieldPath] = struct{}{}
 			}
 		case "desc":
 			if _, ok := fieldSeen[permission.FieldDesc]; !ok {
@@ -368,6 +180,11 @@ func (pe *PermissionQuery) collectField(ctx context.Context, opCtx *graphql.Oper
 			if _, ok := fieldSeen[permission.FieldSort]; !ok {
 				selectedFields = append(selectedFields, permission.FieldSort)
 				fieldSeen[permission.FieldSort] = struct{}{}
+			}
+		case "attrs":
+			if _, ok := fieldSeen[permission.FieldAttrs]; !ok {
+				selectedFields = append(selectedFields, permission.FieldAttrs)
+				fieldSeen[permission.FieldAttrs] = struct{}{}
 			}
 		case "id":
 		case "__typename":
@@ -431,18 +248,6 @@ func (r *RoleQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 	)
 	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
 		switch field.Name {
-		case "menus":
-			var (
-				alias = field.Alias
-				path  = append(path, alias)
-				query = (&MenuClient{config: r.config}).Query()
-			)
-			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
-				return err
-			}
-			r.WithNamedMenus(alias, func(wq *MenuQuery) {
-				*wq = *query
-			})
 		case "permissions":
 			var (
 				alias = field.Alias
@@ -453,18 +258,6 @@ func (r *RoleQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 				return err
 			}
 			r.WithNamedPermissions(alias, func(wq *PermissionQuery) {
-				*wq = *query
-			})
-		case "users":
-			var (
-				alias = field.Alias
-				path  = append(path, alias)
-				query = (&UserClient{config: r.config}).Query()
-			)
-			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
-				return err
-			}
-			r.WithNamedUsers(alias, func(wq *UserQuery) {
 				*wq = *query
 			})
 		case "createdAt":
@@ -559,18 +352,6 @@ func (u *UserQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 				return err
 			}
 			u.WithNamedRoles(alias, func(wq *RoleQuery) {
-				*wq = *query
-			})
-		case "operationLogs":
-			var (
-				alias = field.Alias
-				path  = append(path, alias)
-				query = (&OperationLogClient{config: u.config}).Query()
-			)
-			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
-				return err
-			}
-			u.WithNamedOperationLogs(alias, func(wq *OperationLogQuery) {
 				*wq = *query
 			})
 		case "createdAt":

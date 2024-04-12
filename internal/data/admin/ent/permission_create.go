@@ -10,7 +10,6 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/eiixy/monorepo/internal/data/admin/ent/menu"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/permission"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/role"
 )
@@ -51,16 +50,22 @@ func (pc *PermissionCreate) SetNillableUpdatedAt(t *time.Time) *PermissionCreate
 }
 
 // SetParentID sets the "parent_id" field.
-func (pc *PermissionCreate) SetParentID(i int) *PermissionCreate {
+func (pc *PermissionCreate) SetParentID(i int64) *PermissionCreate {
 	pc.mutation.SetParentID(i)
 	return pc
 }
 
 // SetNillableParentID sets the "parent_id" field if the given value is not nil.
-func (pc *PermissionCreate) SetNillableParentID(i *int) *PermissionCreate {
+func (pc *PermissionCreate) SetNillableParentID(i *int64) *PermissionCreate {
 	if i != nil {
 		pc.SetParentID(*i)
 	}
+	return pc
+}
+
+// SetName sets the "name" field.
+func (pc *PermissionCreate) SetName(s string) *PermissionCreate {
+	pc.mutation.SetName(s)
 	return pc
 }
 
@@ -70,9 +75,31 @@ func (pc *PermissionCreate) SetKey(s string) *PermissionCreate {
 	return pc
 }
 
-// SetName sets the "name" field.
-func (pc *PermissionCreate) SetName(s string) *PermissionCreate {
-	pc.mutation.SetName(s)
+// SetNillableKey sets the "key" field if the given value is not nil.
+func (pc *PermissionCreate) SetNillableKey(s *string) *PermissionCreate {
+	if s != nil {
+		pc.SetKey(*s)
+	}
+	return pc
+}
+
+// SetType sets the "type" field.
+func (pc *PermissionCreate) SetType(pe permission.Type) *PermissionCreate {
+	pc.mutation.SetType(pe)
+	return pc
+}
+
+// SetPath sets the "path" field.
+func (pc *PermissionCreate) SetPath(s string) *PermissionCreate {
+	pc.mutation.SetPath(s)
+	return pc
+}
+
+// SetNillablePath sets the "path" field if the given value is not nil.
+func (pc *PermissionCreate) SetNillablePath(s *string) *PermissionCreate {
+	if s != nil {
+		pc.SetPath(*s)
+	}
 	return pc
 }
 
@@ -104,6 +131,12 @@ func (pc *PermissionCreate) SetNillableSort(i *int) *PermissionCreate {
 	return pc
 }
 
+// SetAttrs sets the "attrs" field.
+func (pc *PermissionCreate) SetAttrs(m map[string]interface{}) *PermissionCreate {
+	pc.mutation.SetAttrs(m)
+	return pc
+}
+
 // AddRoleIDs adds the "roles" edge to the Role entity by IDs.
 func (pc *PermissionCreate) AddRoleIDs(ids ...int) *PermissionCreate {
 	pc.mutation.AddRoleIDs(ids...)
@@ -117,41 +150,6 @@ func (pc *PermissionCreate) AddRoles(r ...*Role) *PermissionCreate {
 		ids[i] = r[i].ID
 	}
 	return pc.AddRoleIDs(ids...)
-}
-
-// AddMenuIDs adds the "menus" edge to the Menu entity by IDs.
-func (pc *PermissionCreate) AddMenuIDs(ids ...int) *PermissionCreate {
-	pc.mutation.AddMenuIDs(ids...)
-	return pc
-}
-
-// AddMenus adds the "menus" edges to the Menu entity.
-func (pc *PermissionCreate) AddMenus(m ...*Menu) *PermissionCreate {
-	ids := make([]int, len(m))
-	for i := range m {
-		ids[i] = m[i].ID
-	}
-	return pc.AddMenuIDs(ids...)
-}
-
-// SetParent sets the "parent" edge to the Permission entity.
-func (pc *PermissionCreate) SetParent(p *Permission) *PermissionCreate {
-	return pc.SetParentID(p.ID)
-}
-
-// AddChildIDs adds the "children" edge to the Permission entity by IDs.
-func (pc *PermissionCreate) AddChildIDs(ids ...int) *PermissionCreate {
-	pc.mutation.AddChildIDs(ids...)
-	return pc
-}
-
-// AddChildren adds the "children" edges to the Permission entity.
-func (pc *PermissionCreate) AddChildren(p ...*Permission) *PermissionCreate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return pc.AddChildIDs(ids...)
 }
 
 // Mutation returns the PermissionMutation object of the builder.
@@ -205,11 +203,16 @@ func (pc *PermissionCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (pc *PermissionCreate) check() error {
-	if _, ok := pc.mutation.Key(); !ok {
-		return &ValidationError{Name: "key", err: errors.New(`ent: missing required field "Permission.key"`)}
-	}
 	if _, ok := pc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Permission.name"`)}
+	}
+	if _, ok := pc.mutation.GetType(); !ok {
+		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Permission.type"`)}
+	}
+	if v, ok := pc.mutation.GetType(); ok {
+		if err := permission.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Permission.type": %w`, err)}
+		}
 	}
 	if _, ok := pc.mutation.Sort(); !ok {
 		return &ValidationError{Name: "sort", err: errors.New(`ent: missing required field "Permission.sort"`)}
@@ -248,13 +251,25 @@ func (pc *PermissionCreate) createSpec() (*Permission, *sqlgraph.CreateSpec) {
 		_spec.SetField(permission.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := pc.mutation.Key(); ok {
-		_spec.SetField(permission.FieldKey, field.TypeString, value)
-		_node.Key = value
+	if value, ok := pc.mutation.ParentID(); ok {
+		_spec.SetField(permission.FieldParentID, field.TypeInt64, value)
+		_node.ParentID = &value
 	}
 	if value, ok := pc.mutation.Name(); ok {
 		_spec.SetField(permission.FieldName, field.TypeString, value)
 		_node.Name = value
+	}
+	if value, ok := pc.mutation.Key(); ok {
+		_spec.SetField(permission.FieldKey, field.TypeString, value)
+		_node.Key = value
+	}
+	if value, ok := pc.mutation.GetType(); ok {
+		_spec.SetField(permission.FieldType, field.TypeEnum, value)
+		_node.Type = value
+	}
+	if value, ok := pc.mutation.Path(); ok {
+		_spec.SetField(permission.FieldPath, field.TypeString, value)
+		_node.Path = value
 	}
 	if value, ok := pc.mutation.Desc(); ok {
 		_spec.SetField(permission.FieldDesc, field.TypeString, value)
@@ -263,6 +278,10 @@ func (pc *PermissionCreate) createSpec() (*Permission, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.Sort(); ok {
 		_spec.SetField(permission.FieldSort, field.TypeInt, value)
 		_node.Sort = value
+	}
+	if value, ok := pc.mutation.Attrs(); ok {
+		_spec.SetField(permission.FieldAttrs, field.TypeJSON, value)
+		_node.Attrs = value
 	}
 	if nodes := pc.mutation.RolesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -273,55 +292,6 @@ func (pc *PermissionCreate) createSpec() (*Permission, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(role.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := pc.mutation.MenusIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   permission.MenusTable,
-			Columns: permission.MenusPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(menu.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := pc.mutation.ParentIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   permission.ParentTable,
-			Columns: []string{permission.ParentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(permission.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.ParentID = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := pc.mutation.ChildrenIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   permission.ChildrenTable,
-			Columns: []string{permission.ChildrenColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(permission.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

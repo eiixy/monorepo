@@ -7,531 +7,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/eiixy/monorepo/internal/data/admin/ent/menu"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/operationlog"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/permission"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/predicate"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/role"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/user"
 )
-
-// MenuWhereInput represents a where input for filtering Menu queries.
-type MenuWhereInput struct {
-	Predicates []predicate.Menu  `json:"-"`
-	Not        *MenuWhereInput   `json:"not,omitempty"`
-	Or         []*MenuWhereInput `json:"or,omitempty"`
-	And        []*MenuWhereInput `json:"and,omitempty"`
-
-	// "id" field predicates.
-	ID      *int  `json:"id,omitempty"`
-	IDNEQ   *int  `json:"idNEQ,omitempty"`
-	IDIn    []int `json:"idIn,omitempty"`
-	IDNotIn []int `json:"idNotIn,omitempty"`
-	IDGT    *int  `json:"idGT,omitempty"`
-	IDGTE   *int  `json:"idGTE,omitempty"`
-	IDLT    *int  `json:"idLT,omitempty"`
-	IDLTE   *int  `json:"idLTE,omitempty"`
-
-	// "created_at" field predicates.
-	CreatedAt       *time.Time  `json:"createdAt,omitempty"`
-	CreatedAtNEQ    *time.Time  `json:"createdAtNEQ,omitempty"`
-	CreatedAtIn     []time.Time `json:"createdAtIn,omitempty"`
-	CreatedAtNotIn  []time.Time `json:"createdAtNotIn,omitempty"`
-	CreatedAtGT     *time.Time  `json:"createdAtGT,omitempty"`
-	CreatedAtGTE    *time.Time  `json:"createdAtGTE,omitempty"`
-	CreatedAtLT     *time.Time  `json:"createdAtLT,omitempty"`
-	CreatedAtLTE    *time.Time  `json:"createdAtLTE,omitempty"`
-	CreatedAtIsNil  bool        `json:"createdAtIsNil,omitempty"`
-	CreatedAtNotNil bool        `json:"createdAtNotNil,omitempty"`
-
-	// "updated_at" field predicates.
-	UpdatedAt       *time.Time  `json:"updatedAt,omitempty"`
-	UpdatedAtNEQ    *time.Time  `json:"updatedAtNEQ,omitempty"`
-	UpdatedAtIn     []time.Time `json:"updatedAtIn,omitempty"`
-	UpdatedAtNotIn  []time.Time `json:"updatedAtNotIn,omitempty"`
-	UpdatedAtGT     *time.Time  `json:"updatedAtGT,omitempty"`
-	UpdatedAtGTE    *time.Time  `json:"updatedAtGTE,omitempty"`
-	UpdatedAtLT     *time.Time  `json:"updatedAtLT,omitempty"`
-	UpdatedAtLTE    *time.Time  `json:"updatedAtLTE,omitempty"`
-	UpdatedAtIsNil  bool        `json:"updatedAtIsNil,omitempty"`
-	UpdatedAtNotNil bool        `json:"updatedAtNotNil,omitempty"`
-
-	// "parent_id" field predicates.
-	ParentID       *int  `json:"parentID,omitempty"`
-	ParentIDNEQ    *int  `json:"parentIDNEQ,omitempty"`
-	ParentIDIn     []int `json:"parentIDIn,omitempty"`
-	ParentIDNotIn  []int `json:"parentIDNotIn,omitempty"`
-	ParentIDIsNil  bool  `json:"parentIDIsNil,omitempty"`
-	ParentIDNotNil bool  `json:"parentIDNotNil,omitempty"`
-
-	// "icon" field predicates.
-	Icon             *string  `json:"icon,omitempty"`
-	IconNEQ          *string  `json:"iconNEQ,omitempty"`
-	IconIn           []string `json:"iconIn,omitempty"`
-	IconNotIn        []string `json:"iconNotIn,omitempty"`
-	IconGT           *string  `json:"iconGT,omitempty"`
-	IconGTE          *string  `json:"iconGTE,omitempty"`
-	IconLT           *string  `json:"iconLT,omitempty"`
-	IconLTE          *string  `json:"iconLTE,omitempty"`
-	IconContains     *string  `json:"iconContains,omitempty"`
-	IconHasPrefix    *string  `json:"iconHasPrefix,omitempty"`
-	IconHasSuffix    *string  `json:"iconHasSuffix,omitempty"`
-	IconEqualFold    *string  `json:"iconEqualFold,omitempty"`
-	IconContainsFold *string  `json:"iconContainsFold,omitempty"`
-
-	// "name" field predicates.
-	Name             *string  `json:"name,omitempty"`
-	NameNEQ          *string  `json:"nameNEQ,omitempty"`
-	NameIn           []string `json:"nameIn,omitempty"`
-	NameNotIn        []string `json:"nameNotIn,omitempty"`
-	NameGT           *string  `json:"nameGT,omitempty"`
-	NameGTE          *string  `json:"nameGTE,omitempty"`
-	NameLT           *string  `json:"nameLT,omitempty"`
-	NameLTE          *string  `json:"nameLTE,omitempty"`
-	NameContains     *string  `json:"nameContains,omitempty"`
-	NameHasPrefix    *string  `json:"nameHasPrefix,omitempty"`
-	NameHasSuffix    *string  `json:"nameHasSuffix,omitempty"`
-	NameEqualFold    *string  `json:"nameEqualFold,omitempty"`
-	NameContainsFold *string  `json:"nameContainsFold,omitempty"`
-
-	// "path" field predicates.
-	Path             *string  `json:"path,omitempty"`
-	PathNEQ          *string  `json:"pathNEQ,omitempty"`
-	PathIn           []string `json:"pathIn,omitempty"`
-	PathNotIn        []string `json:"pathNotIn,omitempty"`
-	PathGT           *string  `json:"pathGT,omitempty"`
-	PathGTE          *string  `json:"pathGTE,omitempty"`
-	PathLT           *string  `json:"pathLT,omitempty"`
-	PathLTE          *string  `json:"pathLTE,omitempty"`
-	PathContains     *string  `json:"pathContains,omitempty"`
-	PathHasPrefix    *string  `json:"pathHasPrefix,omitempty"`
-	PathHasSuffix    *string  `json:"pathHasSuffix,omitempty"`
-	PathEqualFold    *string  `json:"pathEqualFold,omitempty"`
-	PathContainsFold *string  `json:"pathContainsFold,omitempty"`
-
-	// "sort" field predicates.
-	Sort      *int  `json:"sort,omitempty"`
-	SortNEQ   *int  `json:"sortNEQ,omitempty"`
-	SortIn    []int `json:"sortIn,omitempty"`
-	SortNotIn []int `json:"sortNotIn,omitempty"`
-	SortGT    *int  `json:"sortGT,omitempty"`
-	SortGTE   *int  `json:"sortGTE,omitempty"`
-	SortLT    *int  `json:"sortLT,omitempty"`
-	SortLTE   *int  `json:"sortLTE,omitempty"`
-
-	// "roles" edge predicates.
-	HasRoles     *bool             `json:"hasRoles,omitempty"`
-	HasRolesWith []*RoleWhereInput `json:"hasRolesWith,omitempty"`
-
-	// "parent" edge predicates.
-	HasParent     *bool             `json:"hasParent,omitempty"`
-	HasParentWith []*MenuWhereInput `json:"hasParentWith,omitempty"`
-
-	// "children" edge predicates.
-	HasChildren     *bool             `json:"hasChildren,omitempty"`
-	HasChildrenWith []*MenuWhereInput `json:"hasChildrenWith,omitempty"`
-
-	// "permissions" edge predicates.
-	HasPermissions     *bool                   `json:"hasPermissions,omitempty"`
-	HasPermissionsWith []*PermissionWhereInput `json:"hasPermissionsWith,omitempty"`
-}
-
-// AddPredicates adds custom predicates to the where input to be used during the filtering phase.
-func (i *MenuWhereInput) AddPredicates(predicates ...predicate.Menu) {
-	i.Predicates = append(i.Predicates, predicates...)
-}
-
-// Filter applies the MenuWhereInput filter on the MenuQuery builder.
-func (i *MenuWhereInput) Filter(q *MenuQuery) (*MenuQuery, error) {
-	if i == nil {
-		return q, nil
-	}
-	p, err := i.P()
-	if err != nil {
-		if err == ErrEmptyMenuWhereInput {
-			return q, nil
-		}
-		return nil, err
-	}
-	return q.Where(p), nil
-}
-
-// ErrEmptyMenuWhereInput is returned in case the MenuWhereInput is empty.
-var ErrEmptyMenuWhereInput = errors.New("ent: empty predicate MenuWhereInput")
-
-// P returns a predicate for filtering menus.
-// An error is returned if the input is empty or invalid.
-func (i *MenuWhereInput) P() (predicate.Menu, error) {
-	var predicates []predicate.Menu
-	if i.Not != nil {
-		p, err := i.Not.P()
-		if err != nil {
-			return nil, fmt.Errorf("%w: field 'not'", err)
-		}
-		predicates = append(predicates, menu.Not(p))
-	}
-	switch n := len(i.Or); {
-	case n == 1:
-		p, err := i.Or[0].P()
-		if err != nil {
-			return nil, fmt.Errorf("%w: field 'or'", err)
-		}
-		predicates = append(predicates, p)
-	case n > 1:
-		or := make([]predicate.Menu, 0, n)
-		for _, w := range i.Or {
-			p, err := w.P()
-			if err != nil {
-				return nil, fmt.Errorf("%w: field 'or'", err)
-			}
-			or = append(or, p)
-		}
-		predicates = append(predicates, menu.Or(or...))
-	}
-	switch n := len(i.And); {
-	case n == 1:
-		p, err := i.And[0].P()
-		if err != nil {
-			return nil, fmt.Errorf("%w: field 'and'", err)
-		}
-		predicates = append(predicates, p)
-	case n > 1:
-		and := make([]predicate.Menu, 0, n)
-		for _, w := range i.And {
-			p, err := w.P()
-			if err != nil {
-				return nil, fmt.Errorf("%w: field 'and'", err)
-			}
-			and = append(and, p)
-		}
-		predicates = append(predicates, menu.And(and...))
-	}
-	predicates = append(predicates, i.Predicates...)
-	if i.ID != nil {
-		predicates = append(predicates, menu.IDEQ(*i.ID))
-	}
-	if i.IDNEQ != nil {
-		predicates = append(predicates, menu.IDNEQ(*i.IDNEQ))
-	}
-	if len(i.IDIn) > 0 {
-		predicates = append(predicates, menu.IDIn(i.IDIn...))
-	}
-	if len(i.IDNotIn) > 0 {
-		predicates = append(predicates, menu.IDNotIn(i.IDNotIn...))
-	}
-	if i.IDGT != nil {
-		predicates = append(predicates, menu.IDGT(*i.IDGT))
-	}
-	if i.IDGTE != nil {
-		predicates = append(predicates, menu.IDGTE(*i.IDGTE))
-	}
-	if i.IDLT != nil {
-		predicates = append(predicates, menu.IDLT(*i.IDLT))
-	}
-	if i.IDLTE != nil {
-		predicates = append(predicates, menu.IDLTE(*i.IDLTE))
-	}
-	if i.CreatedAt != nil {
-		predicates = append(predicates, menu.CreatedAtEQ(*i.CreatedAt))
-	}
-	if i.CreatedAtNEQ != nil {
-		predicates = append(predicates, menu.CreatedAtNEQ(*i.CreatedAtNEQ))
-	}
-	if len(i.CreatedAtIn) > 0 {
-		predicates = append(predicates, menu.CreatedAtIn(i.CreatedAtIn...))
-	}
-	if len(i.CreatedAtNotIn) > 0 {
-		predicates = append(predicates, menu.CreatedAtNotIn(i.CreatedAtNotIn...))
-	}
-	if i.CreatedAtGT != nil {
-		predicates = append(predicates, menu.CreatedAtGT(*i.CreatedAtGT))
-	}
-	if i.CreatedAtGTE != nil {
-		predicates = append(predicates, menu.CreatedAtGTE(*i.CreatedAtGTE))
-	}
-	if i.CreatedAtLT != nil {
-		predicates = append(predicates, menu.CreatedAtLT(*i.CreatedAtLT))
-	}
-	if i.CreatedAtLTE != nil {
-		predicates = append(predicates, menu.CreatedAtLTE(*i.CreatedAtLTE))
-	}
-	if i.CreatedAtIsNil {
-		predicates = append(predicates, menu.CreatedAtIsNil())
-	}
-	if i.CreatedAtNotNil {
-		predicates = append(predicates, menu.CreatedAtNotNil())
-	}
-	if i.UpdatedAt != nil {
-		predicates = append(predicates, menu.UpdatedAtEQ(*i.UpdatedAt))
-	}
-	if i.UpdatedAtNEQ != nil {
-		predicates = append(predicates, menu.UpdatedAtNEQ(*i.UpdatedAtNEQ))
-	}
-	if len(i.UpdatedAtIn) > 0 {
-		predicates = append(predicates, menu.UpdatedAtIn(i.UpdatedAtIn...))
-	}
-	if len(i.UpdatedAtNotIn) > 0 {
-		predicates = append(predicates, menu.UpdatedAtNotIn(i.UpdatedAtNotIn...))
-	}
-	if i.UpdatedAtGT != nil {
-		predicates = append(predicates, menu.UpdatedAtGT(*i.UpdatedAtGT))
-	}
-	if i.UpdatedAtGTE != nil {
-		predicates = append(predicates, menu.UpdatedAtGTE(*i.UpdatedAtGTE))
-	}
-	if i.UpdatedAtLT != nil {
-		predicates = append(predicates, menu.UpdatedAtLT(*i.UpdatedAtLT))
-	}
-	if i.UpdatedAtLTE != nil {
-		predicates = append(predicates, menu.UpdatedAtLTE(*i.UpdatedAtLTE))
-	}
-	if i.UpdatedAtIsNil {
-		predicates = append(predicates, menu.UpdatedAtIsNil())
-	}
-	if i.UpdatedAtNotNil {
-		predicates = append(predicates, menu.UpdatedAtNotNil())
-	}
-	if i.ParentID != nil {
-		predicates = append(predicates, menu.ParentIDEQ(*i.ParentID))
-	}
-	if i.ParentIDNEQ != nil {
-		predicates = append(predicates, menu.ParentIDNEQ(*i.ParentIDNEQ))
-	}
-	if len(i.ParentIDIn) > 0 {
-		predicates = append(predicates, menu.ParentIDIn(i.ParentIDIn...))
-	}
-	if len(i.ParentIDNotIn) > 0 {
-		predicates = append(predicates, menu.ParentIDNotIn(i.ParentIDNotIn...))
-	}
-	if i.ParentIDIsNil {
-		predicates = append(predicates, menu.ParentIDIsNil())
-	}
-	if i.ParentIDNotNil {
-		predicates = append(predicates, menu.ParentIDNotNil())
-	}
-	if i.Icon != nil {
-		predicates = append(predicates, menu.IconEQ(*i.Icon))
-	}
-	if i.IconNEQ != nil {
-		predicates = append(predicates, menu.IconNEQ(*i.IconNEQ))
-	}
-	if len(i.IconIn) > 0 {
-		predicates = append(predicates, menu.IconIn(i.IconIn...))
-	}
-	if len(i.IconNotIn) > 0 {
-		predicates = append(predicates, menu.IconNotIn(i.IconNotIn...))
-	}
-	if i.IconGT != nil {
-		predicates = append(predicates, menu.IconGT(*i.IconGT))
-	}
-	if i.IconGTE != nil {
-		predicates = append(predicates, menu.IconGTE(*i.IconGTE))
-	}
-	if i.IconLT != nil {
-		predicates = append(predicates, menu.IconLT(*i.IconLT))
-	}
-	if i.IconLTE != nil {
-		predicates = append(predicates, menu.IconLTE(*i.IconLTE))
-	}
-	if i.IconContains != nil {
-		predicates = append(predicates, menu.IconContains(*i.IconContains))
-	}
-	if i.IconHasPrefix != nil {
-		predicates = append(predicates, menu.IconHasPrefix(*i.IconHasPrefix))
-	}
-	if i.IconHasSuffix != nil {
-		predicates = append(predicates, menu.IconHasSuffix(*i.IconHasSuffix))
-	}
-	if i.IconEqualFold != nil {
-		predicates = append(predicates, menu.IconEqualFold(*i.IconEqualFold))
-	}
-	if i.IconContainsFold != nil {
-		predicates = append(predicates, menu.IconContainsFold(*i.IconContainsFold))
-	}
-	if i.Name != nil {
-		predicates = append(predicates, menu.NameEQ(*i.Name))
-	}
-	if i.NameNEQ != nil {
-		predicates = append(predicates, menu.NameNEQ(*i.NameNEQ))
-	}
-	if len(i.NameIn) > 0 {
-		predicates = append(predicates, menu.NameIn(i.NameIn...))
-	}
-	if len(i.NameNotIn) > 0 {
-		predicates = append(predicates, menu.NameNotIn(i.NameNotIn...))
-	}
-	if i.NameGT != nil {
-		predicates = append(predicates, menu.NameGT(*i.NameGT))
-	}
-	if i.NameGTE != nil {
-		predicates = append(predicates, menu.NameGTE(*i.NameGTE))
-	}
-	if i.NameLT != nil {
-		predicates = append(predicates, menu.NameLT(*i.NameLT))
-	}
-	if i.NameLTE != nil {
-		predicates = append(predicates, menu.NameLTE(*i.NameLTE))
-	}
-	if i.NameContains != nil {
-		predicates = append(predicates, menu.NameContains(*i.NameContains))
-	}
-	if i.NameHasPrefix != nil {
-		predicates = append(predicates, menu.NameHasPrefix(*i.NameHasPrefix))
-	}
-	if i.NameHasSuffix != nil {
-		predicates = append(predicates, menu.NameHasSuffix(*i.NameHasSuffix))
-	}
-	if i.NameEqualFold != nil {
-		predicates = append(predicates, menu.NameEqualFold(*i.NameEqualFold))
-	}
-	if i.NameContainsFold != nil {
-		predicates = append(predicates, menu.NameContainsFold(*i.NameContainsFold))
-	}
-	if i.Path != nil {
-		predicates = append(predicates, menu.PathEQ(*i.Path))
-	}
-	if i.PathNEQ != nil {
-		predicates = append(predicates, menu.PathNEQ(*i.PathNEQ))
-	}
-	if len(i.PathIn) > 0 {
-		predicates = append(predicates, menu.PathIn(i.PathIn...))
-	}
-	if len(i.PathNotIn) > 0 {
-		predicates = append(predicates, menu.PathNotIn(i.PathNotIn...))
-	}
-	if i.PathGT != nil {
-		predicates = append(predicates, menu.PathGT(*i.PathGT))
-	}
-	if i.PathGTE != nil {
-		predicates = append(predicates, menu.PathGTE(*i.PathGTE))
-	}
-	if i.PathLT != nil {
-		predicates = append(predicates, menu.PathLT(*i.PathLT))
-	}
-	if i.PathLTE != nil {
-		predicates = append(predicates, menu.PathLTE(*i.PathLTE))
-	}
-	if i.PathContains != nil {
-		predicates = append(predicates, menu.PathContains(*i.PathContains))
-	}
-	if i.PathHasPrefix != nil {
-		predicates = append(predicates, menu.PathHasPrefix(*i.PathHasPrefix))
-	}
-	if i.PathHasSuffix != nil {
-		predicates = append(predicates, menu.PathHasSuffix(*i.PathHasSuffix))
-	}
-	if i.PathEqualFold != nil {
-		predicates = append(predicates, menu.PathEqualFold(*i.PathEqualFold))
-	}
-	if i.PathContainsFold != nil {
-		predicates = append(predicates, menu.PathContainsFold(*i.PathContainsFold))
-	}
-	if i.Sort != nil {
-		predicates = append(predicates, menu.SortEQ(*i.Sort))
-	}
-	if i.SortNEQ != nil {
-		predicates = append(predicates, menu.SortNEQ(*i.SortNEQ))
-	}
-	if len(i.SortIn) > 0 {
-		predicates = append(predicates, menu.SortIn(i.SortIn...))
-	}
-	if len(i.SortNotIn) > 0 {
-		predicates = append(predicates, menu.SortNotIn(i.SortNotIn...))
-	}
-	if i.SortGT != nil {
-		predicates = append(predicates, menu.SortGT(*i.SortGT))
-	}
-	if i.SortGTE != nil {
-		predicates = append(predicates, menu.SortGTE(*i.SortGTE))
-	}
-	if i.SortLT != nil {
-		predicates = append(predicates, menu.SortLT(*i.SortLT))
-	}
-	if i.SortLTE != nil {
-		predicates = append(predicates, menu.SortLTE(*i.SortLTE))
-	}
-
-	if i.HasRoles != nil {
-		p := menu.HasRoles()
-		if !*i.HasRoles {
-			p = menu.Not(p)
-		}
-		predicates = append(predicates, p)
-	}
-	if len(i.HasRolesWith) > 0 {
-		with := make([]predicate.Role, 0, len(i.HasRolesWith))
-		for _, w := range i.HasRolesWith {
-			p, err := w.P()
-			if err != nil {
-				return nil, fmt.Errorf("%w: field 'HasRolesWith'", err)
-			}
-			with = append(with, p)
-		}
-		predicates = append(predicates, menu.HasRolesWith(with...))
-	}
-	if i.HasParent != nil {
-		p := menu.HasParent()
-		if !*i.HasParent {
-			p = menu.Not(p)
-		}
-		predicates = append(predicates, p)
-	}
-	if len(i.HasParentWith) > 0 {
-		with := make([]predicate.Menu, 0, len(i.HasParentWith))
-		for _, w := range i.HasParentWith {
-			p, err := w.P()
-			if err != nil {
-				return nil, fmt.Errorf("%w: field 'HasParentWith'", err)
-			}
-			with = append(with, p)
-		}
-		predicates = append(predicates, menu.HasParentWith(with...))
-	}
-	if i.HasChildren != nil {
-		p := menu.HasChildren()
-		if !*i.HasChildren {
-			p = menu.Not(p)
-		}
-		predicates = append(predicates, p)
-	}
-	if len(i.HasChildrenWith) > 0 {
-		with := make([]predicate.Menu, 0, len(i.HasChildrenWith))
-		for _, w := range i.HasChildrenWith {
-			p, err := w.P()
-			if err != nil {
-				return nil, fmt.Errorf("%w: field 'HasChildrenWith'", err)
-			}
-			with = append(with, p)
-		}
-		predicates = append(predicates, menu.HasChildrenWith(with...))
-	}
-	if i.HasPermissions != nil {
-		p := menu.HasPermissions()
-		if !*i.HasPermissions {
-			p = menu.Not(p)
-		}
-		predicates = append(predicates, p)
-	}
-	if len(i.HasPermissionsWith) > 0 {
-		with := make([]predicate.Permission, 0, len(i.HasPermissionsWith))
-		for _, w := range i.HasPermissionsWith {
-			p, err := w.P()
-			if err != nil {
-				return nil, fmt.Errorf("%w: field 'HasPermissionsWith'", err)
-			}
-			with = append(with, p)
-		}
-		predicates = append(predicates, menu.HasPermissionsWith(with...))
-	}
-	switch len(predicates) {
-	case 0:
-		return nil, ErrEmptyMenuWhereInput
-	case 1:
-		return predicates[0], nil
-	default:
-		return menu.And(predicates...), nil
-	}
-}
 
 // OperationLogWhereInput represents a where input for filtering OperationLog queries.
 type OperationLogWhereInput struct {
@@ -877,27 +358,16 @@ type PermissionWhereInput struct {
 	UpdatedAtNotNil bool        `json:"updatedAtNotNil,omitempty"`
 
 	// "parent_id" field predicates.
-	ParentID       *int  `json:"parentID,omitempty"`
-	ParentIDNEQ    *int  `json:"parentIDNEQ,omitempty"`
-	ParentIDIn     []int `json:"parentIDIn,omitempty"`
-	ParentIDNotIn  []int `json:"parentIDNotIn,omitempty"`
-	ParentIDIsNil  bool  `json:"parentIDIsNil,omitempty"`
-	ParentIDNotNil bool  `json:"parentIDNotNil,omitempty"`
-
-	// "key" field predicates.
-	Key             *string  `json:"key,omitempty"`
-	KeyNEQ          *string  `json:"keyNEQ,omitempty"`
-	KeyIn           []string `json:"keyIn,omitempty"`
-	KeyNotIn        []string `json:"keyNotIn,omitempty"`
-	KeyGT           *string  `json:"keyGT,omitempty"`
-	KeyGTE          *string  `json:"keyGTE,omitempty"`
-	KeyLT           *string  `json:"keyLT,omitempty"`
-	KeyLTE          *string  `json:"keyLTE,omitempty"`
-	KeyContains     *string  `json:"keyContains,omitempty"`
-	KeyHasPrefix    *string  `json:"keyHasPrefix,omitempty"`
-	KeyHasSuffix    *string  `json:"keyHasSuffix,omitempty"`
-	KeyEqualFold    *string  `json:"keyEqualFold,omitempty"`
-	KeyContainsFold *string  `json:"keyContainsFold,omitempty"`
+	ParentID       *int64  `json:"parentID,omitempty"`
+	ParentIDNEQ    *int64  `json:"parentIDNEQ,omitempty"`
+	ParentIDIn     []int64 `json:"parentIDIn,omitempty"`
+	ParentIDNotIn  []int64 `json:"parentIDNotIn,omitempty"`
+	ParentIDGT     *int64  `json:"parentIDGT,omitempty"`
+	ParentIDGTE    *int64  `json:"parentIDGTE,omitempty"`
+	ParentIDLT     *int64  `json:"parentIDLT,omitempty"`
+	ParentIDLTE    *int64  `json:"parentIDLTE,omitempty"`
+	ParentIDIsNil  bool    `json:"parentIDIsNil,omitempty"`
+	ParentIDNotNil bool    `json:"parentIDNotNil,omitempty"`
 
 	// "name" field predicates.
 	Name             *string  `json:"name,omitempty"`
@@ -913,6 +383,46 @@ type PermissionWhereInput struct {
 	NameHasSuffix    *string  `json:"nameHasSuffix,omitempty"`
 	NameEqualFold    *string  `json:"nameEqualFold,omitempty"`
 	NameContainsFold *string  `json:"nameContainsFold,omitempty"`
+
+	// "key" field predicates.
+	Key             *string  `json:"key,omitempty"`
+	KeyNEQ          *string  `json:"keyNEQ,omitempty"`
+	KeyIn           []string `json:"keyIn,omitempty"`
+	KeyNotIn        []string `json:"keyNotIn,omitempty"`
+	KeyGT           *string  `json:"keyGT,omitempty"`
+	KeyGTE          *string  `json:"keyGTE,omitempty"`
+	KeyLT           *string  `json:"keyLT,omitempty"`
+	KeyLTE          *string  `json:"keyLTE,omitempty"`
+	KeyContains     *string  `json:"keyContains,omitempty"`
+	KeyHasPrefix    *string  `json:"keyHasPrefix,omitempty"`
+	KeyHasSuffix    *string  `json:"keyHasSuffix,omitempty"`
+	KeyIsNil        bool     `json:"keyIsNil,omitempty"`
+	KeyNotNil       bool     `json:"keyNotNil,omitempty"`
+	KeyEqualFold    *string  `json:"keyEqualFold,omitempty"`
+	KeyContainsFold *string  `json:"keyContainsFold,omitempty"`
+
+	// "type" field predicates.
+	Type      *permission.Type  `json:"type,omitempty"`
+	TypeNEQ   *permission.Type  `json:"typeNEQ,omitempty"`
+	TypeIn    []permission.Type `json:"typeIn,omitempty"`
+	TypeNotIn []permission.Type `json:"typeNotIn,omitempty"`
+
+	// "path" field predicates.
+	Path             *string  `json:"path,omitempty"`
+	PathNEQ          *string  `json:"pathNEQ,omitempty"`
+	PathIn           []string `json:"pathIn,omitempty"`
+	PathNotIn        []string `json:"pathNotIn,omitempty"`
+	PathGT           *string  `json:"pathGT,omitempty"`
+	PathGTE          *string  `json:"pathGTE,omitempty"`
+	PathLT           *string  `json:"pathLT,omitempty"`
+	PathLTE          *string  `json:"pathLTE,omitempty"`
+	PathContains     *string  `json:"pathContains,omitempty"`
+	PathHasPrefix    *string  `json:"pathHasPrefix,omitempty"`
+	PathHasSuffix    *string  `json:"pathHasSuffix,omitempty"`
+	PathIsNil        bool     `json:"pathIsNil,omitempty"`
+	PathNotNil       bool     `json:"pathNotNil,omitempty"`
+	PathEqualFold    *string  `json:"pathEqualFold,omitempty"`
+	PathContainsFold *string  `json:"pathContainsFold,omitempty"`
 
 	// "desc" field predicates.
 	Desc             *string  `json:"desc,omitempty"`
@@ -940,22 +450,6 @@ type PermissionWhereInput struct {
 	SortGTE   *int  `json:"sortGTE,omitempty"`
 	SortLT    *int  `json:"sortLT,omitempty"`
 	SortLTE   *int  `json:"sortLTE,omitempty"`
-
-	// "roles" edge predicates.
-	HasRoles     *bool             `json:"hasRoles,omitempty"`
-	HasRolesWith []*RoleWhereInput `json:"hasRolesWith,omitempty"`
-
-	// "menus" edge predicates.
-	HasMenus     *bool             `json:"hasMenus,omitempty"`
-	HasMenusWith []*MenuWhereInput `json:"hasMenusWith,omitempty"`
-
-	// "parent" edge predicates.
-	HasParent     *bool                   `json:"hasParent,omitempty"`
-	HasParentWith []*PermissionWhereInput `json:"hasParentWith,omitempty"`
-
-	// "children" edge predicates.
-	HasChildren     *bool                   `json:"hasChildren,omitempty"`
-	HasChildrenWith []*PermissionWhereInput `json:"hasChildrenWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -1125,50 +619,23 @@ func (i *PermissionWhereInput) P() (predicate.Permission, error) {
 	if len(i.ParentIDNotIn) > 0 {
 		predicates = append(predicates, permission.ParentIDNotIn(i.ParentIDNotIn...))
 	}
+	if i.ParentIDGT != nil {
+		predicates = append(predicates, permission.ParentIDGT(*i.ParentIDGT))
+	}
+	if i.ParentIDGTE != nil {
+		predicates = append(predicates, permission.ParentIDGTE(*i.ParentIDGTE))
+	}
+	if i.ParentIDLT != nil {
+		predicates = append(predicates, permission.ParentIDLT(*i.ParentIDLT))
+	}
+	if i.ParentIDLTE != nil {
+		predicates = append(predicates, permission.ParentIDLTE(*i.ParentIDLTE))
+	}
 	if i.ParentIDIsNil {
 		predicates = append(predicates, permission.ParentIDIsNil())
 	}
 	if i.ParentIDNotNil {
 		predicates = append(predicates, permission.ParentIDNotNil())
-	}
-	if i.Key != nil {
-		predicates = append(predicates, permission.KeyEQ(*i.Key))
-	}
-	if i.KeyNEQ != nil {
-		predicates = append(predicates, permission.KeyNEQ(*i.KeyNEQ))
-	}
-	if len(i.KeyIn) > 0 {
-		predicates = append(predicates, permission.KeyIn(i.KeyIn...))
-	}
-	if len(i.KeyNotIn) > 0 {
-		predicates = append(predicates, permission.KeyNotIn(i.KeyNotIn...))
-	}
-	if i.KeyGT != nil {
-		predicates = append(predicates, permission.KeyGT(*i.KeyGT))
-	}
-	if i.KeyGTE != nil {
-		predicates = append(predicates, permission.KeyGTE(*i.KeyGTE))
-	}
-	if i.KeyLT != nil {
-		predicates = append(predicates, permission.KeyLT(*i.KeyLT))
-	}
-	if i.KeyLTE != nil {
-		predicates = append(predicates, permission.KeyLTE(*i.KeyLTE))
-	}
-	if i.KeyContains != nil {
-		predicates = append(predicates, permission.KeyContains(*i.KeyContains))
-	}
-	if i.KeyHasPrefix != nil {
-		predicates = append(predicates, permission.KeyHasPrefix(*i.KeyHasPrefix))
-	}
-	if i.KeyHasSuffix != nil {
-		predicates = append(predicates, permission.KeyHasSuffix(*i.KeyHasSuffix))
-	}
-	if i.KeyEqualFold != nil {
-		predicates = append(predicates, permission.KeyEqualFold(*i.KeyEqualFold))
-	}
-	if i.KeyContainsFold != nil {
-		predicates = append(predicates, permission.KeyContainsFold(*i.KeyContainsFold))
 	}
 	if i.Name != nil {
 		predicates = append(predicates, permission.NameEQ(*i.Name))
@@ -1208,6 +675,108 @@ func (i *PermissionWhereInput) P() (predicate.Permission, error) {
 	}
 	if i.NameContainsFold != nil {
 		predicates = append(predicates, permission.NameContainsFold(*i.NameContainsFold))
+	}
+	if i.Key != nil {
+		predicates = append(predicates, permission.KeyEQ(*i.Key))
+	}
+	if i.KeyNEQ != nil {
+		predicates = append(predicates, permission.KeyNEQ(*i.KeyNEQ))
+	}
+	if len(i.KeyIn) > 0 {
+		predicates = append(predicates, permission.KeyIn(i.KeyIn...))
+	}
+	if len(i.KeyNotIn) > 0 {
+		predicates = append(predicates, permission.KeyNotIn(i.KeyNotIn...))
+	}
+	if i.KeyGT != nil {
+		predicates = append(predicates, permission.KeyGT(*i.KeyGT))
+	}
+	if i.KeyGTE != nil {
+		predicates = append(predicates, permission.KeyGTE(*i.KeyGTE))
+	}
+	if i.KeyLT != nil {
+		predicates = append(predicates, permission.KeyLT(*i.KeyLT))
+	}
+	if i.KeyLTE != nil {
+		predicates = append(predicates, permission.KeyLTE(*i.KeyLTE))
+	}
+	if i.KeyContains != nil {
+		predicates = append(predicates, permission.KeyContains(*i.KeyContains))
+	}
+	if i.KeyHasPrefix != nil {
+		predicates = append(predicates, permission.KeyHasPrefix(*i.KeyHasPrefix))
+	}
+	if i.KeyHasSuffix != nil {
+		predicates = append(predicates, permission.KeyHasSuffix(*i.KeyHasSuffix))
+	}
+	if i.KeyIsNil {
+		predicates = append(predicates, permission.KeyIsNil())
+	}
+	if i.KeyNotNil {
+		predicates = append(predicates, permission.KeyNotNil())
+	}
+	if i.KeyEqualFold != nil {
+		predicates = append(predicates, permission.KeyEqualFold(*i.KeyEqualFold))
+	}
+	if i.KeyContainsFold != nil {
+		predicates = append(predicates, permission.KeyContainsFold(*i.KeyContainsFold))
+	}
+	if i.Type != nil {
+		predicates = append(predicates, permission.TypeEQ(*i.Type))
+	}
+	if i.TypeNEQ != nil {
+		predicates = append(predicates, permission.TypeNEQ(*i.TypeNEQ))
+	}
+	if len(i.TypeIn) > 0 {
+		predicates = append(predicates, permission.TypeIn(i.TypeIn...))
+	}
+	if len(i.TypeNotIn) > 0 {
+		predicates = append(predicates, permission.TypeNotIn(i.TypeNotIn...))
+	}
+	if i.Path != nil {
+		predicates = append(predicates, permission.PathEQ(*i.Path))
+	}
+	if i.PathNEQ != nil {
+		predicates = append(predicates, permission.PathNEQ(*i.PathNEQ))
+	}
+	if len(i.PathIn) > 0 {
+		predicates = append(predicates, permission.PathIn(i.PathIn...))
+	}
+	if len(i.PathNotIn) > 0 {
+		predicates = append(predicates, permission.PathNotIn(i.PathNotIn...))
+	}
+	if i.PathGT != nil {
+		predicates = append(predicates, permission.PathGT(*i.PathGT))
+	}
+	if i.PathGTE != nil {
+		predicates = append(predicates, permission.PathGTE(*i.PathGTE))
+	}
+	if i.PathLT != nil {
+		predicates = append(predicates, permission.PathLT(*i.PathLT))
+	}
+	if i.PathLTE != nil {
+		predicates = append(predicates, permission.PathLTE(*i.PathLTE))
+	}
+	if i.PathContains != nil {
+		predicates = append(predicates, permission.PathContains(*i.PathContains))
+	}
+	if i.PathHasPrefix != nil {
+		predicates = append(predicates, permission.PathHasPrefix(*i.PathHasPrefix))
+	}
+	if i.PathHasSuffix != nil {
+		predicates = append(predicates, permission.PathHasSuffix(*i.PathHasSuffix))
+	}
+	if i.PathIsNil {
+		predicates = append(predicates, permission.PathIsNil())
+	}
+	if i.PathNotNil {
+		predicates = append(predicates, permission.PathNotNil())
+	}
+	if i.PathEqualFold != nil {
+		predicates = append(predicates, permission.PathEqualFold(*i.PathEqualFold))
+	}
+	if i.PathContainsFold != nil {
+		predicates = append(predicates, permission.PathContainsFold(*i.PathContainsFold))
 	}
 	if i.Desc != nil {
 		predicates = append(predicates, permission.DescEQ(*i.Desc))
@@ -1279,78 +848,6 @@ func (i *PermissionWhereInput) P() (predicate.Permission, error) {
 		predicates = append(predicates, permission.SortLTE(*i.SortLTE))
 	}
 
-	if i.HasRoles != nil {
-		p := permission.HasRoles()
-		if !*i.HasRoles {
-			p = permission.Not(p)
-		}
-		predicates = append(predicates, p)
-	}
-	if len(i.HasRolesWith) > 0 {
-		with := make([]predicate.Role, 0, len(i.HasRolesWith))
-		for _, w := range i.HasRolesWith {
-			p, err := w.P()
-			if err != nil {
-				return nil, fmt.Errorf("%w: field 'HasRolesWith'", err)
-			}
-			with = append(with, p)
-		}
-		predicates = append(predicates, permission.HasRolesWith(with...))
-	}
-	if i.HasMenus != nil {
-		p := permission.HasMenus()
-		if !*i.HasMenus {
-			p = permission.Not(p)
-		}
-		predicates = append(predicates, p)
-	}
-	if len(i.HasMenusWith) > 0 {
-		with := make([]predicate.Menu, 0, len(i.HasMenusWith))
-		for _, w := range i.HasMenusWith {
-			p, err := w.P()
-			if err != nil {
-				return nil, fmt.Errorf("%w: field 'HasMenusWith'", err)
-			}
-			with = append(with, p)
-		}
-		predicates = append(predicates, permission.HasMenusWith(with...))
-	}
-	if i.HasParent != nil {
-		p := permission.HasParent()
-		if !*i.HasParent {
-			p = permission.Not(p)
-		}
-		predicates = append(predicates, p)
-	}
-	if len(i.HasParentWith) > 0 {
-		with := make([]predicate.Permission, 0, len(i.HasParentWith))
-		for _, w := range i.HasParentWith {
-			p, err := w.P()
-			if err != nil {
-				return nil, fmt.Errorf("%w: field 'HasParentWith'", err)
-			}
-			with = append(with, p)
-		}
-		predicates = append(predicates, permission.HasParentWith(with...))
-	}
-	if i.HasChildren != nil {
-		p := permission.HasChildren()
-		if !*i.HasChildren {
-			p = permission.Not(p)
-		}
-		predicates = append(predicates, p)
-	}
-	if len(i.HasChildrenWith) > 0 {
-		with := make([]predicate.Permission, 0, len(i.HasChildrenWith))
-		for _, w := range i.HasChildrenWith {
-			p, err := w.P()
-			if err != nil {
-				return nil, fmt.Errorf("%w: field 'HasChildrenWith'", err)
-			}
-			with = append(with, p)
-		}
-		predicates = append(predicates, permission.HasChildrenWith(with...))
-	}
 	switch len(predicates) {
 	case 0:
 		return nil, ErrEmptyPermissionWhereInput
@@ -1427,17 +924,9 @@ type RoleWhereInput struct {
 	SortLT    *int  `json:"sortLT,omitempty"`
 	SortLTE   *int  `json:"sortLTE,omitempty"`
 
-	// "menus" edge predicates.
-	HasMenus     *bool             `json:"hasMenus,omitempty"`
-	HasMenusWith []*MenuWhereInput `json:"hasMenusWith,omitempty"`
-
 	// "permissions" edge predicates.
 	HasPermissions     *bool                   `json:"hasPermissions,omitempty"`
 	HasPermissionsWith []*PermissionWhereInput `json:"hasPermissionsWith,omitempty"`
-
-	// "users" edge predicates.
-	HasUsers     *bool             `json:"hasUsers,omitempty"`
-	HasUsersWith []*UserWhereInput `json:"hasUsersWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -1659,24 +1148,6 @@ func (i *RoleWhereInput) P() (predicate.Role, error) {
 		predicates = append(predicates, role.SortLTE(*i.SortLTE))
 	}
 
-	if i.HasMenus != nil {
-		p := role.HasMenus()
-		if !*i.HasMenus {
-			p = role.Not(p)
-		}
-		predicates = append(predicates, p)
-	}
-	if len(i.HasMenusWith) > 0 {
-		with := make([]predicate.Menu, 0, len(i.HasMenusWith))
-		for _, w := range i.HasMenusWith {
-			p, err := w.P()
-			if err != nil {
-				return nil, fmt.Errorf("%w: field 'HasMenusWith'", err)
-			}
-			with = append(with, p)
-		}
-		predicates = append(predicates, role.HasMenusWith(with...))
-	}
 	if i.HasPermissions != nil {
 		p := role.HasPermissions()
 		if !*i.HasPermissions {
@@ -1694,24 +1165,6 @@ func (i *RoleWhereInput) P() (predicate.Role, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, role.HasPermissionsWith(with...))
-	}
-	if i.HasUsers != nil {
-		p := role.HasUsers()
-		if !*i.HasUsers {
-			p = role.Not(p)
-		}
-		predicates = append(predicates, p)
-	}
-	if len(i.HasUsersWith) > 0 {
-		with := make([]predicate.User, 0, len(i.HasUsersWith))
-		for _, w := range i.HasUsersWith {
-			p, err := w.P()
-			if err != nil {
-				return nil, fmt.Errorf("%w: field 'HasUsersWith'", err)
-			}
-			with = append(with, p)
-		}
-		predicates = append(predicates, role.HasUsersWith(with...))
 	}
 	switch len(predicates) {
 	case 0:
@@ -1839,10 +1292,6 @@ type UserWhereInput struct {
 	// "roles" edge predicates.
 	HasRoles     *bool             `json:"hasRoles,omitempty"`
 	HasRolesWith []*RoleWhereInput `json:"hasRolesWith,omitempty"`
-
-	// "operation_logs" edge predicates.
-	HasOperationLogs     *bool                     `json:"hasOperationLogs,omitempty"`
-	HasOperationLogsWith []*OperationLogWhereInput `json:"hasOperationLogsWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -2198,24 +1647,6 @@ func (i *UserWhereInput) P() (predicate.User, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, user.HasRolesWith(with...))
-	}
-	if i.HasOperationLogs != nil {
-		p := user.HasOperationLogs()
-		if !*i.HasOperationLogs {
-			p = user.Not(p)
-		}
-		predicates = append(predicates, p)
-	}
-	if len(i.HasOperationLogsWith) > 0 {
-		with := make([]predicate.OperationLog, 0, len(i.HasOperationLogsWith))
-		for _, w := range i.HasOperationLogsWith {
-			p, err := w.P()
-			if err != nil {
-				return nil, fmt.Errorf("%w: field 'HasOperationLogsWith'", err)
-			}
-			with = append(with, p)
-		}
-		predicates = append(predicates, user.HasOperationLogsWith(with...))
 	}
 	switch len(predicates) {
 	case 0:

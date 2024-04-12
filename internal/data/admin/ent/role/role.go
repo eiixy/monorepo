@@ -22,19 +22,12 @@ const (
 	FieldName = "name"
 	// FieldSort holds the string denoting the sort field in the database.
 	FieldSort = "sort"
-	// EdgeMenus holds the string denoting the menus edge name in mutations.
-	EdgeMenus = "menus"
 	// EdgePermissions holds the string denoting the permissions edge name in mutations.
 	EdgePermissions = "permissions"
 	// EdgeUsers holds the string denoting the users edge name in mutations.
 	EdgeUsers = "users"
 	// Table holds the table name of the role in the database.
 	Table = "roles"
-	// MenusTable is the table that holds the menus relation/edge. The primary key declared below.
-	MenusTable = "role_menus"
-	// MenusInverseTable is the table name for the Menu entity.
-	// It exists in this package in order to avoid circular dependency with the "menu" package.
-	MenusInverseTable = "menus"
 	// PermissionsTable is the table that holds the permissions relation/edge. The primary key declared below.
 	PermissionsTable = "role_permissions"
 	// PermissionsInverseTable is the table name for the Permission entity.
@@ -57,9 +50,6 @@ var Columns = []string{
 }
 
 var (
-	// MenusPrimaryKey and MenusColumn2 are the table columns denoting the
-	// primary key for the menus relation (M2M).
-	MenusPrimaryKey = []string{"role_id", "menu_id"}
 	// PermissionsPrimaryKey and PermissionsColumn2 are the table columns denoting the
 	// primary key for the permissions relation (M2M).
 	PermissionsPrimaryKey = []string{"role_id", "permission_id"}
@@ -117,20 +107,6 @@ func BySort(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSort, opts...).ToFunc()
 }
 
-// ByMenusCount orders the results by menus count.
-func ByMenusCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newMenusStep(), opts...)
-	}
-}
-
-// ByMenus orders the results by menus terms.
-func ByMenus(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newMenusStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByPermissionsCount orders the results by permissions count.
 func ByPermissionsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -157,13 +133,6 @@ func ByUsers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newUsersStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
-}
-func newMenusStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(MenusInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, MenusTable, MenusPrimaryKey...),
-	)
 }
 func newPermissionsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

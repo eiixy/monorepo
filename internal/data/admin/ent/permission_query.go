@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/eiixy/monorepo/internal/data/admin/ent/menu"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/permission"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/predicate"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/role"
@@ -20,19 +19,14 @@ import (
 // PermissionQuery is the builder for querying Permission entities.
 type PermissionQuery struct {
 	config
-	ctx               *QueryContext
-	order             []permission.OrderOption
-	inters            []Interceptor
-	predicates        []predicate.Permission
-	withRoles         *RoleQuery
-	withMenus         *MenuQuery
-	withParent        *PermissionQuery
-	withChildren      *PermissionQuery
-	loadTotal         []func(context.Context, []*Permission) error
-	modifiers         []func(*sql.Selector)
-	withNamedRoles    map[string]*RoleQuery
-	withNamedMenus    map[string]*MenuQuery
-	withNamedChildren map[string]*PermissionQuery
+	ctx            *QueryContext
+	order          []permission.OrderOption
+	inters         []Interceptor
+	predicates     []predicate.Permission
+	withRoles      *RoleQuery
+	loadTotal      []func(context.Context, []*Permission) error
+	modifiers      []func(*sql.Selector)
+	withNamedRoles map[string]*RoleQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -84,72 +78,6 @@ func (pq *PermissionQuery) QueryRoles() *RoleQuery {
 			sqlgraph.From(permission.Table, permission.FieldID, selector),
 			sqlgraph.To(role.Table, role.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, permission.RolesTable, permission.RolesPrimaryKey...),
-		)
-		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryMenus chains the current query on the "menus" edge.
-func (pq *PermissionQuery) QueryMenus() *MenuQuery {
-	query := (&MenuClient{config: pq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := pq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := pq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(permission.Table, permission.FieldID, selector),
-			sqlgraph.To(menu.Table, menu.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, permission.MenusTable, permission.MenusPrimaryKey...),
-		)
-		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryParent chains the current query on the "parent" edge.
-func (pq *PermissionQuery) QueryParent() *PermissionQuery {
-	query := (&PermissionClient{config: pq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := pq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := pq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(permission.Table, permission.FieldID, selector),
-			sqlgraph.To(permission.Table, permission.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, permission.ParentTable, permission.ParentColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryChildren chains the current query on the "children" edge.
-func (pq *PermissionQuery) QueryChildren() *PermissionQuery {
-	query := (&PermissionClient{config: pq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := pq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := pq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(permission.Table, permission.FieldID, selector),
-			sqlgraph.To(permission.Table, permission.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, permission.ChildrenTable, permission.ChildrenColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
 		return fromU, nil
@@ -344,15 +272,12 @@ func (pq *PermissionQuery) Clone() *PermissionQuery {
 		return nil
 	}
 	return &PermissionQuery{
-		config:       pq.config,
-		ctx:          pq.ctx.Clone(),
-		order:        append([]permission.OrderOption{}, pq.order...),
-		inters:       append([]Interceptor{}, pq.inters...),
-		predicates:   append([]predicate.Permission{}, pq.predicates...),
-		withRoles:    pq.withRoles.Clone(),
-		withMenus:    pq.withMenus.Clone(),
-		withParent:   pq.withParent.Clone(),
-		withChildren: pq.withChildren.Clone(),
+		config:     pq.config,
+		ctx:        pq.ctx.Clone(),
+		order:      append([]permission.OrderOption{}, pq.order...),
+		inters:     append([]Interceptor{}, pq.inters...),
+		predicates: append([]predicate.Permission{}, pq.predicates...),
+		withRoles:  pq.withRoles.Clone(),
 		// clone intermediate query.
 		sql:  pq.sql.Clone(),
 		path: pq.path,
@@ -367,39 +292,6 @@ func (pq *PermissionQuery) WithRoles(opts ...func(*RoleQuery)) *PermissionQuery 
 		opt(query)
 	}
 	pq.withRoles = query
-	return pq
-}
-
-// WithMenus tells the query-builder to eager-load the nodes that are connected to
-// the "menus" edge. The optional arguments are used to configure the query builder of the edge.
-func (pq *PermissionQuery) WithMenus(opts ...func(*MenuQuery)) *PermissionQuery {
-	query := (&MenuClient{config: pq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	pq.withMenus = query
-	return pq
-}
-
-// WithParent tells the query-builder to eager-load the nodes that are connected to
-// the "parent" edge. The optional arguments are used to configure the query builder of the edge.
-func (pq *PermissionQuery) WithParent(opts ...func(*PermissionQuery)) *PermissionQuery {
-	query := (&PermissionClient{config: pq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	pq.withParent = query
-	return pq
-}
-
-// WithChildren tells the query-builder to eager-load the nodes that are connected to
-// the "children" edge. The optional arguments are used to configure the query builder of the edge.
-func (pq *PermissionQuery) WithChildren(opts ...func(*PermissionQuery)) *PermissionQuery {
-	query := (&PermissionClient{config: pq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	pq.withChildren = query
 	return pq
 }
 
@@ -481,11 +373,8 @@ func (pq *PermissionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*P
 	var (
 		nodes       = []*Permission{}
 		_spec       = pq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [1]bool{
 			pq.withRoles != nil,
-			pq.withMenus != nil,
-			pq.withParent != nil,
-			pq.withChildren != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -516,44 +405,10 @@ func (pq *PermissionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*P
 			return nil, err
 		}
 	}
-	if query := pq.withMenus; query != nil {
-		if err := pq.loadMenus(ctx, query, nodes,
-			func(n *Permission) { n.Edges.Menus = []*Menu{} },
-			func(n *Permission, e *Menu) { n.Edges.Menus = append(n.Edges.Menus, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := pq.withParent; query != nil {
-		if err := pq.loadParent(ctx, query, nodes, nil,
-			func(n *Permission, e *Permission) { n.Edges.Parent = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := pq.withChildren; query != nil {
-		if err := pq.loadChildren(ctx, query, nodes,
-			func(n *Permission) { n.Edges.Children = []*Permission{} },
-			func(n *Permission, e *Permission) { n.Edges.Children = append(n.Edges.Children, e) }); err != nil {
-			return nil, err
-		}
-	}
 	for name, query := range pq.withNamedRoles {
 		if err := pq.loadRoles(ctx, query, nodes,
 			func(n *Permission) { n.appendNamedRoles(name) },
 			func(n *Permission, e *Role) { n.appendNamedRoles(name, e) }); err != nil {
-			return nil, err
-		}
-	}
-	for name, query := range pq.withNamedMenus {
-		if err := pq.loadMenus(ctx, query, nodes,
-			func(n *Permission) { n.appendNamedMenus(name) },
-			func(n *Permission, e *Menu) { n.appendNamedMenus(name, e) }); err != nil {
-			return nil, err
-		}
-	}
-	for name, query := range pq.withNamedChildren {
-		if err := pq.loadChildren(ctx, query, nodes,
-			func(n *Permission) { n.appendNamedChildren(name) },
-			func(n *Permission, e *Permission) { n.appendNamedChildren(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -626,132 +481,6 @@ func (pq *PermissionQuery) loadRoles(ctx context.Context, query *RoleQuery, node
 	}
 	return nil
 }
-func (pq *PermissionQuery) loadMenus(ctx context.Context, query *MenuQuery, nodes []*Permission, init func(*Permission), assign func(*Permission, *Menu)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[int]*Permission)
-	nids := make(map[int]map[*Permission]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
-		}
-	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(permission.MenusTable)
-		s.Join(joinT).On(s.C(menu.FieldID), joinT.C(permission.MenusPrimaryKey[0]))
-		s.Where(sql.InValues(joinT.C(permission.MenusPrimaryKey[1]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(permission.MenusPrimaryKey[1]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
-	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(sql.NullInt64)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := int(values[0].(*sql.NullInt64).Int64)
-				inValue := int(values[1].(*sql.NullInt64).Int64)
-				if nids[inValue] == nil {
-					nids[inValue] = map[*Permission]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*Menu](ctx, query, qr, query.inters)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected "menus" node returned %v`, n.ID)
-		}
-		for kn := range nodes {
-			assign(kn, n)
-		}
-	}
-	return nil
-}
-func (pq *PermissionQuery) loadParent(ctx context.Context, query *PermissionQuery, nodes []*Permission, init func(*Permission), assign func(*Permission, *Permission)) error {
-	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*Permission)
-	for i := range nodes {
-		if nodes[i].ParentID == nil {
-			continue
-		}
-		fk := *nodes[i].ParentID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(permission.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "parent_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (pq *PermissionQuery) loadChildren(ctx context.Context, query *PermissionQuery, nodes []*Permission, init func(*Permission), assign func(*Permission, *Permission)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Permission)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(permission.FieldParentID)
-	}
-	query.Where(predicate.Permission(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(permission.ChildrenColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.ParentID
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "parent_id" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "parent_id" returned %v for node %v`, *fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
 
 func (pq *PermissionQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := pq.querySpec()
@@ -780,9 +509,6 @@ func (pq *PermissionQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != permission.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
-		}
-		if pq.withParent != nil {
-			_spec.Node.AddColumnOnce(permission.FieldParentID)
 		}
 	}
 	if ps := pq.predicates; len(ps) > 0 {
@@ -860,34 +586,6 @@ func (pq *PermissionQuery) WithNamedRoles(name string, opts ...func(*RoleQuery))
 		pq.withNamedRoles = make(map[string]*RoleQuery)
 	}
 	pq.withNamedRoles[name] = query
-	return pq
-}
-
-// WithNamedMenus tells the query-builder to eager-load the nodes that are connected to the "menus"
-// edge with the given name. The optional arguments are used to configure the query builder of the edge.
-func (pq *PermissionQuery) WithNamedMenus(name string, opts ...func(*MenuQuery)) *PermissionQuery {
-	query := (&MenuClient{config: pq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	if pq.withNamedMenus == nil {
-		pq.withNamedMenus = make(map[string]*MenuQuery)
-	}
-	pq.withNamedMenus[name] = query
-	return pq
-}
-
-// WithNamedChildren tells the query-builder to eager-load the nodes that are connected to the "children"
-// edge with the given name. The optional arguments are used to configure the query builder of the edge.
-func (pq *PermissionQuery) WithNamedChildren(name string, opts ...func(*PermissionQuery)) *PermissionQuery {
-	query := (&PermissionClient{config: pq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	if pq.withNamedChildren == nil {
-		pq.withNamedChildren = make(map[string]*PermissionQuery)
-	}
-	pq.withNamedChildren[name] = query
 	return pq
 }
 

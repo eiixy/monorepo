@@ -22,11 +22,6 @@ func (r *queryResolver) Nodes(ctx context.Context, ids []int) ([]ent.Noder, erro
 	panic(fmt.Errorf("not implemented"))
 }
 
-// Menus is the resolver for the menus field.
-func (r *queryResolver) Menus(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.MenuWhereInput) (*ent.MenuConnection, error) {
-	return r.client.Menu.Query().Paginate(ctx, after, first, before, last, ent.WithMenuFilter(where.Filter))
-}
-
 // OperationLogs is the resolver for the operationLogs field.
 func (r *queryResolver) OperationLogs(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.OperationLogWhereInput) (*ent.OperationLogConnection, error) {
 	return r.client.OperationLog.Query().Paginate(ctx, after, first, before, last, ent.WithOperationLogFilter(where.Filter))

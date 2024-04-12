@@ -12,11 +12,16 @@ import (
 
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input ent.CreateUserInput) (*ent.User, error) {
+	input.Password = r.accountUseCase.GeneratePassword(input.Password)
 	return r.client.User.Create().SetInput(input).Save(ctx)
 }
 
 // UpdateUser is the resolver for the updateUser field.
 func (r *mutationResolver) UpdateUser(ctx context.Context, id int, input ent.UpdateUserInput) (*ent.User, error) {
+	if input.Password != nil {
+		hashed := r.accountUseCase.GeneratePassword(*input.Password)
+		input.Password = &hashed
+	}
 	return r.client.User.UpdateOneID(id).SetInput(input).Save(ctx)
 }
 
@@ -33,25 +38,6 @@ func (r *mutationResolver) UpdateRole(ctx context.Context, id int, input ent.Upd
 // DeleteRole is the resolver for the deleteRole field.
 func (r *mutationResolver) DeleteRole(ctx context.Context, id int) (bool, error) {
 	err := r.client.Role.DeleteOneID(id).Exec(ctx)
-	if err != nil {
-		return false, err
-	}
-	return true, nil
-}
-
-// CreateMenu is the resolver for the createMenu field.
-func (r *mutationResolver) CreateMenu(ctx context.Context, input ent.CreateMenuInput) (*ent.Menu, error) {
-	return r.client.Menu.Create().SetInput(input).Save(ctx)
-}
-
-// UpdateMenu is the resolver for the updateMenu field.
-func (r *mutationResolver) UpdateMenu(ctx context.Context, id int, input ent.UpdateMenuInput) (*ent.Menu, error) {
-	return r.client.Menu.UpdateOneID(id).SetInput(input).Save(ctx)
-}
-
-// DeleteMenu is the resolver for the deleteMenu field.
-func (r *mutationResolver) DeleteMenu(ctx context.Context, id int) (bool, error) {
-	err := r.client.Menu.DeleteOneID(id).Exec(ctx)
 	if err != nil {
 		return false, err
 	}

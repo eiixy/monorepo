@@ -31,20 +31,18 @@ func Middleware(key string, client *ent.Client, next http.Handler) http.Handler 
 		token := r.Header.Get("Authorization")
 		auths := strings.SplitN(token, " ", 2)
 		if len(auths) == 2 && auths[0] == "Bearer" {
-			claims := jwt.MapClaims{}
+			claims := jwt.RegisteredClaims{}
 			_, err := jwt.ParseWithClaims(auths[1], &claims, func(token *jwt.Token) (interface{}, error) {
 				return []byte(key), nil
 			})
 			if err == nil {
-				if subject, ok := claims["sub"]; ok {
-					u, err := client.User.Get(r.Context(), cast.ToInt(subject))
-					if err != nil {
-						return
-					}
-					nextCtx := context.WithValue(r.Context(), userId, subject)
-					nextCtx = context.WithValue(nextCtx, userKey, u)
-					r = r.WithContext(nextCtx)
+				u, err := client.User.Get(r.Context(), cast.ToInt(claims.Subject))
+				if err != nil {
+					return
 				}
+				nextCtx := context.WithValue(r.Context(), userId, u.ID)
+				nextCtx = context.WithValue(nextCtx, userKey, u)
+				r = r.WithContext(nextCtx)
 			}
 		}
 		next.ServeHTTP(w, r)

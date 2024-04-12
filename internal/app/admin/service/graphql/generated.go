@@ -18,6 +18,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/eiixy/monorepo/internal/app/admin/service/graphql/model"
 	"github.com/eiixy/monorepo/internal/data/admin/ent"
+	"github.com/eiixy/monorepo/internal/data/admin/ent/permission"
 	"github.com/eiixy/monorepo/internal/data/admin/ent/user"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
@@ -59,43 +60,14 @@ type ComplexityRoot struct {
 		User  func(childComplexity int) int
 	}
 
-	Menu struct {
-		Children    func(childComplexity int) int
-		CreatedAt   func(childComplexity int) int
-		ID          func(childComplexity int) int
-		Icon        func(childComplexity int) int
-		Name        func(childComplexity int) int
-		Parent      func(childComplexity int) int
-		ParentID    func(childComplexity int) int
-		Path        func(childComplexity int) int
-		Permissions func(childComplexity int) int
-		Roles       func(childComplexity int) int
-		Sort        func(childComplexity int) int
-		UpdatedAt   func(childComplexity int) int
-	}
-
-	MenuConnection struct {
-		Edges      func(childComplexity int) int
-		PageInfo   func(childComplexity int) int
-		TotalCount func(childComplexity int) int
-	}
-
-	MenuEdge struct {
-		Cursor func(childComplexity int) int
-		Node   func(childComplexity int) int
-	}
-
 	Mutation struct {
-		CreateMenu       func(childComplexity int, input ent.CreateMenuInput) int
 		CreatePermission func(childComplexity int, input ent.CreatePermissionInput) int
 		CreateRole       func(childComplexity int, input ent.CreateRoleInput) int
 		CreateUser       func(childComplexity int, input ent.CreateUserInput) int
-		DeleteMenu       func(childComplexity int, id int) int
 		DeletePermission func(childComplexity int, id int) int
 		DeleteRole       func(childComplexity int, id int) int
 		ForgetPassword   func(childComplexity int, email string, code string, password string) int
 		ResetPassword    func(childComplexity int, oldPassword string, password string) int
-		UpdateMenu       func(childComplexity int, id int, input ent.UpdateMenuInput) int
 		UpdatePermission func(childComplexity int, id int, input ent.UpdatePermissionInput) int
 		UpdateProfile    func(childComplexity int, input model.UpdateProfileInput) int
 		UpdateRole       func(childComplexity int, id int, input ent.UpdateRoleInput) int
@@ -131,17 +103,16 @@ type ComplexityRoot struct {
 	}
 
 	Permission struct {
-		Children  func(childComplexity int) int
+		Attrs     func(childComplexity int) int
 		CreatedAt func(childComplexity int) int
 		Desc      func(childComplexity int) int
 		ID        func(childComplexity int) int
 		Key       func(childComplexity int) int
-		Menus     func(childComplexity int) int
 		Name      func(childComplexity int) int
-		Parent    func(childComplexity int) int
 		ParentID  func(childComplexity int) int
-		Roles     func(childComplexity int) int
+		Path      func(childComplexity int) int
 		Sort      func(childComplexity int) int
+		Type      func(childComplexity int) int
 		UpdatedAt func(childComplexity int) int
 	}
 
@@ -159,7 +130,6 @@ type ComplexityRoot struct {
 	Query struct {
 		Captcha        func(childComplexity int) int
 		Login          func(childComplexity int, email string, password string, captchaID *string, captchaValue *string) int
-		Menus          func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.MenuWhereInput) int
 		Node           func(childComplexity int, id int) int
 		Nodes          func(childComplexity int, ids []int) int
 		OperationLogs  func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.OperationLogWhereInput) int
@@ -174,12 +144,10 @@ type ComplexityRoot struct {
 	Role struct {
 		CreatedAt   func(childComplexity int) int
 		ID          func(childComplexity int) int
-		Menus       func(childComplexity int) int
 		Name        func(childComplexity int) int
 		Permissions func(childComplexity int) int
 		Sort        func(childComplexity int) int
 		UpdatedAt   func(childComplexity int) int
-		Users       func(childComplexity int) int
 	}
 
 	RoleConnection struct {
@@ -194,19 +162,17 @@ type ComplexityRoot struct {
 	}
 
 	User struct {
-		Avatar        func(childComplexity int) int
-		CreatedAt     func(childComplexity int) int
-		Email         func(childComplexity int) int
-		ID            func(childComplexity int) int
-		IsAdmin       func(childComplexity int) int
-		Menus         func(childComplexity int) int
-		Nickname      func(childComplexity int) int
-		OperationLogs func(childComplexity int) int
-		Permissions   func(childComplexity int) int
-		RoleCount     func(childComplexity int) int
-		Roles         func(childComplexity int) int
-		Status        func(childComplexity int) int
-		UpdatedAt     func(childComplexity int) int
+		Avatar      func(childComplexity int) int
+		CreatedAt   func(childComplexity int) int
+		Email       func(childComplexity int) int
+		ID          func(childComplexity int) int
+		IsAdmin     func(childComplexity int) int
+		Nickname    func(childComplexity int) int
+		Permissions func(childComplexity int) int
+		RoleCount   func(childComplexity int) int
+		Roles       func(childComplexity int) int
+		Status      func(childComplexity int) int
+		UpdatedAt   func(childComplexity int) int
 	}
 
 	UserConnection struct {
@@ -235,9 +201,6 @@ type MutationResolver interface {
 	CreateRole(ctx context.Context, input ent.CreateRoleInput) (*ent.Role, error)
 	UpdateRole(ctx context.Context, id int, input ent.UpdateRoleInput) (*ent.Role, error)
 	DeleteRole(ctx context.Context, id int) (bool, error)
-	CreateMenu(ctx context.Context, input ent.CreateMenuInput) (*ent.Menu, error)
-	UpdateMenu(ctx context.Context, id int, input ent.UpdateMenuInput) (*ent.Menu, error)
-	DeleteMenu(ctx context.Context, id int) (bool, error)
 	CreatePermission(ctx context.Context, input ent.CreatePermissionInput) (*ent.Permission, error)
 	UpdatePermission(ctx context.Context, id int, input ent.UpdatePermissionInput) (*ent.Permission, error)
 	DeletePermission(ctx context.Context, id int) (bool, error)
@@ -245,7 +208,6 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Node(ctx context.Context, id int) (ent.Noder, error)
 	Nodes(ctx context.Context, ids []int) ([]ent.Noder, error)
-	Menus(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.MenuWhereInput) (*ent.MenuConnection, error)
 	OperationLogs(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.OperationLogWhereInput) (*ent.OperationLogConnection, error)
 	Permissions(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.PermissionWhereInput) (*ent.PermissionConnection, error)
 	Roles(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.RoleWhereInput) (*ent.RoleConnection, error)
@@ -259,7 +221,6 @@ type QueryResolver interface {
 type UserResolver interface {
 	RoleCount(ctx context.Context, obj *ent.User) (int, error)
 	Permissions(ctx context.Context, obj *ent.User) ([]*ent.Permission, error)
-	Menus(ctx context.Context, obj *ent.User) ([]*ent.Menu, error)
 }
 
 type executableSchema struct {
@@ -298,137 +259,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.LoginReply.User(childComplexity), true
 
-	case "Menu.children":
-		if e.complexity.Menu.Children == nil {
-			break
-		}
-
-		return e.complexity.Menu.Children(childComplexity), true
-
-	case "Menu.createdAt":
-		if e.complexity.Menu.CreatedAt == nil {
-			break
-		}
-
-		return e.complexity.Menu.CreatedAt(childComplexity), true
-
-	case "Menu.id":
-		if e.complexity.Menu.ID == nil {
-			break
-		}
-
-		return e.complexity.Menu.ID(childComplexity), true
-
-	case "Menu.icon":
-		if e.complexity.Menu.Icon == nil {
-			break
-		}
-
-		return e.complexity.Menu.Icon(childComplexity), true
-
-	case "Menu.name":
-		if e.complexity.Menu.Name == nil {
-			break
-		}
-
-		return e.complexity.Menu.Name(childComplexity), true
-
-	case "Menu.parent":
-		if e.complexity.Menu.Parent == nil {
-			break
-		}
-
-		return e.complexity.Menu.Parent(childComplexity), true
-
-	case "Menu.parentID":
-		if e.complexity.Menu.ParentID == nil {
-			break
-		}
-
-		return e.complexity.Menu.ParentID(childComplexity), true
-
-	case "Menu.path":
-		if e.complexity.Menu.Path == nil {
-			break
-		}
-
-		return e.complexity.Menu.Path(childComplexity), true
-
-	case "Menu.permissions":
-		if e.complexity.Menu.Permissions == nil {
-			break
-		}
-
-		return e.complexity.Menu.Permissions(childComplexity), true
-
-	case "Menu.roles":
-		if e.complexity.Menu.Roles == nil {
-			break
-		}
-
-		return e.complexity.Menu.Roles(childComplexity), true
-
-	case "Menu.sort":
-		if e.complexity.Menu.Sort == nil {
-			break
-		}
-
-		return e.complexity.Menu.Sort(childComplexity), true
-
-	case "Menu.updatedAt":
-		if e.complexity.Menu.UpdatedAt == nil {
-			break
-		}
-
-		return e.complexity.Menu.UpdatedAt(childComplexity), true
-
-	case "MenuConnection.edges":
-		if e.complexity.MenuConnection.Edges == nil {
-			break
-		}
-
-		return e.complexity.MenuConnection.Edges(childComplexity), true
-
-	case "MenuConnection.pageInfo":
-		if e.complexity.MenuConnection.PageInfo == nil {
-			break
-		}
-
-		return e.complexity.MenuConnection.PageInfo(childComplexity), true
-
-	case "MenuConnection.totalCount":
-		if e.complexity.MenuConnection.TotalCount == nil {
-			break
-		}
-
-		return e.complexity.MenuConnection.TotalCount(childComplexity), true
-
-	case "MenuEdge.cursor":
-		if e.complexity.MenuEdge.Cursor == nil {
-			break
-		}
-
-		return e.complexity.MenuEdge.Cursor(childComplexity), true
-
-	case "MenuEdge.node":
-		if e.complexity.MenuEdge.Node == nil {
-			break
-		}
-
-		return e.complexity.MenuEdge.Node(childComplexity), true
-
-	case "Mutation.createMenu":
-		if e.complexity.Mutation.CreateMenu == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_createMenu_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.CreateMenu(childComplexity, args["input"].(ent.CreateMenuInput)), true
-
 	case "Mutation.createPermission":
 		if e.complexity.Mutation.CreatePermission == nil {
 			break
@@ -464,18 +294,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateUser(childComplexity, args["input"].(ent.CreateUserInput)), true
-
-	case "Mutation.deleteMenu":
-		if e.complexity.Mutation.DeleteMenu == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_deleteMenu_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.DeleteMenu(childComplexity, args["id"].(int)), true
 
 	case "Mutation.deletePermission":
 		if e.complexity.Mutation.DeletePermission == nil {
@@ -524,18 +342,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.ResetPassword(childComplexity, args["oldPassword"].(string), args["password"].(string)), true
-
-	case "Mutation.updateMenu":
-		if e.complexity.Mutation.UpdateMenu == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_updateMenu_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.UpdateMenu(childComplexity, args["id"].(int), args["input"].(ent.UpdateMenuInput)), true
 
 	case "Mutation.updatePermission":
 		if e.complexity.Mutation.UpdatePermission == nil {
@@ -697,12 +503,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PageInfo.StartCursor(childComplexity), true
 
-	case "Permission.children":
-		if e.complexity.Permission.Children == nil {
+	case "Permission.attrs":
+		if e.complexity.Permission.Attrs == nil {
 			break
 		}
 
-		return e.complexity.Permission.Children(childComplexity), true
+		return e.complexity.Permission.Attrs(childComplexity), true
 
 	case "Permission.createdAt":
 		if e.complexity.Permission.CreatedAt == nil {
@@ -732,26 +538,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Permission.Key(childComplexity), true
 
-	case "Permission.menus":
-		if e.complexity.Permission.Menus == nil {
-			break
-		}
-
-		return e.complexity.Permission.Menus(childComplexity), true
-
 	case "Permission.name":
 		if e.complexity.Permission.Name == nil {
 			break
 		}
 
 		return e.complexity.Permission.Name(childComplexity), true
-
-	case "Permission.parent":
-		if e.complexity.Permission.Parent == nil {
-			break
-		}
-
-		return e.complexity.Permission.Parent(childComplexity), true
 
 	case "Permission.parentID":
 		if e.complexity.Permission.ParentID == nil {
@@ -760,12 +552,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Permission.ParentID(childComplexity), true
 
-	case "Permission.roles":
-		if e.complexity.Permission.Roles == nil {
+	case "Permission.path":
+		if e.complexity.Permission.Path == nil {
 			break
 		}
 
-		return e.complexity.Permission.Roles(childComplexity), true
+		return e.complexity.Permission.Path(childComplexity), true
 
 	case "Permission.sort":
 		if e.complexity.Permission.Sort == nil {
@@ -773,6 +565,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Permission.Sort(childComplexity), true
+
+	case "Permission.type":
+		if e.complexity.Permission.Type == nil {
+			break
+		}
+
+		return e.complexity.Permission.Type(childComplexity), true
 
 	case "Permission.updatedAt":
 		if e.complexity.Permission.UpdatedAt == nil {
@@ -834,18 +633,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Login(childComplexity, args["email"].(string), args["password"].(string), args["captchaId"].(*string), args["captchaValue"].(*string)), true
-
-	case "Query.menus":
-		if e.complexity.Query.Menus == nil {
-			break
-		}
-
-		args, err := ec.field_Query_menus_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.Menus(childComplexity, args["after"].(*entgql.Cursor[int]), args["first"].(*int), args["before"].(*entgql.Cursor[int]), args["last"].(*int), args["where"].(*ent.MenuWhereInput)), true
 
 	case "Query.node":
 		if e.complexity.Query.Node == nil {
@@ -959,13 +746,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Role.ID(childComplexity), true
 
-	case "Role.menus":
-		if e.complexity.Role.Menus == nil {
-			break
-		}
-
-		return e.complexity.Role.Menus(childComplexity), true
-
 	case "Role.name":
 		if e.complexity.Role.Name == nil {
 			break
@@ -993,13 +773,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Role.UpdatedAt(childComplexity), true
-
-	case "Role.users":
-		if e.complexity.Role.Users == nil {
-			break
-		}
-
-		return e.complexity.Role.Users(childComplexity), true
 
 	case "RoleConnection.edges":
 		if e.complexity.RoleConnection.Edges == nil {
@@ -1071,26 +844,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.IsAdmin(childComplexity), true
 
-	case "User.menus":
-		if e.complexity.User.Menus == nil {
-			break
-		}
-
-		return e.complexity.User.Menus(childComplexity), true
-
 	case "User.nickname":
 		if e.complexity.User.Nickname == nil {
 			break
 		}
 
 		return e.complexity.User.Nickname(childComplexity), true
-
-	case "User.operationLogs":
-		if e.complexity.User.OperationLogs == nil {
-			break
-		}
-
-		return e.complexity.User.OperationLogs(childComplexity), true
 
 	case "User.permissions":
 		if e.complexity.User.Permissions == nil {
@@ -1184,16 +943,13 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
-		ec.unmarshalInputCreateMenuInput,
 		ec.unmarshalInputCreateOperationLogInput,
 		ec.unmarshalInputCreatePermissionInput,
 		ec.unmarshalInputCreateRoleInput,
 		ec.unmarshalInputCreateUserInput,
-		ec.unmarshalInputMenuWhereInput,
 		ec.unmarshalInputOperationLogWhereInput,
 		ec.unmarshalInputPermissionWhereInput,
 		ec.unmarshalInputRoleWhereInput,
-		ec.unmarshalInputUpdateMenuInput,
 		ec.unmarshalInputUpdateOperationLogInput,
 		ec.unmarshalInputUpdatePermissionInput,
 		ec.unmarshalInputUpdateProfileInput,
@@ -1335,21 +1091,6 @@ func (ec *executionContext) dir_hasPermission_args(ctx context.Context, rawArgs 
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_createMenu_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 ent.CreateMenuInput
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNCreateMenuInput2githubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐCreateMenuInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg0
-	return args, nil
-}
-
 func (ec *executionContext) field_Mutation_createPermission_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1392,21 +1133,6 @@ func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, 
 		}
 	}
 	args["input"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_deleteMenu_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 int
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNID2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
 	return args, nil
 }
 
@@ -1494,30 +1220,6 @@ func (ec *executionContext) field_Mutation_resetPassword_args(ctx context.Contex
 		}
 	}
 	args["password"] = arg1
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_updateMenu_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 int
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNID2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	var arg1 ent.UpdateMenuInput
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg1, err = ec.unmarshalNUpdateMenuInput2githubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐUpdateMenuInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg1
 	return args, nil
 }
 
@@ -1662,57 +1364,6 @@ func (ec *executionContext) field_Query_login_args(ctx context.Context, rawArgs 
 		}
 	}
 	args["captchaValue"] = arg3
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_menus_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 *entgql.Cursor[int]
-	if tmp, ok := rawArgs["after"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
-		arg0, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["after"] = arg0
-	var arg1 *int
-	if tmp, ok := rawArgs["first"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
-		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["first"] = arg1
-	var arg2 *entgql.Cursor[int]
-	if tmp, ok := rawArgs["before"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
-		arg2, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["before"] = arg2
-	var arg3 *int
-	if tmp, ok := rawArgs["last"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
-		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["last"] = arg3
-	var arg4 *ent.MenuWhereInput
-	if tmp, ok := rawArgs["where"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
-		arg4, err = ec.unmarshalOMenuWhereInput2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenuWhereInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["where"] = arg4
 	return args, nil
 }
 
@@ -2166,875 +1817,12 @@ func (ec *executionContext) fieldContext_LoginReply_user(ctx context.Context, fi
 				return ec.fieldContext_User_isAdmin(ctx, field)
 			case "roles":
 				return ec.fieldContext_User_roles(ctx, field)
-			case "operationLogs":
-				return ec.fieldContext_User_operationLogs(ctx, field)
 			case "roleCount":
 				return ec.fieldContext_User_roleCount(ctx, field)
 			case "permissions":
 				return ec.fieldContext_User_permissions(ctx, field)
-			case "menus":
-				return ec.fieldContext_User_menus(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Menu_id(ctx context.Context, field graphql.CollectedField, obj *ent.Menu) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Menu_id(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNID2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Menu_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Menu",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Menu_createdAt(ctx context.Context, field graphql.CollectedField, obj *ent.Menu) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Menu_createdAt(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.CreatedAt, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(time.Time)
-	fc.Result = res
-	return ec.marshalOTime2timeᚐTime(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Menu_createdAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Menu",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Time does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Menu_updatedAt(ctx context.Context, field graphql.CollectedField, obj *ent.Menu) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Menu_updatedAt(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.UpdatedAt, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(time.Time)
-	fc.Result = res
-	return ec.marshalOTime2timeᚐTime(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Menu_updatedAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Menu",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Time does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Menu_parentID(ctx context.Context, field graphql.CollectedField, obj *ent.Menu) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Menu_parentID(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ParentID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*int)
-	fc.Result = res
-	return ec.marshalOID2ᚖint(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Menu_parentID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Menu",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Menu_icon(ctx context.Context, field graphql.CollectedField, obj *ent.Menu) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Menu_icon(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Icon, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Menu_icon(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Menu",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Menu_name(ctx context.Context, field graphql.CollectedField, obj *ent.Menu) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Menu_name(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Name, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Menu_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Menu",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Menu_path(ctx context.Context, field graphql.CollectedField, obj *ent.Menu) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Menu_path(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Path, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Menu_path(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Menu",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Menu_sort(ctx context.Context, field graphql.CollectedField, obj *ent.Menu) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Menu_sort(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Sort, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Menu_sort(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Menu",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Menu_roles(ctx context.Context, field graphql.CollectedField, obj *ent.Menu) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Menu_roles(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Roles(ctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*ent.Role)
-	fc.Result = res
-	return ec.marshalORole2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐRoleᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Menu_roles(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Menu",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Role_id(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Role_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Role_updatedAt(ctx, field)
-			case "name":
-				return ec.fieldContext_Role_name(ctx, field)
-			case "sort":
-				return ec.fieldContext_Role_sort(ctx, field)
-			case "menus":
-				return ec.fieldContext_Role_menus(ctx, field)
-			case "permissions":
-				return ec.fieldContext_Role_permissions(ctx, field)
-			case "users":
-				return ec.fieldContext_Role_users(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Role", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Menu_parent(ctx context.Context, field graphql.CollectedField, obj *ent.Menu) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Menu_parent(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Parent(ctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*ent.Menu)
-	fc.Result = res
-	return ec.marshalOMenu2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenu(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Menu_parent(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Menu",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Menu_id(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Menu_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Menu_updatedAt(ctx, field)
-			case "parentID":
-				return ec.fieldContext_Menu_parentID(ctx, field)
-			case "icon":
-				return ec.fieldContext_Menu_icon(ctx, field)
-			case "name":
-				return ec.fieldContext_Menu_name(ctx, field)
-			case "path":
-				return ec.fieldContext_Menu_path(ctx, field)
-			case "sort":
-				return ec.fieldContext_Menu_sort(ctx, field)
-			case "roles":
-				return ec.fieldContext_Menu_roles(ctx, field)
-			case "parent":
-				return ec.fieldContext_Menu_parent(ctx, field)
-			case "children":
-				return ec.fieldContext_Menu_children(ctx, field)
-			case "permissions":
-				return ec.fieldContext_Menu_permissions(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Menu", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Menu_children(ctx context.Context, field graphql.CollectedField, obj *ent.Menu) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Menu_children(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Children(ctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*ent.Menu)
-	fc.Result = res
-	return ec.marshalOMenu2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenuᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Menu_children(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Menu",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Menu_id(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Menu_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Menu_updatedAt(ctx, field)
-			case "parentID":
-				return ec.fieldContext_Menu_parentID(ctx, field)
-			case "icon":
-				return ec.fieldContext_Menu_icon(ctx, field)
-			case "name":
-				return ec.fieldContext_Menu_name(ctx, field)
-			case "path":
-				return ec.fieldContext_Menu_path(ctx, field)
-			case "sort":
-				return ec.fieldContext_Menu_sort(ctx, field)
-			case "roles":
-				return ec.fieldContext_Menu_roles(ctx, field)
-			case "parent":
-				return ec.fieldContext_Menu_parent(ctx, field)
-			case "children":
-				return ec.fieldContext_Menu_children(ctx, field)
-			case "permissions":
-				return ec.fieldContext_Menu_permissions(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Menu", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Menu_permissions(ctx context.Context, field graphql.CollectedField, obj *ent.Menu) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Menu_permissions(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Permissions(ctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*ent.Permission)
-	fc.Result = res
-	return ec.marshalOPermission2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐPermissionᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Menu_permissions(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Menu",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Permission_id(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Permission_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Permission_updatedAt(ctx, field)
-			case "parentID":
-				return ec.fieldContext_Permission_parentID(ctx, field)
-			case "key":
-				return ec.fieldContext_Permission_key(ctx, field)
-			case "name":
-				return ec.fieldContext_Permission_name(ctx, field)
-			case "desc":
-				return ec.fieldContext_Permission_desc(ctx, field)
-			case "sort":
-				return ec.fieldContext_Permission_sort(ctx, field)
-			case "roles":
-				return ec.fieldContext_Permission_roles(ctx, field)
-			case "menus":
-				return ec.fieldContext_Permission_menus(ctx, field)
-			case "parent":
-				return ec.fieldContext_Permission_parent(ctx, field)
-			case "children":
-				return ec.fieldContext_Permission_children(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Permission", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _MenuConnection_edges(ctx context.Context, field graphql.CollectedField, obj *ent.MenuConnection) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_MenuConnection_edges(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Edges, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*ent.MenuEdge)
-	fc.Result = res
-	return ec.marshalOMenuEdge2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenuEdge(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_MenuConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "MenuConnection",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "node":
-				return ec.fieldContext_MenuEdge_node(ctx, field)
-			case "cursor":
-				return ec.fieldContext_MenuEdge_cursor(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type MenuEdge", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _MenuConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *ent.MenuConnection) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_MenuConnection_pageInfo(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.PageInfo, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(entgql.PageInfo[int])
-	fc.Result = res
-	return ec.marshalNPageInfo2entgoᚗioᚋcontribᚋentgqlᚐPageInfo(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_MenuConnection_pageInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "MenuConnection",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "hasNextPage":
-				return ec.fieldContext_PageInfo_hasNextPage(ctx, field)
-			case "hasPreviousPage":
-				return ec.fieldContext_PageInfo_hasPreviousPage(ctx, field)
-			case "startCursor":
-				return ec.fieldContext_PageInfo_startCursor(ctx, field)
-			case "endCursor":
-				return ec.fieldContext_PageInfo_endCursor(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type PageInfo", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _MenuConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.MenuConnection) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_MenuConnection_totalCount(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.TotalCount, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_MenuConnection_totalCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "MenuConnection",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _MenuEdge_node(ctx context.Context, field graphql.CollectedField, obj *ent.MenuEdge) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_MenuEdge_node(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Node, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*ent.Menu)
-	fc.Result = res
-	return ec.marshalOMenu2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenu(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_MenuEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "MenuEdge",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Menu_id(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Menu_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Menu_updatedAt(ctx, field)
-			case "parentID":
-				return ec.fieldContext_Menu_parentID(ctx, field)
-			case "icon":
-				return ec.fieldContext_Menu_icon(ctx, field)
-			case "name":
-				return ec.fieldContext_Menu_name(ctx, field)
-			case "path":
-				return ec.fieldContext_Menu_path(ctx, field)
-			case "sort":
-				return ec.fieldContext_Menu_sort(ctx, field)
-			case "roles":
-				return ec.fieldContext_Menu_roles(ctx, field)
-			case "parent":
-				return ec.fieldContext_Menu_parent(ctx, field)
-			case "children":
-				return ec.fieldContext_Menu_children(ctx, field)
-			case "permissions":
-				return ec.fieldContext_Menu_permissions(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Menu", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _MenuEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *ent.MenuEdge) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_MenuEdge_cursor(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Cursor, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(entgql.Cursor[int])
-	fc.Result = res
-	return ec.marshalNCursor2entgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_MenuEdge_cursor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "MenuEdge",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Cursor does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3247,14 +2035,10 @@ func (ec *executionContext) fieldContext_Mutation_updateProfile(ctx context.Cont
 				return ec.fieldContext_User_isAdmin(ctx, field)
 			case "roles":
 				return ec.fieldContext_User_roles(ctx, field)
-			case "operationLogs":
-				return ec.fieldContext_User_operationLogs(ctx, field)
 			case "roleCount":
 				return ec.fieldContext_User_roleCount(ctx, field)
 			case "permissions":
 				return ec.fieldContext_User_permissions(ctx, field)
-			case "menus":
-				return ec.fieldContext_User_menus(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -3354,14 +2138,10 @@ func (ec *executionContext) fieldContext_Mutation_createUser(ctx context.Context
 				return ec.fieldContext_User_isAdmin(ctx, field)
 			case "roles":
 				return ec.fieldContext_User_roles(ctx, field)
-			case "operationLogs":
-				return ec.fieldContext_User_operationLogs(ctx, field)
 			case "roleCount":
 				return ec.fieldContext_User_roleCount(ctx, field)
 			case "permissions":
 				return ec.fieldContext_User_permissions(ctx, field)
-			case "menus":
-				return ec.fieldContext_User_menus(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -3461,14 +2241,10 @@ func (ec *executionContext) fieldContext_Mutation_updateUser(ctx context.Context
 				return ec.fieldContext_User_isAdmin(ctx, field)
 			case "roles":
 				return ec.fieldContext_User_roles(ctx, field)
-			case "operationLogs":
-				return ec.fieldContext_User_operationLogs(ctx, field)
 			case "roleCount":
 				return ec.fieldContext_User_roleCount(ctx, field)
 			case "permissions":
 				return ec.fieldContext_User_permissions(ctx, field)
-			case "menus":
-				return ec.fieldContext_User_menus(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -3560,12 +2336,8 @@ func (ec *executionContext) fieldContext_Mutation_createRole(ctx context.Context
 				return ec.fieldContext_Role_name(ctx, field)
 			case "sort":
 				return ec.fieldContext_Role_sort(ctx, field)
-			case "menus":
-				return ec.fieldContext_Role_menus(ctx, field)
 			case "permissions":
 				return ec.fieldContext_Role_permissions(ctx, field)
-			case "users":
-				return ec.fieldContext_Role_users(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Role", field.Name)
 		},
@@ -3657,12 +2429,8 @@ func (ec *executionContext) fieldContext_Mutation_updateRole(ctx context.Context
 				return ec.fieldContext_Role_name(ctx, field)
 			case "sort":
 				return ec.fieldContext_Role_sort(ctx, field)
-			case "menus":
-				return ec.fieldContext_Role_menus(ctx, field)
 			case "permissions":
 				return ec.fieldContext_Role_permissions(ctx, field)
-			case "users":
-				return ec.fieldContext_Role_users(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Role", field.Name)
 		},
@@ -3760,295 +2528,6 @@ func (ec *executionContext) fieldContext_Mutation_deleteRole(ctx context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_createMenu(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_createMenu(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		directive0 := func(rctx context.Context) (interface{}, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().CreateMenu(rctx, fc.Args["input"].(ent.CreateMenuInput))
-		}
-		directive1 := func(ctx context.Context) (interface{}, error) {
-			key, err := ec.unmarshalNString2string(ctx, "create_menu")
-			if err != nil {
-				return nil, err
-			}
-			if ec.directives.HasPermission == nil {
-				return nil, errors.New("directive hasPermission is not implemented")
-			}
-			return ec.directives.HasPermission(ctx, nil, directive0, key)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(*ent.Menu); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/eiixy/monorepo/internal/data/admin/ent.Menu`, tmp)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*ent.Menu)
-	fc.Result = res
-	return ec.marshalNMenu2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenu(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_createMenu(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Menu_id(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Menu_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Menu_updatedAt(ctx, field)
-			case "parentID":
-				return ec.fieldContext_Menu_parentID(ctx, field)
-			case "icon":
-				return ec.fieldContext_Menu_icon(ctx, field)
-			case "name":
-				return ec.fieldContext_Menu_name(ctx, field)
-			case "path":
-				return ec.fieldContext_Menu_path(ctx, field)
-			case "sort":
-				return ec.fieldContext_Menu_sort(ctx, field)
-			case "roles":
-				return ec.fieldContext_Menu_roles(ctx, field)
-			case "parent":
-				return ec.fieldContext_Menu_parent(ctx, field)
-			case "children":
-				return ec.fieldContext_Menu_children(ctx, field)
-			case "permissions":
-				return ec.fieldContext_Menu_permissions(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Menu", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_createMenu_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_updateMenu(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_updateMenu(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		directive0 := func(rctx context.Context) (interface{}, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().UpdateMenu(rctx, fc.Args["id"].(int), fc.Args["input"].(ent.UpdateMenuInput))
-		}
-		directive1 := func(ctx context.Context) (interface{}, error) {
-			key, err := ec.unmarshalNString2string(ctx, "update_menu")
-			if err != nil {
-				return nil, err
-			}
-			if ec.directives.HasPermission == nil {
-				return nil, errors.New("directive hasPermission is not implemented")
-			}
-			return ec.directives.HasPermission(ctx, nil, directive0, key)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(*ent.Menu); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/eiixy/monorepo/internal/data/admin/ent.Menu`, tmp)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*ent.Menu)
-	fc.Result = res
-	return ec.marshalNMenu2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenu(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_updateMenu(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Menu_id(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Menu_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Menu_updatedAt(ctx, field)
-			case "parentID":
-				return ec.fieldContext_Menu_parentID(ctx, field)
-			case "icon":
-				return ec.fieldContext_Menu_icon(ctx, field)
-			case "name":
-				return ec.fieldContext_Menu_name(ctx, field)
-			case "path":
-				return ec.fieldContext_Menu_path(ctx, field)
-			case "sort":
-				return ec.fieldContext_Menu_sort(ctx, field)
-			case "roles":
-				return ec.fieldContext_Menu_roles(ctx, field)
-			case "parent":
-				return ec.fieldContext_Menu_parent(ctx, field)
-			case "children":
-				return ec.fieldContext_Menu_children(ctx, field)
-			case "permissions":
-				return ec.fieldContext_Menu_permissions(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Menu", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_updateMenu_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_deleteMenu(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_deleteMenu(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		directive0 := func(rctx context.Context) (interface{}, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().DeleteMenu(rctx, fc.Args["id"].(int))
-		}
-		directive1 := func(ctx context.Context) (interface{}, error) {
-			key, err := ec.unmarshalNString2string(ctx, "delete_menu")
-			if err != nil {
-				return nil, err
-			}
-			if ec.directives.HasPermission == nil {
-				return nil, errors.New("directive hasPermission is not implemented")
-			}
-			return ec.directives.HasPermission(ctx, nil, directive0, key)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(bool); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(bool)
-	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_deleteMenu(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_deleteMenu_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Mutation_createPermission(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createPermission(ctx, field)
 	if err != nil {
@@ -4120,22 +2599,20 @@ func (ec *executionContext) fieldContext_Mutation_createPermission(ctx context.C
 				return ec.fieldContext_Permission_updatedAt(ctx, field)
 			case "parentID":
 				return ec.fieldContext_Permission_parentID(ctx, field)
-			case "key":
-				return ec.fieldContext_Permission_key(ctx, field)
 			case "name":
 				return ec.fieldContext_Permission_name(ctx, field)
+			case "key":
+				return ec.fieldContext_Permission_key(ctx, field)
+			case "type":
+				return ec.fieldContext_Permission_type(ctx, field)
+			case "path":
+				return ec.fieldContext_Permission_path(ctx, field)
 			case "desc":
 				return ec.fieldContext_Permission_desc(ctx, field)
 			case "sort":
 				return ec.fieldContext_Permission_sort(ctx, field)
-			case "roles":
-				return ec.fieldContext_Permission_roles(ctx, field)
-			case "menus":
-				return ec.fieldContext_Permission_menus(ctx, field)
-			case "parent":
-				return ec.fieldContext_Permission_parent(ctx, field)
-			case "children":
-				return ec.fieldContext_Permission_children(ctx, field)
+			case "attrs":
+				return ec.fieldContext_Permission_attrs(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Permission", field.Name)
 		},
@@ -4225,22 +2702,20 @@ func (ec *executionContext) fieldContext_Mutation_updatePermission(ctx context.C
 				return ec.fieldContext_Permission_updatedAt(ctx, field)
 			case "parentID":
 				return ec.fieldContext_Permission_parentID(ctx, field)
-			case "key":
-				return ec.fieldContext_Permission_key(ctx, field)
 			case "name":
 				return ec.fieldContext_Permission_name(ctx, field)
+			case "key":
+				return ec.fieldContext_Permission_key(ctx, field)
+			case "type":
+				return ec.fieldContext_Permission_type(ctx, field)
+			case "path":
+				return ec.fieldContext_Permission_path(ctx, field)
 			case "desc":
 				return ec.fieldContext_Permission_desc(ctx, field)
 			case "sort":
 				return ec.fieldContext_Permission_sort(ctx, field)
-			case "roles":
-				return ec.fieldContext_Permission_roles(ctx, field)
-			case "menus":
-				return ec.fieldContext_Permission_menus(ctx, field)
-			case "parent":
-				return ec.fieldContext_Permission_parent(ctx, field)
-			case "children":
-				return ec.fieldContext_Permission_children(ctx, field)
+			case "attrs":
+				return ec.fieldContext_Permission_attrs(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Permission", field.Name)
 		},
@@ -4653,14 +3128,10 @@ func (ec *executionContext) fieldContext_OperationLog_user(ctx context.Context, 
 				return ec.fieldContext_User_isAdmin(ctx, field)
 			case "roles":
 				return ec.fieldContext_User_roles(ctx, field)
-			case "operationLogs":
-				return ec.fieldContext_User_operationLogs(ctx, field)
 			case "roleCount":
 				return ec.fieldContext_User_roleCount(ctx, field)
 			case "permissions":
 				return ec.fieldContext_User_permissions(ctx, field)
-			case "menus":
-				return ec.fieldContext_User_menus(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -5233,9 +3704,9 @@ func (ec *executionContext) _Permission_parentID(ctx context.Context, field grap
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*int)
+	res := resTmp.(*int64)
 	fc.Result = res
-	return ec.marshalOID2ᚖint(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Permission_parentID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5245,51 +3716,7 @@ func (ec *executionContext) fieldContext_Permission_parentID(ctx context.Context
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Permission_key(ctx context.Context, field graphql.CollectedField, obj *ent.Permission) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Permission_key(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Key, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Permission_key(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Permission",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5327,6 +3754,132 @@ func (ec *executionContext) _Permission_name(ctx context.Context, field graphql.
 }
 
 func (ec *executionContext) fieldContext_Permission_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Permission",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Permission_key(ctx context.Context, field graphql.CollectedField, obj *ent.Permission) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Permission_key(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Key, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Permission_key(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Permission",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Permission_type(ctx context.Context, field graphql.CollectedField, obj *ent.Permission) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Permission_type(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Type, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(permission.Type)
+	fc.Result = res
+	return ec.marshalNPermissionType2githubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚋpermissionᚐType(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Permission_type(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Permission",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type PermissionType does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Permission_path(ctx context.Context, field graphql.CollectedField, obj *ent.Permission) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Permission_path(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Path, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Permission_path(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Permission",
 		Field:      field,
@@ -5424,8 +3977,8 @@ func (ec *executionContext) fieldContext_Permission_sort(ctx context.Context, fi
 	return fc, nil
 }
 
-func (ec *executionContext) _Permission_roles(ctx context.Context, field graphql.CollectedField, obj *ent.Permission) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Permission_roles(ctx, field)
+func (ec *executionContext) _Permission_attrs(ctx context.Context, field graphql.CollectedField, obj *ent.Permission) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Permission_attrs(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -5438,7 +3991,7 @@ func (ec *executionContext) _Permission_roles(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Roles(ctx)
+		return obj.Attrs, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5447,238 +4000,19 @@ func (ec *executionContext) _Permission_roles(ctx context.Context, field graphql
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*ent.Role)
+	res := resTmp.(map[string]interface{})
 	fc.Result = res
-	return ec.marshalORole2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐRoleᚄ(ctx, field.Selections, res)
+	return ec.marshalOMap2map(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Permission_roles(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Permission_attrs(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Permission",
 		Field:      field,
-		IsMethod:   true,
+		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Role_id(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Role_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Role_updatedAt(ctx, field)
-			case "name":
-				return ec.fieldContext_Role_name(ctx, field)
-			case "sort":
-				return ec.fieldContext_Role_sort(ctx, field)
-			case "menus":
-				return ec.fieldContext_Role_menus(ctx, field)
-			case "permissions":
-				return ec.fieldContext_Role_permissions(ctx, field)
-			case "users":
-				return ec.fieldContext_Role_users(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Role", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Permission_menus(ctx context.Context, field graphql.CollectedField, obj *ent.Permission) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Permission_menus(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Menus(ctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*ent.Menu)
-	fc.Result = res
-	return ec.marshalOMenu2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenuᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Permission_menus(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Permission",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Menu_id(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Menu_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Menu_updatedAt(ctx, field)
-			case "parentID":
-				return ec.fieldContext_Menu_parentID(ctx, field)
-			case "icon":
-				return ec.fieldContext_Menu_icon(ctx, field)
-			case "name":
-				return ec.fieldContext_Menu_name(ctx, field)
-			case "path":
-				return ec.fieldContext_Menu_path(ctx, field)
-			case "sort":
-				return ec.fieldContext_Menu_sort(ctx, field)
-			case "roles":
-				return ec.fieldContext_Menu_roles(ctx, field)
-			case "parent":
-				return ec.fieldContext_Menu_parent(ctx, field)
-			case "children":
-				return ec.fieldContext_Menu_children(ctx, field)
-			case "permissions":
-				return ec.fieldContext_Menu_permissions(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Menu", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Permission_parent(ctx context.Context, field graphql.CollectedField, obj *ent.Permission) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Permission_parent(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Parent(ctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*ent.Permission)
-	fc.Result = res
-	return ec.marshalOPermission2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐPermission(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Permission_parent(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Permission",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Permission_id(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Permission_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Permission_updatedAt(ctx, field)
-			case "parentID":
-				return ec.fieldContext_Permission_parentID(ctx, field)
-			case "key":
-				return ec.fieldContext_Permission_key(ctx, field)
-			case "name":
-				return ec.fieldContext_Permission_name(ctx, field)
-			case "desc":
-				return ec.fieldContext_Permission_desc(ctx, field)
-			case "sort":
-				return ec.fieldContext_Permission_sort(ctx, field)
-			case "roles":
-				return ec.fieldContext_Permission_roles(ctx, field)
-			case "menus":
-				return ec.fieldContext_Permission_menus(ctx, field)
-			case "parent":
-				return ec.fieldContext_Permission_parent(ctx, field)
-			case "children":
-				return ec.fieldContext_Permission_children(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Permission", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Permission_children(ctx context.Context, field graphql.CollectedField, obj *ent.Permission) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Permission_children(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Children(ctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*ent.Permission)
-	fc.Result = res
-	return ec.marshalOPermission2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐPermissionᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Permission_children(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Permission",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Permission_id(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Permission_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Permission_updatedAt(ctx, field)
-			case "parentID":
-				return ec.fieldContext_Permission_parentID(ctx, field)
-			case "key":
-				return ec.fieldContext_Permission_key(ctx, field)
-			case "name":
-				return ec.fieldContext_Permission_name(ctx, field)
-			case "desc":
-				return ec.fieldContext_Permission_desc(ctx, field)
-			case "sort":
-				return ec.fieldContext_Permission_sort(ctx, field)
-			case "roles":
-				return ec.fieldContext_Permission_roles(ctx, field)
-			case "menus":
-				return ec.fieldContext_Permission_menus(ctx, field)
-			case "parent":
-				return ec.fieldContext_Permission_parent(ctx, field)
-			case "children":
-				return ec.fieldContext_Permission_children(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Permission", field.Name)
+			return nil, errors.New("field of type Map does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5873,22 +4207,20 @@ func (ec *executionContext) fieldContext_PermissionEdge_node(ctx context.Context
 				return ec.fieldContext_Permission_updatedAt(ctx, field)
 			case "parentID":
 				return ec.fieldContext_Permission_parentID(ctx, field)
-			case "key":
-				return ec.fieldContext_Permission_key(ctx, field)
 			case "name":
 				return ec.fieldContext_Permission_name(ctx, field)
+			case "key":
+				return ec.fieldContext_Permission_key(ctx, field)
+			case "type":
+				return ec.fieldContext_Permission_type(ctx, field)
+			case "path":
+				return ec.fieldContext_Permission_path(ctx, field)
 			case "desc":
 				return ec.fieldContext_Permission_desc(ctx, field)
 			case "sort":
 				return ec.fieldContext_Permission_sort(ctx, field)
-			case "roles":
-				return ec.fieldContext_Permission_roles(ctx, field)
-			case "menus":
-				return ec.fieldContext_Permission_menus(ctx, field)
-			case "parent":
-				return ec.fieldContext_Permission_parent(ctx, field)
-			case "children":
-				return ec.fieldContext_Permission_children(ctx, field)
+			case "attrs":
+				return ec.fieldContext_Permission_attrs(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Permission", field.Name)
 		},
@@ -6041,69 +4373,6 @@ func (ec *executionContext) fieldContext_Query_nodes(ctx context.Context, field 
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_nodes_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_menus(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_menus(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Menus(rctx, fc.Args["after"].(*entgql.Cursor[int]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[int]), fc.Args["last"].(*int), fc.Args["where"].(*ent.MenuWhereInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*ent.MenuConnection)
-	fc.Result = res
-	return ec.marshalNMenuConnection2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenuConnection(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_menus(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "edges":
-				return ec.fieldContext_MenuConnection_edges(ctx, field)
-			case "pageInfo":
-				return ec.fieldContext_MenuConnection_pageInfo(ctx, field)
-			case "totalCount":
-				return ec.fieldContext_MenuConnection_totalCount(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type MenuConnection", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_menus_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -6502,14 +4771,10 @@ func (ec *executionContext) fieldContext_Query_profile(ctx context.Context, fiel
 				return ec.fieldContext_User_isAdmin(ctx, field)
 			case "roles":
 				return ec.fieldContext_User_roles(ctx, field)
-			case "operationLogs":
-				return ec.fieldContext_User_operationLogs(ctx, field)
 			case "roleCount":
 				return ec.fieldContext_User_roleCount(ctx, field)
 			case "permissions":
 				return ec.fieldContext_User_permissions(ctx, field)
-			case "menus":
-				return ec.fieldContext_User_menus(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -7037,73 +5302,6 @@ func (ec *executionContext) fieldContext_Role_sort(ctx context.Context, field gr
 	return fc, nil
 }
 
-func (ec *executionContext) _Role_menus(ctx context.Context, field graphql.CollectedField, obj *ent.Role) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Role_menus(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Menus(ctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*ent.Menu)
-	fc.Result = res
-	return ec.marshalOMenu2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenuᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Role_menus(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Role",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Menu_id(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Menu_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Menu_updatedAt(ctx, field)
-			case "parentID":
-				return ec.fieldContext_Menu_parentID(ctx, field)
-			case "icon":
-				return ec.fieldContext_Menu_icon(ctx, field)
-			case "name":
-				return ec.fieldContext_Menu_name(ctx, field)
-			case "path":
-				return ec.fieldContext_Menu_path(ctx, field)
-			case "sort":
-				return ec.fieldContext_Menu_sort(ctx, field)
-			case "roles":
-				return ec.fieldContext_Menu_roles(ctx, field)
-			case "parent":
-				return ec.fieldContext_Menu_parent(ctx, field)
-			case "children":
-				return ec.fieldContext_Menu_children(ctx, field)
-			case "permissions":
-				return ec.fieldContext_Menu_permissions(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Menu", field.Name)
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Role_permissions(ctx context.Context, field graphql.CollectedField, obj *ent.Role) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Role_permissions(ctx, field)
 	if err != nil {
@@ -7148,93 +5346,22 @@ func (ec *executionContext) fieldContext_Role_permissions(ctx context.Context, f
 				return ec.fieldContext_Permission_updatedAt(ctx, field)
 			case "parentID":
 				return ec.fieldContext_Permission_parentID(ctx, field)
-			case "key":
-				return ec.fieldContext_Permission_key(ctx, field)
 			case "name":
 				return ec.fieldContext_Permission_name(ctx, field)
+			case "key":
+				return ec.fieldContext_Permission_key(ctx, field)
+			case "type":
+				return ec.fieldContext_Permission_type(ctx, field)
+			case "path":
+				return ec.fieldContext_Permission_path(ctx, field)
 			case "desc":
 				return ec.fieldContext_Permission_desc(ctx, field)
 			case "sort":
 				return ec.fieldContext_Permission_sort(ctx, field)
-			case "roles":
-				return ec.fieldContext_Permission_roles(ctx, field)
-			case "menus":
-				return ec.fieldContext_Permission_menus(ctx, field)
-			case "parent":
-				return ec.fieldContext_Permission_parent(ctx, field)
-			case "children":
-				return ec.fieldContext_Permission_children(ctx, field)
+			case "attrs":
+				return ec.fieldContext_Permission_attrs(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Permission", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Role_users(ctx context.Context, field graphql.CollectedField, obj *ent.Role) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Role_users(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Users(ctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*ent.User)
-	fc.Result = res
-	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐUserᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Role_users(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Role",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_User_id(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_User_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_User_updatedAt(ctx, field)
-			case "email":
-				return ec.fieldContext_User_email(ctx, field)
-			case "nickname":
-				return ec.fieldContext_User_nickname(ctx, field)
-			case "avatar":
-				return ec.fieldContext_User_avatar(ctx, field)
-			case "status":
-				return ec.fieldContext_User_status(ctx, field)
-			case "isAdmin":
-				return ec.fieldContext_User_isAdmin(ctx, field)
-			case "roles":
-				return ec.fieldContext_User_roles(ctx, field)
-			case "operationLogs":
-				return ec.fieldContext_User_operationLogs(ctx, field)
-			case "roleCount":
-				return ec.fieldContext_User_roleCount(ctx, field)
-			case "permissions":
-				return ec.fieldContext_User_permissions(ctx, field)
-			case "menus":
-				return ec.fieldContext_User_menus(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
 	}
 	return fc, nil
@@ -7431,12 +5558,8 @@ func (ec *executionContext) fieldContext_RoleEdge_node(ctx context.Context, fiel
 				return ec.fieldContext_Role_name(ctx, field)
 			case "sort":
 				return ec.fieldContext_Role_sort(ctx, field)
-			case "menus":
-				return ec.fieldContext_Role_menus(ctx, field)
 			case "permissions":
 				return ec.fieldContext_Role_permissions(ctx, field)
-			case "users":
-				return ec.fieldContext_Role_users(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Role", field.Name)
 		},
@@ -7877,71 +6000,10 @@ func (ec *executionContext) fieldContext_User_roles(ctx context.Context, field g
 				return ec.fieldContext_Role_name(ctx, field)
 			case "sort":
 				return ec.fieldContext_Role_sort(ctx, field)
-			case "menus":
-				return ec.fieldContext_Role_menus(ctx, field)
 			case "permissions":
 				return ec.fieldContext_Role_permissions(ctx, field)
-			case "users":
-				return ec.fieldContext_Role_users(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Role", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _User_operationLogs(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_User_operationLogs(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.OperationLogs(ctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*ent.OperationLog)
-	fc.Result = res
-	return ec.marshalOOperationLog2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐOperationLogᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_User_operationLogs(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "User",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_OperationLog_id(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_OperationLog_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_OperationLog_updatedAt(ctx, field)
-			case "userID":
-				return ec.fieldContext_OperationLog_userID(ctx, field)
-			case "type":
-				return ec.fieldContext_OperationLog_type(ctx, field)
-			case "context":
-				return ec.fieldContext_OperationLog_context(ctx, field)
-			case "user":
-				return ec.fieldContext_OperationLog_user(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type OperationLog", field.Name)
 		},
 	}
 	return fc, nil
@@ -8035,91 +6097,22 @@ func (ec *executionContext) fieldContext_User_permissions(ctx context.Context, f
 				return ec.fieldContext_Permission_updatedAt(ctx, field)
 			case "parentID":
 				return ec.fieldContext_Permission_parentID(ctx, field)
-			case "key":
-				return ec.fieldContext_Permission_key(ctx, field)
 			case "name":
 				return ec.fieldContext_Permission_name(ctx, field)
+			case "key":
+				return ec.fieldContext_Permission_key(ctx, field)
+			case "type":
+				return ec.fieldContext_Permission_type(ctx, field)
+			case "path":
+				return ec.fieldContext_Permission_path(ctx, field)
 			case "desc":
 				return ec.fieldContext_Permission_desc(ctx, field)
 			case "sort":
 				return ec.fieldContext_Permission_sort(ctx, field)
-			case "roles":
-				return ec.fieldContext_Permission_roles(ctx, field)
-			case "menus":
-				return ec.fieldContext_Permission_menus(ctx, field)
-			case "parent":
-				return ec.fieldContext_Permission_parent(ctx, field)
-			case "children":
-				return ec.fieldContext_Permission_children(ctx, field)
+			case "attrs":
+				return ec.fieldContext_Permission_attrs(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Permission", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _User_menus(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_User_menus(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.User().Menus(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*ent.Menu)
-	fc.Result = res
-	return ec.marshalOMenu2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenuᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_User_menus(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "User",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Menu_id(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Menu_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Menu_updatedAt(ctx, field)
-			case "parentID":
-				return ec.fieldContext_Menu_parentID(ctx, field)
-			case "icon":
-				return ec.fieldContext_Menu_icon(ctx, field)
-			case "name":
-				return ec.fieldContext_Menu_name(ctx, field)
-			case "path":
-				return ec.fieldContext_Menu_path(ctx, field)
-			case "sort":
-				return ec.fieldContext_Menu_sort(ctx, field)
-			case "roles":
-				return ec.fieldContext_Menu_roles(ctx, field)
-			case "parent":
-				return ec.fieldContext_Menu_parent(ctx, field)
-			case "children":
-				return ec.fieldContext_Menu_children(ctx, field)
-			case "permissions":
-				return ec.fieldContext_Menu_permissions(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Menu", field.Name)
 		},
 	}
 	return fc, nil
@@ -8324,14 +6317,10 @@ func (ec *executionContext) fieldContext_UserEdge_node(ctx context.Context, fiel
 				return ec.fieldContext_User_isAdmin(ctx, field)
 			case "roles":
 				return ec.fieldContext_User_roles(ctx, field)
-			case "operationLogs":
-				return ec.fieldContext_User_operationLogs(ctx, field)
 			case "roleCount":
 				return ec.fieldContext_User_roleCount(ctx, field)
 			case "permissions":
 				return ec.fieldContext_User_permissions(ctx, field)
-			case "menus":
-				return ec.fieldContext_User_menus(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -10244,98 +8233,6 @@ func (ec *executionContext) fieldContext_captchaReply_captcha(ctx context.Contex
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputCreateMenuInput(ctx context.Context, obj interface{}) (ent.CreateMenuInput, error) {
-	var it ent.CreateMenuInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"icon", "name", "path", "sort", "roleIDs", "parentID", "childIDs", "permissionIDs"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "icon":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("icon"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Icon = data
-		case "name":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Name = data
-		case "path":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("path"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Path = data
-		case "sort":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sort"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Sort = data
-		case "roleIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("roleIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.RoleIDs = data
-		case "parentID":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentID"))
-			data, err := ec.unmarshalOID2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ParentID = data
-		case "childIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("childIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ChildIDs = data
-		case "permissionIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("permissionIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PermissionIDs = data
-		}
-	}
-
-	return it, nil
-}
-
 func (ec *executionContext) unmarshalInputCreateOperationLogInput(ctx context.Context, obj interface{}) (ent.CreateOperationLogInput, error) {
 	var it ent.CreateOperationLogInput
 	asMap := map[string]interface{}{}
@@ -10390,22 +8287,22 @@ func (ec *executionContext) unmarshalInputCreatePermissionInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"key", "name", "desc", "sort", "roleIDs", "menuIDs", "parentID", "childIDs"}
+	fieldsInOrder := [...]string{"parentID", "name", "key", "type", "path", "desc", "sort", "attrs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "key":
+		case "parentID":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("key"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentID"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Key = data
+			it.ParentID = data
 		case "name":
 			var err error
 
@@ -10415,6 +8312,33 @@ func (ec *executionContext) unmarshalInputCreatePermissionInput(ctx context.Cont
 				return it, err
 			}
 			it.Name = data
+		case "key":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("key"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Key = data
+		case "type":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			data, err := ec.unmarshalNPermissionType2githubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚋpermissionᚐType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Type = data
+		case "path":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("path"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Path = data
 		case "desc":
 			var err error
 
@@ -10433,42 +8357,15 @@ func (ec *executionContext) unmarshalInputCreatePermissionInput(ctx context.Cont
 				return it, err
 			}
 			it.Sort = data
-		case "roleIDs":
+		case "attrs":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("roleIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("attrs"))
+			data, err := ec.unmarshalOMap2map(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.RoleIDs = data
-		case "menuIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("menuIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.MenuIDs = data
-		case "parentID":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentID"))
-			data, err := ec.unmarshalOID2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ParentID = data
-		case "childIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("childIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ChildIDs = data
+			it.Attrs = data
 		}
 	}
 
@@ -10482,7 +8379,7 @@ func (ec *executionContext) unmarshalInputCreateRoleInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "sort", "menuIDs", "permissionIDs", "userIDs"}
+	fieldsInOrder := [...]string{"name", "sort", "permissionIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -10507,15 +8404,6 @@ func (ec *executionContext) unmarshalInputCreateRoleInput(ctx context.Context, o
 				return it, err
 			}
 			it.Sort = data
-		case "menuIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("menuIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.MenuIDs = data
 		case "permissionIDs":
 			var err error
 
@@ -10525,15 +8413,6 @@ func (ec *executionContext) unmarshalInputCreateRoleInput(ctx context.Context, o
 				return it, err
 			}
 			it.PermissionIDs = data
-		case "userIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UserIDs = data
 		}
 	}
 
@@ -10547,7 +8426,7 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"email", "nickname", "avatar", "password", "status", "isAdmin", "roleIDs", "operationLogIDs"}
+	fieldsInOrder := [...]string{"email", "nickname", "avatar", "password", "status", "isAdmin", "roleIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -10617,863 +8496,6 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 				return it, err
 			}
 			it.RoleIDs = data
-		case "operationLogIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("operationLogIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.OperationLogIDs = data
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputMenuWhereInput(ctx context.Context, obj interface{}) (ent.MenuWhereInput, error) {
-	var it ent.MenuWhereInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "createdAtIsNil", "createdAtNotNil", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "updatedAtIsNil", "updatedAtNotNil", "parentID", "parentIDNEQ", "parentIDIn", "parentIDNotIn", "parentIDIsNil", "parentIDNotNil", "icon", "iconNEQ", "iconIn", "iconNotIn", "iconGT", "iconGTE", "iconLT", "iconLTE", "iconContains", "iconHasPrefix", "iconHasSuffix", "iconEqualFold", "iconContainsFold", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "path", "pathNEQ", "pathIn", "pathNotIn", "pathGT", "pathGTE", "pathLT", "pathLTE", "pathContains", "pathHasPrefix", "pathHasSuffix", "pathEqualFold", "pathContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "hasRoles", "hasRolesWith", "hasParent", "hasParentWith", "hasChildren", "hasChildrenWith", "hasPermissions", "hasPermissionsWith"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "not":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
-			data, err := ec.unmarshalOMenuWhereInput2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenuWhereInput(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Not = data
-		case "and":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
-			data, err := ec.unmarshalOMenuWhereInput2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenuWhereInputᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.And = data
-		case "or":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
-			data, err := ec.unmarshalOMenuWhereInput2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenuWhereInputᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Or = data
-		case "id":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			data, err := ec.unmarshalOID2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ID = data
-		case "idNEQ":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNEQ"))
-			data, err := ec.unmarshalOID2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IDNEQ = data
-		case "idIn":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idIn"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IDIn = data
-		case "idNotIn":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNotIn"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IDNotIn = data
-		case "idGT":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGT"))
-			data, err := ec.unmarshalOID2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IDGT = data
-		case "idGTE":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGTE"))
-			data, err := ec.unmarshalOID2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IDGTE = data
-		case "idLT":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLT"))
-			data, err := ec.unmarshalOID2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IDLT = data
-		case "idLTE":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLTE"))
-			data, err := ec.unmarshalOID2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IDLTE = data
-		case "createdAt":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAt"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreatedAt = data
-		case "createdAtNEQ":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAtNEQ"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreatedAtNEQ = data
-		case "createdAtIn":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAtIn"))
-			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreatedAtIn = data
-		case "createdAtNotIn":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAtNotIn"))
-			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreatedAtNotIn = data
-		case "createdAtGT":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAtGT"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreatedAtGT = data
-		case "createdAtGTE":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAtGTE"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreatedAtGTE = data
-		case "createdAtLT":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAtLT"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreatedAtLT = data
-		case "createdAtLTE":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAtLTE"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreatedAtLTE = data
-		case "createdAtIsNil":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAtIsNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreatedAtIsNil = data
-		case "createdAtNotNil":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAtNotNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreatedAtNotNil = data
-		case "updatedAt":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAt"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdatedAt = data
-		case "updatedAtNEQ":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAtNEQ"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdatedAtNEQ = data
-		case "updatedAtIn":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAtIn"))
-			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdatedAtIn = data
-		case "updatedAtNotIn":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAtNotIn"))
-			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdatedAtNotIn = data
-		case "updatedAtGT":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAtGT"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdatedAtGT = data
-		case "updatedAtGTE":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAtGTE"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdatedAtGTE = data
-		case "updatedAtLT":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAtLT"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdatedAtLT = data
-		case "updatedAtLTE":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAtLTE"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdatedAtLTE = data
-		case "updatedAtIsNil":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAtIsNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdatedAtIsNil = data
-		case "updatedAtNotNil":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAtNotNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdatedAtNotNil = data
-		case "parentID":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentID"))
-			data, err := ec.unmarshalOID2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ParentID = data
-		case "parentIDNEQ":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentIDNEQ"))
-			data, err := ec.unmarshalOID2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ParentIDNEQ = data
-		case "parentIDIn":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentIDIn"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ParentIDIn = data
-		case "parentIDNotIn":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentIDNotIn"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ParentIDNotIn = data
-		case "parentIDIsNil":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentIDIsNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ParentIDIsNil = data
-		case "parentIDNotNil":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentIDNotNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ParentIDNotNil = data
-		case "icon":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("icon"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Icon = data
-		case "iconNEQ":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("iconNEQ"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IconNEQ = data
-		case "iconIn":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("iconIn"))
-			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IconIn = data
-		case "iconNotIn":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("iconNotIn"))
-			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IconNotIn = data
-		case "iconGT":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("iconGT"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IconGT = data
-		case "iconGTE":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("iconGTE"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IconGTE = data
-		case "iconLT":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("iconLT"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IconLT = data
-		case "iconLTE":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("iconLTE"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IconLTE = data
-		case "iconContains":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("iconContains"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IconContains = data
-		case "iconHasPrefix":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("iconHasPrefix"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IconHasPrefix = data
-		case "iconHasSuffix":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("iconHasSuffix"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IconHasSuffix = data
-		case "iconEqualFold":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("iconEqualFold"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IconEqualFold = data
-		case "iconContainsFold":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("iconContainsFold"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IconContainsFold = data
-		case "name":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Name = data
-		case "nameNEQ":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameNEQ"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NameNEQ = data
-		case "nameIn":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameIn"))
-			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NameIn = data
-		case "nameNotIn":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameNotIn"))
-			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NameNotIn = data
-		case "nameGT":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameGT"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NameGT = data
-		case "nameGTE":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameGTE"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NameGTE = data
-		case "nameLT":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameLT"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NameLT = data
-		case "nameLTE":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameLTE"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NameLTE = data
-		case "nameContains":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameContains"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NameContains = data
-		case "nameHasPrefix":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameHasPrefix"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NameHasPrefix = data
-		case "nameHasSuffix":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameHasSuffix"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NameHasSuffix = data
-		case "nameEqualFold":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameEqualFold"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NameEqualFold = data
-		case "nameContainsFold":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameContainsFold"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NameContainsFold = data
-		case "path":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("path"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Path = data
-		case "pathNEQ":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathNEQ"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PathNEQ = data
-		case "pathIn":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathIn"))
-			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PathIn = data
-		case "pathNotIn":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathNotIn"))
-			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PathNotIn = data
-		case "pathGT":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathGT"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PathGT = data
-		case "pathGTE":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathGTE"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PathGTE = data
-		case "pathLT":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathLT"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PathLT = data
-		case "pathLTE":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathLTE"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PathLTE = data
-		case "pathContains":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathContains"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PathContains = data
-		case "pathHasPrefix":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathHasPrefix"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PathHasPrefix = data
-		case "pathHasSuffix":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathHasSuffix"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PathHasSuffix = data
-		case "pathEqualFold":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathEqualFold"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PathEqualFold = data
-		case "pathContainsFold":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathContainsFold"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PathContainsFold = data
-		case "sort":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sort"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Sort = data
-		case "sortNEQ":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sortNEQ"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.SortNEQ = data
-		case "sortIn":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sortIn"))
-			data, err := ec.unmarshalOInt2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.SortIn = data
-		case "sortNotIn":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sortNotIn"))
-			data, err := ec.unmarshalOInt2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.SortNotIn = data
-		case "sortGT":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sortGT"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.SortGT = data
-		case "sortGTE":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sortGTE"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.SortGTE = data
-		case "sortLT":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sortLT"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.SortLT = data
-		case "sortLTE":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sortLTE"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.SortLTE = data
-		case "hasRoles":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasRoles"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasRoles = data
-		case "hasRolesWith":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasRolesWith"))
-			data, err := ec.unmarshalORoleWhereInput2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐRoleWhereInputᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasRolesWith = data
-		case "hasParent":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasParent"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasParent = data
-		case "hasParentWith":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasParentWith"))
-			data, err := ec.unmarshalOMenuWhereInput2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenuWhereInputᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasParentWith = data
-		case "hasChildren":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasChildren"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasChildren = data
-		case "hasChildrenWith":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasChildrenWith"))
-			data, err := ec.unmarshalOMenuWhereInput2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenuWhereInputᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasChildrenWith = data
-		case "hasPermissions":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasPermissions"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasPermissions = data
-		case "hasPermissionsWith":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasPermissionsWith"))
-			data, err := ec.unmarshalOPermissionWhereInput2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐPermissionWhereInputᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasPermissionsWith = data
 		}
 	}
 
@@ -11957,7 +8979,7 @@ func (ec *executionContext) unmarshalInputPermissionWhereInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "createdAtIsNil", "createdAtNotNil", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "updatedAtIsNil", "updatedAtNotNil", "parentID", "parentIDNEQ", "parentIDIn", "parentIDNotIn", "parentIDIsNil", "parentIDNotNil", "key", "keyNEQ", "keyIn", "keyNotIn", "keyGT", "keyGTE", "keyLT", "keyLTE", "keyContains", "keyHasPrefix", "keyHasSuffix", "keyEqualFold", "keyContainsFold", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "desc", "descNEQ", "descIn", "descNotIn", "descGT", "descGTE", "descLT", "descLTE", "descContains", "descHasPrefix", "descHasSuffix", "descIsNil", "descNotNil", "descEqualFold", "descContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "hasRoles", "hasRolesWith", "hasMenus", "hasMenusWith", "hasParent", "hasParentWith", "hasChildren", "hasChildrenWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "createdAtIsNil", "createdAtNotNil", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "updatedAtIsNil", "updatedAtNotNil", "parentID", "parentIDNEQ", "parentIDIn", "parentIDNotIn", "parentIDGT", "parentIDGTE", "parentIDLT", "parentIDLTE", "parentIDIsNil", "parentIDNotNil", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "key", "keyNEQ", "keyIn", "keyNotIn", "keyGT", "keyGTE", "keyLT", "keyLTE", "keyContains", "keyHasPrefix", "keyHasSuffix", "keyIsNil", "keyNotNil", "keyEqualFold", "keyContainsFold", "type", "typeNEQ", "typeIn", "typeNotIn", "path", "pathNEQ", "pathIn", "pathNotIn", "pathGT", "pathGTE", "pathLT", "pathLTE", "pathContains", "pathHasPrefix", "pathHasSuffix", "pathIsNil", "pathNotNil", "pathEqualFold", "pathContainsFold", "desc", "descNEQ", "descIn", "descNotIn", "descGT", "descGTE", "descLT", "descLTE", "descContains", "descHasPrefix", "descHasSuffix", "descIsNil", "descNotNil", "descEqualFold", "descContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -12247,7 +9269,7 @@ func (ec *executionContext) unmarshalInputPermissionWhereInput(ctx context.Conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentID"))
-			data, err := ec.unmarshalOID2ᚖint(ctx, v)
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12256,7 +9278,7 @@ func (ec *executionContext) unmarshalInputPermissionWhereInput(ctx context.Conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentIDNEQ"))
-			data, err := ec.unmarshalOID2ᚖint(ctx, v)
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12265,7 +9287,7 @@ func (ec *executionContext) unmarshalInputPermissionWhereInput(ctx context.Conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentIDIn"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			data, err := ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12274,11 +9296,47 @@ func (ec *executionContext) unmarshalInputPermissionWhereInput(ctx context.Conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentIDNotIn"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			data, err := ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.ParentIDNotIn = data
+		case "parentIDGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentIDGT"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ParentIDGT = data
+		case "parentIDGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentIDGTE"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ParentIDGTE = data
+		case "parentIDLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentIDLT"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ParentIDLT = data
+		case "parentIDLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentIDLTE"))
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ParentIDLTE = data
 		case "parentIDIsNil":
 			var err error
 
@@ -12297,123 +9355,6 @@ func (ec *executionContext) unmarshalInputPermissionWhereInput(ctx context.Conte
 				return it, err
 			}
 			it.ParentIDNotNil = data
-		case "key":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("key"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Key = data
-		case "keyNEQ":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyNEQ"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.KeyNEQ = data
-		case "keyIn":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyIn"))
-			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.KeyIn = data
-		case "keyNotIn":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyNotIn"))
-			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.KeyNotIn = data
-		case "keyGT":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyGT"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.KeyGT = data
-		case "keyGTE":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyGTE"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.KeyGTE = data
-		case "keyLT":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyLT"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.KeyLT = data
-		case "keyLTE":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyLTE"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.KeyLTE = data
-		case "keyContains":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyContains"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.KeyContains = data
-		case "keyHasPrefix":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyHasPrefix"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.KeyHasPrefix = data
-		case "keyHasSuffix":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyHasSuffix"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.KeyHasSuffix = data
-		case "keyEqualFold":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyEqualFold"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.KeyEqualFold = data
-		case "keyContainsFold":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyContainsFold"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.KeyContainsFold = data
 		case "name":
 			var err error
 
@@ -12531,6 +9472,312 @@ func (ec *executionContext) unmarshalInputPermissionWhereInput(ctx context.Conte
 				return it, err
 			}
 			it.NameContainsFold = data
+		case "key":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("key"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Key = data
+		case "keyNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.KeyNEQ = data
+		case "keyIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.KeyIn = data
+		case "keyNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.KeyNotIn = data
+		case "keyGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.KeyGT = data
+		case "keyGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.KeyGTE = data
+		case "keyLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.KeyLT = data
+		case "keyLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.KeyLTE = data
+		case "keyContains":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.KeyContains = data
+		case "keyHasPrefix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.KeyHasPrefix = data
+		case "keyHasSuffix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.KeyHasSuffix = data
+		case "keyIsNil":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.KeyIsNil = data
+		case "keyNotNil":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.KeyNotNil = data
+		case "keyEqualFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.KeyEqualFold = data
+		case "keyContainsFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keyContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.KeyContainsFold = data
+		case "type":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			data, err := ec.unmarshalOPermissionType2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚋpermissionᚐType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Type = data
+		case "typeNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeNEQ"))
+			data, err := ec.unmarshalOPermissionType2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚋpermissionᚐType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TypeNEQ = data
+		case "typeIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeIn"))
+			data, err := ec.unmarshalOPermissionType2ᚕgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚋpermissionᚐTypeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TypeIn = data
+		case "typeNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeNotIn"))
+			data, err := ec.unmarshalOPermissionType2ᚕgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚋpermissionᚐTypeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TypeNotIn = data
+		case "path":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("path"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Path = data
+		case "pathNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathNEQ = data
+		case "pathIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathIn = data
+		case "pathNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathNotIn = data
+		case "pathGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathGT = data
+		case "pathGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathGTE = data
+		case "pathLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathLT = data
+		case "pathLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathLTE = data
+		case "pathContains":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathContains = data
+		case "pathHasPrefix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathHasPrefix = data
+		case "pathHasSuffix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathHasSuffix = data
+		case "pathIsNil":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathIsNil = data
+		case "pathNotNil":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathNotNil = data
+		case "pathEqualFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathEqualFold = data
+		case "pathContainsFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pathContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PathContainsFold = data
 		case "desc":
 			var err error
 
@@ -12738,78 +9985,6 @@ func (ec *executionContext) unmarshalInputPermissionWhereInput(ctx context.Conte
 				return it, err
 			}
 			it.SortLTE = data
-		case "hasRoles":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasRoles"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasRoles = data
-		case "hasRolesWith":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasRolesWith"))
-			data, err := ec.unmarshalORoleWhereInput2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐRoleWhereInputᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasRolesWith = data
-		case "hasMenus":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasMenus"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasMenus = data
-		case "hasMenusWith":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasMenusWith"))
-			data, err := ec.unmarshalOMenuWhereInput2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenuWhereInputᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasMenusWith = data
-		case "hasParent":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasParent"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasParent = data
-		case "hasParentWith":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasParentWith"))
-			data, err := ec.unmarshalOPermissionWhereInput2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐPermissionWhereInputᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasParentWith = data
-		case "hasChildren":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasChildren"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasChildren = data
-		case "hasChildrenWith":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasChildrenWith"))
-			data, err := ec.unmarshalOPermissionWhereInput2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐPermissionWhereInputᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasChildrenWith = data
 		}
 	}
 
@@ -12823,7 +9998,7 @@ func (ec *executionContext) unmarshalInputRoleWhereInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "createdAtIsNil", "createdAtNotNil", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "updatedAtIsNil", "updatedAtNotNil", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "hasMenus", "hasMenusWith", "hasPermissions", "hasPermissionsWith", "hasUsers", "hasUsersWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "createdAtIsNil", "createdAtNotNil", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "updatedAtIsNil", "updatedAtNotNil", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "sort", "sortNEQ", "sortIn", "sortNotIn", "sortGT", "sortGTE", "sortLT", "sortLTE", "hasPermissions", "hasPermissionsWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -13298,24 +10473,6 @@ func (ec *executionContext) unmarshalInputRoleWhereInput(ctx context.Context, ob
 				return it, err
 			}
 			it.SortLTE = data
-		case "hasMenus":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasMenus"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasMenus = data
-		case "hasMenusWith":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasMenusWith"))
-			data, err := ec.unmarshalOMenuWhereInput2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenuWhereInputᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasMenusWith = data
 		case "hasPermissions":
 			var err error
 
@@ -13334,179 +10491,6 @@ func (ec *executionContext) unmarshalInputRoleWhereInput(ctx context.Context, ob
 				return it, err
 			}
 			it.HasPermissionsWith = data
-		case "hasUsers":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasUsers"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasUsers = data
-		case "hasUsersWith":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasUsersWith"))
-			data, err := ec.unmarshalOUserWhereInput2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐUserWhereInputᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasUsersWith = data
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputUpdateMenuInput(ctx context.Context, obj interface{}) (ent.UpdateMenuInput, error) {
-	var it ent.UpdateMenuInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"icon", "name", "path", "sort", "addRoleIDs", "removeRoleIDs", "clearRoles", "parentID", "clearParent", "addChildIDs", "removeChildIDs", "clearChildren", "addPermissionIDs", "removePermissionIDs", "clearPermissions"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "icon":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("icon"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Icon = data
-		case "name":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Name = data
-		case "path":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("path"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Path = data
-		case "sort":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sort"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Sort = data
-		case "addRoleIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addRoleIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.AddRoleIDs = data
-		case "removeRoleIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeRoleIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.RemoveRoleIDs = data
-		case "clearRoles":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearRoles"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ClearRoles = data
-		case "parentID":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentID"))
-			data, err := ec.unmarshalOID2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ParentID = data
-		case "clearParent":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearParent"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ClearParent = data
-		case "addChildIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addChildIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.AddChildIDs = data
-		case "removeChildIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeChildIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.RemoveChildIDs = data
-		case "clearChildren":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearChildren"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ClearChildren = data
-		case "addPermissionIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addPermissionIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.AddPermissionIDs = data
-		case "removePermissionIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removePermissionIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.RemovePermissionIDs = data
-		case "clearPermissions":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearPermissions"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ClearPermissions = data
 		}
 	}
 
@@ -13567,22 +10551,13 @@ func (ec *executionContext) unmarshalInputUpdatePermissionInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"key", "name", "desc", "clearDesc", "sort", "addRoleIDs", "removeRoleIDs", "clearRoles", "addMenuIDs", "removeMenuIDs", "clearMenus", "parentID", "clearParent", "addChildIDs", "removeChildIDs", "clearChildren"}
+	fieldsInOrder := [...]string{"name", "key", "clearKey", "type", "path", "clearPath", "desc", "clearDesc", "sort", "attrs", "clearAttrs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "key":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("key"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Key = data
 		case "name":
 			var err error
 
@@ -13592,6 +10567,51 @@ func (ec *executionContext) unmarshalInputUpdatePermissionInput(ctx context.Cont
 				return it, err
 			}
 			it.Name = data
+		case "key":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("key"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Key = data
+		case "clearKey":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearKey"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearKey = data
+		case "type":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			data, err := ec.unmarshalOPermissionType2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚋpermissionᚐType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Type = data
+		case "path":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("path"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Path = data
+		case "clearPath":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearPath"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearPath = data
 		case "desc":
 			var err error
 
@@ -13619,105 +10639,24 @@ func (ec *executionContext) unmarshalInputUpdatePermissionInput(ctx context.Cont
 				return it, err
 			}
 			it.Sort = data
-		case "addRoleIDs":
+		case "attrs":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addRoleIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("attrs"))
+			data, err := ec.unmarshalOMap2map(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.AddRoleIDs = data
-		case "removeRoleIDs":
+			it.Attrs = data
+		case "clearAttrs":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeRoleIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.RemoveRoleIDs = data
-		case "clearRoles":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearRoles"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearAttrs"))
 			data, err := ec.unmarshalOBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.ClearRoles = data
-		case "addMenuIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addMenuIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.AddMenuIDs = data
-		case "removeMenuIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeMenuIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.RemoveMenuIDs = data
-		case "clearMenus":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearMenus"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ClearMenus = data
-		case "parentID":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentID"))
-			data, err := ec.unmarshalOID2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ParentID = data
-		case "clearParent":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearParent"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ClearParent = data
-		case "addChildIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addChildIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.AddChildIDs = data
-		case "removeChildIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeChildIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.RemoveChildIDs = data
-		case "clearChildren":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearChildren"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ClearChildren = data
+			it.ClearAttrs = data
 		}
 	}
 
@@ -13778,7 +10717,7 @@ func (ec *executionContext) unmarshalInputUpdateRoleInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "sort", "addMenuIDs", "removeMenuIDs", "clearMenus", "addPermissionIDs", "removePermissionIDs", "clearPermissions", "addUserIDs", "removeUserIDs", "clearUsers"}
+	fieldsInOrder := [...]string{"name", "sort", "addPermissionIDs", "removePermissionIDs", "clearPermissions"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -13803,33 +10742,6 @@ func (ec *executionContext) unmarshalInputUpdateRoleInput(ctx context.Context, o
 				return it, err
 			}
 			it.Sort = data
-		case "addMenuIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addMenuIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.AddMenuIDs = data
-		case "removeMenuIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeMenuIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.RemoveMenuIDs = data
-		case "clearMenus":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearMenus"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ClearMenus = data
 		case "addPermissionIDs":
 			var err error
 
@@ -13857,33 +10769,6 @@ func (ec *executionContext) unmarshalInputUpdateRoleInput(ctx context.Context, o
 				return it, err
 			}
 			it.ClearPermissions = data
-		case "addUserIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addUserIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.AddUserIDs = data
-		case "removeUserIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeUserIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.RemoveUserIDs = data
-		case "clearUsers":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearUsers"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ClearUsers = data
 		}
 	}
 
@@ -13897,7 +10782,7 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"email", "nickname", "avatar", "clearAvatar", "password", "status", "isAdmin", "addRoleIDs", "removeRoleIDs", "clearRoles", "addOperationLogIDs", "removeOperationLogIDs", "clearOperationLogs"}
+	fieldsInOrder := [...]string{"email", "nickname", "avatar", "clearAvatar", "password", "status", "isAdmin", "addRoleIDs", "removeRoleIDs", "clearRoles"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -13994,33 +10879,6 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 				return it, err
 			}
 			it.ClearRoles = data
-		case "addOperationLogIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addOperationLogIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.AddOperationLogIDs = data
-		case "removeOperationLogIDs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeOperationLogIDs"))
-			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.RemoveOperationLogIDs = data
-		case "clearOperationLogs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearOperationLogs"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ClearOperationLogs = data
 		}
 	}
 
@@ -14076,7 +10934,7 @@ func (ec *executionContext) unmarshalInputUserWhereInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "createdAtIsNil", "createdAtNotNil", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "updatedAtIsNil", "updatedAtNotNil", "email", "emailNEQ", "emailIn", "emailNotIn", "emailGT", "emailGTE", "emailLT", "emailLTE", "emailContains", "emailHasPrefix", "emailHasSuffix", "emailEqualFold", "emailContainsFold", "nickname", "nicknameNEQ", "nicknameIn", "nicknameNotIn", "nicknameGT", "nicknameGTE", "nicknameLT", "nicknameLTE", "nicknameContains", "nicknameHasPrefix", "nicknameHasSuffix", "nicknameEqualFold", "nicknameContainsFold", "avatar", "avatarNEQ", "avatarIn", "avatarNotIn", "avatarGT", "avatarGTE", "avatarLT", "avatarLTE", "avatarContains", "avatarHasPrefix", "avatarHasSuffix", "avatarIsNil", "avatarNotNil", "avatarEqualFold", "avatarContainsFold", "status", "statusNEQ", "statusIn", "statusNotIn", "isAdmin", "isAdminNEQ", "hasRoles", "hasRolesWith", "hasOperationLogs", "hasOperationLogsWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "createdAtIsNil", "createdAtNotNil", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "updatedAtIsNil", "updatedAtNotNil", "email", "emailNEQ", "emailIn", "emailNotIn", "emailGT", "emailGTE", "emailLT", "emailLTE", "emailContains", "emailHasPrefix", "emailHasSuffix", "emailEqualFold", "emailContainsFold", "nickname", "nicknameNEQ", "nicknameIn", "nicknameNotIn", "nicknameGT", "nicknameGTE", "nicknameLT", "nicknameLTE", "nicknameContains", "nicknameHasPrefix", "nicknameHasSuffix", "nicknameEqualFold", "nicknameContainsFold", "avatar", "avatarNEQ", "avatarIn", "avatarNotIn", "avatarGT", "avatarGTE", "avatarLT", "avatarLTE", "avatarContains", "avatarHasPrefix", "avatarHasSuffix", "avatarIsNil", "avatarNotNil", "avatarEqualFold", "avatarContainsFold", "status", "statusNEQ", "statusIn", "statusNotIn", "isAdmin", "isAdminNEQ", "hasRoles", "hasRolesWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -14803,24 +11661,6 @@ func (ec *executionContext) unmarshalInputUserWhereInput(ctx context.Context, ob
 				return it, err
 			}
 			it.HasRolesWith = data
-		case "hasOperationLogs":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasOperationLogs"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasOperationLogs = data
-		case "hasOperationLogsWith":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasOperationLogsWith"))
-			data, err := ec.unmarshalOOperationLogWhereInput2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐOperationLogWhereInputᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasOperationLogsWith = data
 		}
 	}
 
@@ -14835,11 +11675,6 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case *ent.Menu:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._Menu(ctx, sel, obj)
 	case *ent.OperationLog:
 		if obj == nil {
 			return graphql.Null
@@ -14892,290 +11727,6 @@ func (ec *executionContext) _LoginReply(ctx context.Context, sel ast.SelectionSe
 			}
 		case "user":
 			out.Values[i] = ec._LoginReply_user(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var menuImplementors = []string{"Menu", "Node"}
-
-func (ec *executionContext) _Menu(ctx context.Context, sel ast.SelectionSet, obj *ent.Menu) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, menuImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("Menu")
-		case "id":
-			out.Values[i] = ec._Menu_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
-		case "createdAt":
-			out.Values[i] = ec._Menu_createdAt(ctx, field, obj)
-		case "updatedAt":
-			out.Values[i] = ec._Menu_updatedAt(ctx, field, obj)
-		case "parentID":
-			out.Values[i] = ec._Menu_parentID(ctx, field, obj)
-		case "icon":
-			out.Values[i] = ec._Menu_icon(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
-		case "name":
-			out.Values[i] = ec._Menu_name(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
-		case "path":
-			out.Values[i] = ec._Menu_path(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
-		case "sort":
-			out.Values[i] = ec._Menu_sort(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
-		case "roles":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Menu_roles(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "parent":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Menu_parent(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "children":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Menu_children(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "permissions":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Menu_permissions(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var menuConnectionImplementors = []string{"MenuConnection"}
-
-func (ec *executionContext) _MenuConnection(ctx context.Context, sel ast.SelectionSet, obj *ent.MenuConnection) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, menuConnectionImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("MenuConnection")
-		case "edges":
-			out.Values[i] = ec._MenuConnection_edges(ctx, field, obj)
-		case "pageInfo":
-			out.Values[i] = ec._MenuConnection_pageInfo(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "totalCount":
-			out.Values[i] = ec._MenuConnection_totalCount(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var menuEdgeImplementors = []string{"MenuEdge"}
-
-func (ec *executionContext) _MenuEdge(ctx context.Context, sel ast.SelectionSet, obj *ent.MenuEdge) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, menuEdgeImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("MenuEdge")
-		case "node":
-			out.Values[i] = ec._MenuEdge_node(ctx, field, obj)
-		case "cursor":
-			out.Values[i] = ec._MenuEdge_cursor(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -15273,27 +11824,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "deleteRole":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteRole(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "createMenu":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_createMenu(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "updateMenu":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_updateMenu(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "deleteMenu":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_deleteMenu(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -15585,7 +12115,7 @@ func (ec *executionContext) _Permission(ctx context.Context, sel ast.SelectionSe
 		case "id":
 			out.Values[i] = ec._Permission_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
+				out.Invalids++
 			}
 		case "createdAt":
 			out.Values[i] = ec._Permission_createdAt(ctx, field, obj)
@@ -15593,155 +12123,29 @@ func (ec *executionContext) _Permission(ctx context.Context, sel ast.SelectionSe
 			out.Values[i] = ec._Permission_updatedAt(ctx, field, obj)
 		case "parentID":
 			out.Values[i] = ec._Permission_parentID(ctx, field, obj)
-		case "key":
-			out.Values[i] = ec._Permission_key(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
 		case "name":
 			out.Values[i] = ec._Permission_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
+				out.Invalids++
 			}
+		case "key":
+			out.Values[i] = ec._Permission_key(ctx, field, obj)
+		case "type":
+			out.Values[i] = ec._Permission_type(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "path":
+			out.Values[i] = ec._Permission_path(ctx, field, obj)
 		case "desc":
 			out.Values[i] = ec._Permission_desc(ctx, field, obj)
 		case "sort":
 			out.Values[i] = ec._Permission_sort(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
+				out.Invalids++
 			}
-		case "roles":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Permission_roles(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "menus":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Permission_menus(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "parent":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Permission_parent(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "children":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Permission_children(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "attrs":
+			out.Values[i] = ec._Permission_attrs(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -15900,28 +12304,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_nodes(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "menus":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_menus(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -16193,39 +12575,6 @@ func (ec *executionContext) _Role(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
-		case "menus":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Role_menus(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "permissions":
 			field := field
 
@@ -16236,39 +12585,6 @@ func (ec *executionContext) _Role(ctx context.Context, sel ast.SelectionSet, obj
 					}
 				}()
 				res = ec._Role_permissions(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "users":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Role_users(ctx, field, obj)
 				return res
 			}
 
@@ -16477,39 +12793,6 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "operationLogs":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._User_operationLogs(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "roleCount":
 			field := field
 
@@ -16556,39 +12839,6 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 					}
 				}()
 				res = ec._User_permissions(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "menus":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._User_menus(ctx, field, obj)
 				return res
 			}
 
@@ -17107,11 +13357,6 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) unmarshalNCreateMenuInput2githubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐCreateMenuInput(ctx context.Context, v interface{}) (ent.CreateMenuInput, error) {
-	res, err := ec.unmarshalInputCreateMenuInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) unmarshalNCreatePermissionInput2githubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐCreatePermissionInput(ctx context.Context, v interface{}) (ent.CreatePermissionInput, error) {
 	res, err := ec.unmarshalInputCreatePermissionInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -17199,6 +13444,21 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
+func (ec *executionContext) unmarshalNInt2int64(ctx context.Context, v interface{}) (int64, error) {
+	res, err := graphql.UnmarshalInt64(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2int64(ctx context.Context, sel ast.SelectionSet, v int64) graphql.Marshaler {
+	res := graphql.MarshalInt64(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
 func (ec *executionContext) marshalNLoginReply2githubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋappᚋadminᚋserviceᚋgraphqlᚋmodelᚐLoginReply(ctx context.Context, sel ast.SelectionSet, v model.LoginReply) graphql.Marshaler {
 	return ec._LoginReply(ctx, sel, &v)
 }
@@ -17232,39 +13492,6 @@ func (ec *executionContext) marshalNMap2map(ctx context.Context, sel ast.Selecti
 		}
 	}
 	return res
-}
-
-func (ec *executionContext) marshalNMenu2githubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenu(ctx context.Context, sel ast.SelectionSet, v ent.Menu) graphql.Marshaler {
-	return ec._Menu(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNMenu2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenu(ctx context.Context, sel ast.SelectionSet, v *ent.Menu) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Menu(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNMenuConnection2githubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenuConnection(ctx context.Context, sel ast.SelectionSet, v ent.MenuConnection) graphql.Marshaler {
-	return ec._MenuConnection(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNMenuConnection2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenuConnection(ctx context.Context, sel ast.SelectionSet, v *ent.MenuConnection) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._MenuConnection(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNMenuWhereInput2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenuWhereInput(ctx context.Context, v interface{}) (*ent.MenuWhereInput, error) {
-	res, err := ec.unmarshalInputMenuWhereInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNNode2ᚕgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐNoder(ctx context.Context, sel ast.SelectionSet, v []ent.Noder) graphql.Marshaler {
@@ -17303,16 +13530,6 @@ func (ec *executionContext) marshalNNode2ᚕgithubᚗcomᚋeiixyᚋmonorepoᚋin
 	wg.Wait()
 
 	return ret
-}
-
-func (ec *executionContext) marshalNOperationLog2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐOperationLog(ctx context.Context, sel ast.SelectionSet, v *ent.OperationLog) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._OperationLog(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNOperationLogConnection2githubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐOperationLogConnection(ctx context.Context, sel ast.SelectionSet, v ent.OperationLogConnection) graphql.Marshaler {
@@ -17374,6 +13591,16 @@ func (ec *executionContext) marshalNPermissionConnection2ᚖgithubᚗcomᚋeiixy
 		return graphql.Null
 	}
 	return ec._PermissionConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNPermissionType2githubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚋpermissionᚐType(ctx context.Context, v interface{}) (permission.Type, error) {
+	var res permission.Type
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNPermissionType2githubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚋpermissionᚐType(ctx context.Context, sel ast.SelectionSet, v permission.Type) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) unmarshalNPermissionWhereInput2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐPermissionWhereInput(ctx context.Context, v interface{}) (*ent.PermissionWhereInput, error) {
@@ -17442,11 +13669,6 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 		}
 	}
 	return res
-}
-
-func (ec *executionContext) unmarshalNUpdateMenuInput2githubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐUpdateMenuInput(ctx context.Context, v interface{}) (ent.UpdateMenuInput, error) {
-	res, err := ec.unmarshalInputUpdateMenuInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNUpdatePermissionInput2githubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐUpdatePermissionInput(ctx context.Context, v interface{}) (ent.UpdatePermissionInput, error) {
@@ -17901,6 +14123,44 @@ func (ec *executionContext) marshalOID2ᚖint(ctx context.Context, sel ast.Selec
 	return res
 }
 
+func (ec *executionContext) unmarshalOInt2ᚕint64ᚄ(ctx context.Context, v interface{}) ([]int64, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]int64, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNInt2int64(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOInt2ᚕint64ᚄ(ctx context.Context, sel ast.SelectionSet, v []int64) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNInt2int64(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalOInt2ᚕintᚄ(ctx context.Context, v interface{}) ([]int, error) {
 	if v == nil {
 		return nil, nil
@@ -17955,6 +14215,22 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
+func (ec *executionContext) unmarshalOInt2ᚖint64(ctx context.Context, v interface{}) (*int64, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalInt64(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2ᚖint64(ctx context.Context, sel ast.SelectionSet, v *int64) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalInt64(*v)
+	return res
+}
+
 func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v interface{}) (map[string]interface{}, error) {
 	if v == nil {
 		return nil, nil
@@ -17971,188 +14247,11 @@ func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) marshalOMenu2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenuᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Menu) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNMenu2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenu(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) marshalOMenu2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenu(ctx context.Context, sel ast.SelectionSet, v *ent.Menu) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._Menu(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalOMenuEdge2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenuEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.MenuEdge) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalOMenuEdge2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenuEdge(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	return ret
-}
-
-func (ec *executionContext) marshalOMenuEdge2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenuEdge(ctx context.Context, sel ast.SelectionSet, v *ent.MenuEdge) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._MenuEdge(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalOMenuWhereInput2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenuWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.MenuWhereInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var vSlice []interface{}
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
-	var err error
-	res := make([]*ent.MenuWhereInput, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNMenuWhereInput2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenuWhereInput(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) unmarshalOMenuWhereInput2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐMenuWhereInput(ctx context.Context, v interface{}) (*ent.MenuWhereInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputMenuWhereInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) marshalONode2githubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐNoder(ctx context.Context, sel ast.SelectionSet, v ent.Noder) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Node(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalOOperationLog2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐOperationLogᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.OperationLog) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNOperationLog2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐOperationLog(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
 }
 
 func (ec *executionContext) marshalOOperationLog2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐOperationLog(ctx context.Context, sel ast.SelectionSet, v *ent.OperationLog) graphql.Marshaler {
@@ -18338,6 +14437,89 @@ func (ec *executionContext) marshalOPermissionEdge2ᚖgithubᚗcomᚋeiixyᚋmon
 		return graphql.Null
 	}
 	return ec._PermissionEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOPermissionType2ᚕgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚋpermissionᚐTypeᚄ(ctx context.Context, v interface{}) ([]permission.Type, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]permission.Type, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNPermissionType2githubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚋpermissionᚐType(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOPermissionType2ᚕgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚋpermissionᚐTypeᚄ(ctx context.Context, sel ast.SelectionSet, v []permission.Type) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNPermissionType2githubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚋpermissionᚐType(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOPermissionType2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚋpermissionᚐType(ctx context.Context, v interface{}) (*permission.Type, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(permission.Type)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOPermissionType2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚋpermissionᚐType(ctx context.Context, sel ast.SelectionSet, v *permission.Type) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalOPermissionWhereInput2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐPermissionWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.PermissionWhereInput, error) {
@@ -18624,53 +14806,6 @@ func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel
 	}
 	res := graphql.MarshalTime(*v)
 	return res
-}
-
-func (ec *executionContext) marshalOUser2ᚕᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.User) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNUser2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐUser(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
 }
 
 func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋeiixyᚋmonorepoᚋinternalᚋdataᚋadminᚋentᚐUser(ctx context.Context, sel ast.SelectionSet, v *ent.User) graphql.Marshaler {
