@@ -2,7 +2,7 @@ package dataloader
 
 import (
 	"context"
-	"github.com/eiixy/monorepo/internal/data/admin/ent"
+	"github.com/eiixy/monorepo/internal/data/example/ent"
 	"github.com/eiixy/monorepo/internal/pkg/gql"
 	"github.com/graph-gophers/dataloader"
 	"github.com/spf13/cast"
@@ -17,19 +17,30 @@ const (
 
 // DataLoader offers data loaders scoped to a context
 type DataLoader struct {
-	userRoleCountLoader *dataloader.Loader
+	userRoleCountLoader           *dataloader.Loader
+	permissionChildrenCountLoader *dataloader.Loader
 }
 
 // NewDataLoader returns the instantiated Loaders struct for use in a request
 func NewDataLoader(client *ent.Client) *DataLoader {
 	opts := []dataloader.Option{dataloader.WithCache(&dataloader.NoCache{})}
 	return &DataLoader{
-		userRoleCountLoader: dataloader.NewBatchedLoader(gql.Load[int](&userRoleCountLoader{client}), opts...),
+		userRoleCountLoader:           dataloader.NewBatchedLoader(gql.Load[int](&userRoleCountLoader{client}), opts...),
+		permissionChildrenCountLoader: dataloader.NewBatchedLoader(gql.Load[int](&permissionChildrenCountLoader{client}), opts...),
 	}
 }
 
 func (l DataLoader) GetUserRoleCount(ctx context.Context, id int) (int, error) {
 	thunk := l.userRoleCountLoader.Load(ctx, dataloader.StringKey(cast.ToString(id)))
+	result, err := thunk()
+	if err != nil {
+		return 0, err
+	}
+	return result.(int), nil
+}
+
+func (l DataLoader) GetPermissionChildrenCount(ctx context.Context, id int) (int, error) {
+	thunk := l.permissionChildrenCountLoader.Load(ctx, dataloader.StringKey(cast.ToString(id)))
 	result, err := thunk()
 	if err != nil {
 		return 0, err

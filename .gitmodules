@@ -1,0 +1,6 @@
+[submodule "third_party/go-openai"]
+	path = third_party/go-openai
+	url = git@github.com:eiixy/go-openai.git
+[submodule "third_party/gateway"]
+	path = third_party/gateway
+	url = https://github.com/eiixy/gateway.git

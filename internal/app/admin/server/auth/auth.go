@@ -2,7 +2,7 @@ package auth
 
 import (
 	"context"
-	"github.com/eiixy/monorepo/internal/data/admin/ent"
+	"github.com/eiixy/monorepo/internal/data/example/ent"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/spf13/cast"
 	"net/http"

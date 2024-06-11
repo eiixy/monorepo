@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package apis.gateway.middleware.v1;
+
+option go_package = "github.com/eiixy/monorepo/apis/api/gateway/middleware/v1";
+
+message Permission{
+  string discoveryDSN = 1;
+  string domain = 2;
+  repeated string whitelist = 3;
+  repeated string blacklist = 4;
+}

@@ -4,12 +4,6 @@ import (
 	"strings"
 )
 
-type Registry struct {
-	Type       string
-	Addrs      string
-	NacosGroup string
-}
-
 type Log struct {
 	Dir          string
 	Level        string
@@ -20,10 +14,10 @@ type Log struct {
 type Database struct {
 	Driver          string
 	Dsn             string
-	MaxOpenConns    string
-	MaxIdleConns    string
-	ConnMaxLifetime string // 秒
-	ConnMaxIdleTime string // 秒
+	MaxOpenConns    int
+	MaxIdleConns    int
+	ConnMaxLifetime string // time.Duration
+	ConnMaxIdleTime string // time.Duration
 }
 
 type Email struct {

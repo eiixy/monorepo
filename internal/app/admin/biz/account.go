@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/eiixy/monorepo/internal/app/admin/conf"
 	"github.com/eiixy/monorepo/internal/app/admin/service/graphql/model"
-	"github.com/eiixy/monorepo/internal/data/admin/ent"
+	"github.com/eiixy/monorepo/internal/data/example/ent"
 	"github.com/eiixy/monorepo/pkg/cache"
 	"github.com/eiixy/monorepo/pkg/helpers"
 	"github.com/golang-jwt/jwt/v4"

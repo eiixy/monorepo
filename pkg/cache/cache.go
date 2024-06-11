@@ -1,26 +1,12 @@
 package cache
 
 import (
-	"context"
-	"errors"
 	"github.com/patrickmn/go-cache"
 	"time"
 )
 
-var (
-	DoesNotExist = errors.New("cache does not exist")
-)
-
-type Cache interface {
-	Has(ctx context.Context, key string) (bool, error)
-	Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error
-	Get(ctx context.Context, key string) ([]byte, error)
-	Forget(ctx context.Context, key string) error
-	Remember(ctx context.Context, key string, ttl time.Duration, fn func() ([]byte, error)) ([]byte, error)
-}
-
 var goCache *cache.Cache
-var DefaultExpiration = 11 * time.Second
+var DefaultExpiration = time.Hour
 
 func init() {
 	goCache = cache.New(DefaultExpiration, 3*DefaultExpiration)
@@ -53,6 +39,7 @@ func LocalSet(key string, val any, ttl time.Duration) {
 func LocalGet(key string) (any, bool) {
 	return goCache.Get(key)
 }
+
 func LocalClear(key string) {
 	goCache.Delete(key)
 }

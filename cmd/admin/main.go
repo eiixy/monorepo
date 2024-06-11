@@ -16,7 +16,7 @@ import (
 
 var (
 	// Name is the name of the compiled software.
-	Name = "account"
+	Name = "admin"
 	// Version is the version of the compiled software.
 	Version = "latest"
 
@@ -24,14 +24,13 @@ var (
 
 	rootCmd = &cobra.Command{
 		Use:     Name,
-		Short:   "account",
 		Version: Version,
 	}
 )
 
 func init() {
 	rootCmd.AddCommand(migrate.Cmd)
-	rootCmd.PersistentFlags().String("conf", "./configs/account.yaml", "config path, eg: -conf config.yaml")
+	rootCmd.PersistentFlags().String("conf", "./configs/admin.yaml", "config path, eg: -conf config.yaml")
 }
 
 func main() {

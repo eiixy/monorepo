@@ -3,7 +3,7 @@ package dataloader
 import (
 	"context"
 	"fmt"
-	"github.com/eiixy/monorepo/internal/data/admin/ent"
+	"github.com/eiixy/monorepo/internal/data/example/ent"
 	"github.com/eiixy/monorepo/internal/pkg/gql"
 	"github.com/graph-gophers/dataloader"
 	"strings"

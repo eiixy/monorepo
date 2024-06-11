@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package apis.account.v1;
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+option go_package = "github.com/eiixy/monorepo/apis/api/account/v1";
+
+service AccountService {
+  rpc Profile(google.protobuf.Empty) returns (Account){
+    option (google.api.http) = {
+      get: "/profile"
+    };
+  }
+}
+
+message Account {
+  int64 id = 1;
+  string nickname = 2;
+}

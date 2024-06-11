@@ -18,3 +18,7 @@ extend type Mutation {
     """删除权限"""
     deletePermission(id: ID!): Boolean! @hasPermission(key: "delete_permission")
 }
+
+extend type Permission {
+    childrenCount: Int!
+}

@@ -47,7 +47,7 @@ func ({{ $receiver }} *{{ $query }}) CustomCollectFields(ctx context.Context, pa
         return {{ $receiver }}, nil
     }
     if field := collectedField(ctx, path...); field != nil {
-        if err := {{ $receiver }}.collectField(ctx, graphql.GetOperationContext(ctx), *field, path); err != nil {
+        if err := {{ $receiver }}.collectField(ctx, true, graphql.GetOperationContext(ctx), *field, path); err != nil {
             return nil, err
         }
     }

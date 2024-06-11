@@ -39,3 +39,6 @@ test:
 	@echo "publish $(SERVICE)"
 	docker tag $(SERVICE):$(VERSION) $(IMAGE_REGISTRY)/$(SERVICE):$(VERSION)
 	docker push $(IMAGE_REGISTRY)/$(SERVICE):$(VERSION)
+
+%.deploy:
+	@echo "TODO deploy to k8s"

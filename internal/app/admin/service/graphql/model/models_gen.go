@@ -7,7 +7,7 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/eiixy/monorepo/internal/data/admin/ent"
+	"github.com/eiixy/monorepo/internal/data/example/ent"
 )
 
 type LoginReply struct {

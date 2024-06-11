@@ -1,7 +1,7 @@
 # schema tells gqlgen when the GraphQL schema is located.
 schema:
   - ent.graphql
-  - custom.graphql
+  - user.graphql
   - role.graphql
   - directives.graphql
 
@@ -21,7 +21,8 @@ resolver:
 # autobind tells gqlgen to search for any type names in the GraphQL schema in the
 # provided package. If they match it will use them, otherwise it will generate new.
 autobind:
-  - github.com/eiixy/monorepo/internal/data/admin/ent
+  - github.com/99designs/gqlgen/graphql/introspection
+  - github.com/eiixy/monorepo/internal/data/example/ent
 
 # This section declares type mapping between the GraphQL and Go type systems.
 models:
