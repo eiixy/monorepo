@@ -1,0 +1,30 @@
+# 镜像仓库地址
+registry: https://eiixy-docker.pkg.coding.net/monorepo/repo
+
+# 分支发布策略配置
+branches:
+  - branch: master
+    namespace: production # 命名空间
+    kubeConfig: ~/.kube/config # (可选)集群凭证配置地址 默认：~/.kube-live/config
+    tagPolicy: version # tag生成策略: version=版本号，branch latest-分支名，version-branch 版本号-分支名
+  - branch: dev
+    namespace: dev
+    kubeConfig: ~/.kube/config
+    tagPolicy: branch
+    
+# 默认分支策略
+default:
+  namespace: dev
+  kubeConfig: ~/.kube/config
+  tagPolicy: version-branch
+
+#
+services:
+  # example
+  - name: example
+    changes:
+      - "cmd/example/"
+      - "configs/example.yaml"
+      - "internal/app/example/"
+    scripts:
+      - "make example.deploy"

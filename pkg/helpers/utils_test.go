@@ -9,17 +9,17 @@ import (
 
 func TestHideEmail(t *testing.T) {
 	items := map[string]string{
-		"xxsazbanx.com":        "****",
-		"1@zbanx.com":          "**@zbanx.com",
-		"12@zbanx.com":         "**@zbanx.com",
-		"123@zbanx.com":        "1**@zbanx.com",
-		"1234@zbanx.com":       "12**@zbanx.com",
-		"12345@zbanx.com":      "12***@zbanx.com",
-		"123456@zbanx.com":     "12****@zbanx.com",
-		"1234567@zbanx.com":    "12****@zbanx.com",
-		"12345678@zbanx.com":   "12****78@zbanx.com",
-		"123456789@zbanx.com":  "12****89@zbanx.com",
-		"1234567890@zbanx.com": "12****90@zbanx.com",
+		"xxsaexample.com":        "****",
+		"1@example.com":          "**@example.com",
+		"12@example.com":         "**@example.com",
+		"123@example.com":        "1**@example.com",
+		"1234@example.com":       "12**@example.com",
+		"12345@example.com":      "12***@example.com",
+		"123456@example.com":     "12****@example.com",
+		"1234567@example.com":    "12****@example.com",
+		"12345678@example.com":   "12****78@example.com",
+		"123456789@example.com":  "12****89@example.com",
+		"1234567890@example.com": "12****90@example.com",
 	}
 
 	for email, hide := range items {

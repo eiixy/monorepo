@@ -2,6 +2,9 @@ admin.build: admin.build
 admin.image: admin.image
 admin.publish: admin.publish
 
+api.build: api.build
+api.image: api.image
+api.publish: api.publish
 
 .PHONY: generate
 generate:
@@ -9,11 +12,6 @@ generate:
 
 build.all: generate
 	go build -ldflags "-X main.Version=$(VERSION)" -o ./bin/ ./cmd/...
-
-release.all:
-	for service in $(shell ls ./cmd/); do \
-	 $(MAKE) release.$$service; \
-	done
 
 test:
 	go test -v ./internal/... -cover
