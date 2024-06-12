@@ -18,7 +18,12 @@ func main() {
 		user: userRepo{ent: client},
 		role: roleRepo{ent: client},
 	}
-	err = uc.UpdateUserAndRoles(context.Background())
+	ctx := context.Background()
+	err = uc.UpdateUserName(ctx, 1, "user1")
+	if err != nil {
+		return
+	}
+	err = uc.UpdateUserAndRoles(ctx, 1, "test", []int{1, 2, 3})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -30,24 +35,25 @@ type userUseCase struct {
 	role roleRepo
 }
 
-// UpdateUserAndRoles 修改用户信息+关联角色
-func (r userUseCase) UpdateUserAndRoles(ctx context.Context) error {
+// UpdateUserName 修改用户名 （不使用事务）
+func (r userUseCase) UpdateUserName(ctx context.Context, id int, name string) error {
+	return r.user.UpdateUserName(ctx, id, name)
+}
+
+// UpdateUserAndRoles 修改用户信息+关联角色 （使用事务）
+func (r userUseCase) UpdateUserAndRoles(ctx context.Context, id int, name string, roleIDs []int) error {
 	return enthelper.WithTx(ctx, r.ent, func(tx *ent.Tx) error {
 		ctx = WithTx(ctx, tx)
-		err := r.user.UpdateUserName(ctx, 1, "test")
+		err := r.user.UpdateUserName(ctx, id, name)
 		if err != nil {
 			return err
 		}
-		err = r.role.UpdateUserRoles(ctx, 1, []int{1, 2, 3})
+		err = r.role.UpdateUserRoles(ctx, id, roleIDs)
 		if err != nil {
 			return err
 		}
 		return nil
 	})
-}
-
-func (r userUseCase) UpdateUserName(ctx context.Context) error {
-	return r.user.UpdateUserName(ctx, 1, "test1")
 }
 
 type txKey struct{}
