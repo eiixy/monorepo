@@ -15,8 +15,8 @@ func main() {
 	}
 	uc := userUseCase{
 		ent:  client,
-		user: userRepo{ent: client},
-		role: roleRepo{ent: client},
+		user: userRepo{data{ent: client}},
+		role: roleRepo{data{ent: client}},
 	}
 	ctx := context.Background()
 	err = uc.UpdateUserName(ctx, 1, "user1")
@@ -70,35 +70,30 @@ func GetTxFromContext(ctx context.Context) *ent.Tx {
 	return v.(*ent.Tx)
 }
 
-type userRepo struct {
+type data struct {
 	ent *ent.Client
 }
 
-// GetClient 获取 *ent.Client 优先从 context 中获取
-func (r userRepo) GetClient(ctx context.Context) *ent.Client {
+// Client 获取 *ent.Client 优先从 context 中获取
+func (r data) Client(ctx context.Context) *ent.Client {
 	if tx := GetTxFromContext(ctx); tx != nil {
 		return tx.Client()
 	}
 	return r.ent
+}
+
+type userRepo struct {
+	data
 }
 
 func (r userRepo) UpdateUserName(ctx context.Context, id int, name string) error {
-	client := r.GetClient(ctx)
-	return client.User.UpdateOneID(id).SetNickname(name).Exec(ctx)
+	return r.Client(ctx).User.UpdateOneID(id).SetNickname(name).Exec(ctx)
 }
 
 type roleRepo struct {
-	ent *ent.Client
-}
-
-func (r roleRepo) GetClient(ctx context.Context) *ent.Client {
-	if tx := GetTxFromContext(ctx); tx != nil {
-		return tx.Client()
-	}
-	return r.ent
+	data
 }
 
 func (r roleRepo) UpdateUserRoles(ctx context.Context, userID int, roleIDs []int) error {
-	client := r.GetClient(ctx)
-	return client.User.UpdateOneID(userID).AddRoleIDs(roleIDs...).Exec(ctx)
+	return r.Client(ctx).User.UpdateOneID(userID).AddRoleIDs(roleIDs...).Exec(ctx)
 }
