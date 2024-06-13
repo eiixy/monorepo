@@ -2,7 +2,7 @@ package enthelper
 
 import (
 	"context"
-	"github.com/pkg/errors"
+	"errors"
 )
 
 type clientImp[T txImp] interface {
@@ -14,7 +14,21 @@ type txImp interface {
 	Commit() error
 }
 
-func WithTx[Q clientImp[T], T txImp](ctx context.Context, client Q, fn func(tx T) error) error {
+type txKey struct{}
+
+func SetTx[T txImp](ctx context.Context, tx T) context.Context {
+	return context.WithValue(ctx, txKey{}, tx)
+}
+
+func GetTxFromContext[T txImp](ctx context.Context) T {
+	if val := ctx.Value(txKey{}); val != nil {
+		return val.(T)
+	}
+	var v T
+	return v
+}
+
+func WithTx[Q clientImp[T], T txImp](ctx context.Context, client Q, fn func(ctx context.Context, tx T) error) error {
 	tx, err := client.Tx(ctx)
 	if err != nil {
 		return err
@@ -25,14 +39,12 @@ func WithTx[Q clientImp[T], T txImp](ctx context.Context, client Q, fn func(tx T
 			panic(v)
 		}
 	}()
-	if err = fn(tx); err != nil {
+	ctx = SetTx(ctx, tx)
+	if err = fn(ctx, tx); err != nil {
 		if rollbackErr := tx.Rollback(); rollbackErr != nil {
-			err = errors.Wrap(err, rollbackErr.Error())
+			err = errors.Join(err, rollbackErr)
 		}
 		return err
 	}
-	if err = tx.Commit(); err != nil {
-		return errors.Wrap(err, "committing transaction")
-	}
-	return nil
+	return tx.Commit()
 }

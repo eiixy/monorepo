@@ -21,7 +21,7 @@ func main() {
 	ctx := context.Background()
 	err = uc.UpdateUserName(ctx, 1, "user1")
 	if err != nil {
-		return
+		log.Fatal(err)
 	}
 	err = uc.UpdateUserAndRoles(ctx, 1, "test", []int{1, 2, 3})
 	if err != nil {
@@ -42,8 +42,7 @@ func (r userUseCase) UpdateUserName(ctx context.Context, id int, name string) er
 
 // UpdateUserAndRoles 修改用户信息+关联角色 （使用事务）
 func (r userUseCase) UpdateUserAndRoles(ctx context.Context, id int, name string, roleIDs []int) error {
-	return enthelper.WithTx(ctx, r.ent, func(tx *ent.Tx) error {
-		ctx = WithTx(ctx, tx)
+	return enthelper.WithTx(ctx, r.ent, func(ctx context.Context, tx *ent.Tx) error {
 		err := r.user.UpdateUserName(ctx, id, name)
 		if err != nil {
 			return err
@@ -56,27 +55,13 @@ func (r userUseCase) UpdateUserAndRoles(ctx context.Context, id int, name string
 	})
 }
 
-type txKey struct{}
-
-func WithTx(ctx context.Context, tx *ent.Tx) context.Context {
-	return context.WithValue(ctx, txKey{}, tx)
-}
-
-func GetTxFromContext(ctx context.Context) *ent.Tx {
-	v := ctx.Value(txKey{})
-	if v == nil {
-		return nil
-	}
-	return v.(*ent.Tx)
-}
-
 type data struct {
 	ent *ent.Client
 }
 
 // Client 获取 *ent.Client 优先从 context 中获取
 func (r data) Client(ctx context.Context) *ent.Client {
-	if tx := GetTxFromContext(ctx); tx != nil {
+	if tx := enthelper.GetTxFromContext[*ent.Tx](ctx); tx != nil {
 		return tx.Client()
 	}
 	return r.ent
