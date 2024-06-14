@@ -2,7 +2,6 @@ package kafka
 
 import (
 	"github.com/IBM/sarama"
-	"log"
 )
 
 func NewSyncProducer(addrs []string, opts ...ConfigOption) (sarama.SyncProducer, error) {
@@ -17,7 +16,6 @@ func NewSyncProducer(addrs []string, opts ...ConfigOption) (sarama.SyncProducer,
 
 	client, err := sarama.NewSyncProducer(addrs, cfg)
 	if err != nil {
-		log.Println("producer closed, err:", err)
 		return nil, err
 	}
 
