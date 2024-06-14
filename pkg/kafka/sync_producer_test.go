@@ -9,7 +9,11 @@ import (
 )
 
 func TestNewSyncProducer(t *testing.T) {
-	sp, err := NewSyncProducer([]string{"127.0.0.1:9093"})
+	sp, err := NewSyncProducer(
+		[]string{"127.0.0.1:9093"},
+		SetNetSASL("", ""),
+		SetProducerPartitioner(sarama.NewHashPartitioner),
+	)
 
 	if err != nil {
 		log.Fatal(err)
