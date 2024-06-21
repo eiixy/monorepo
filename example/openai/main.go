@@ -2,16 +2,86 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/go-kratos/kratos/v2"
+	khttp "github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/sashabaranov/go-openai"
 	"github.com/subosito/gotenv"
 	"io"
+	"log"
+	"net/http"
 	"os"
+	"time"
 )
 
 func main() {
 	_ = gotenv.Load(".env")
 	client := openai.NewClient(os.Getenv("OPENAI_TOKEN"))
+	chatCompletionStream(client)
+	//batchesApi(client)
+}
+
+func chatCompletionStream(client *openai.Client) {
+	handler := http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		// 设置响应头
+		writer.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		writer.Header().Set("Transfer-Encoding", "chunked")
+		writer.Header().Set("Cache-Control", "no-cache")
+		flusher, ok := writer.(http.Flusher)
+		if !ok {
+			http.Error(writer, "Streaming not supported!", http.StatusInternalServerError)
+			return
+		}
+
+		req := openai.ChatCompletionRequest{
+			Model:     openai.GPT3Dot5Turbo,
+			MaxTokens: 50,
+			Stream:    true,
+			Messages: []openai.ChatCompletionMessage{
+				{
+					Role:    openai.ChatMessageRoleUser,
+					Content: request.URL.Query().Get("msg"),
+				},
+			},
+		}
+		stream, err := client.CreateChatCompletionStream(request.Context(), req)
+		if err != nil {
+			fmt.Printf("CreateChatCompletionStream error: %v\n", err)
+			return
+		}
+
+		defer stream.Close()
+		for {
+			select {
+			case <-request.Context().Done():
+				return
+			default:
+				response, err := stream.Recv()
+				if errors.Is(err, io.EOF) {
+					return
+				} else if err != nil {
+					log.Printf("stream error: %v\r\n", err)
+					return
+				}
+				content := response.Choices[0].Delta.Content
+				//需要 \r\n 结尾 https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding#chunked
+				writer.Write([]byte(content + "\n"))
+				flusher.Flush()
+				time.Sleep(200 * time.Millisecond)
+			}
+		}
+	})
+	srv := khttp.NewServer(khttp.Address(":8003"), khttp.Timeout(30*time.Second))
+	srv.HandleFunc("/chat", handler)
+
+	app := kratos.New(kratos.Server(srv))
+	if err := app.Run(); err != nil {
+		panic(err)
+	}
+}
+
+func batchesApi(client *openai.Client) {
 	ctx := context.Background()
 	//createBatch(ctx, client)
 
