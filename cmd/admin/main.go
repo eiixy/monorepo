@@ -40,7 +40,12 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		app, cleanup, err := initApp(newLogger(cfg.Log), cfg)
+		logger := log.NewLoggerFromConfig(cfg.Log, Name,
+			log.ServiceID(id),
+			log.ServiceName(Name),
+			log.ServiceVersion(Version),
+		)
+		app, cleanup, err := initApp(logger, cfg)
 		if err != nil {
 			panic(err)
 		}
@@ -63,13 +68,5 @@ func newApp(logger klog.Logger, hs *http.Server) *kratos.App {
 		kratos.Version(Version),
 		kratos.Logger(logger),
 		kratos.Server(hs),
-	)
-}
-
-func newLogger(conf config.Log) klog.Logger {
-	return log.NewLoggerFromConfig(conf, Name,
-		"service.id", id,
-		"service.name", Name,
-		"service.version", Version,
 	)
 }
