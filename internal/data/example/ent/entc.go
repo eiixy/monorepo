@@ -26,16 +26,15 @@ func main() {
 		log.Fatalf("creating entgql extension: %v", err)
 	}
 	_, filename, _, _ := runtime.Caller(0)
-	entPath := strings.TrimSuffix(filename, "example/ent/entc.go")
-	if err = entc.Generate(entPath+"example/ent/schema", &gen.Config{
+	entPath := strings.TrimSuffix(filename, "ent/entc.go")
+	if err = entc.Generate(entPath+"ent/schema", &gen.Config{
 		Features: []gen.Feature{
 			gen.FeatureIntercept,
 			gen.FeatureSnapshot,
 			gen.FeatureModifier,
 			gen.FeatureExecQuery,
-			gen.FeatureEntQL,
 		},
-	}, entc.Extensions(ex), entc.TemplateDir(entPath+"template")); err != nil {
+	}, entc.Extensions(ex), entc.TemplateDir(entPath+"../template")); err != nil {
 		log.Fatalf("running ent codegen: %v", err)
 	}
 }

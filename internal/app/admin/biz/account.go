@@ -7,8 +7,8 @@ import (
 	"github.com/eiixy/monorepo/internal/app/admin/service/graphql/model"
 	"github.com/eiixy/monorepo/internal/data/example/ent"
 	"github.com/eiixy/monorepo/pkg/cache"
-	"github.com/eiixy/monorepo/pkg/helpers"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/samber/lo"
 	"github.com/spf13/cast"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/gomail.v2"
@@ -28,7 +28,7 @@ func NewAccountUseCase(cfg *conf.Config) *AccountUseCase {
 	}
 }
 
-func (r AccountUseCase) GenerateToken(ctx context.Context, userId int) (string, int64, error) {
+func (r AccountUseCase) GenerateToken(_ context.Context, userId int) (string, int64, error) {
 	exp := time.Now().Add(time.Hour * 24 * 7).Unix()
 	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": cast.ToString(userId),
@@ -51,7 +51,7 @@ func (r AccountUseCase) GeneratePassword(password string) string {
 }
 
 func (r AccountUseCase) SendEmail(email string, emailType model.VerifyCodeType) error {
-	code := cast.ToString(helpers.RandomNumber(100000, 999999))
+	code := lo.RandomString(6, lo.NumbersCharset)
 	cache.LocalSet(fmt.Sprintf("send_email:%s:%s", emailType, email), code, time.Minute*15)
 	m := gomail.NewMessage()
 	m.SetHeader("From", r.cfg.Email.From)

@@ -24,22 +24,22 @@ func (r *queryResolver) Nodes(ctx context.Context, ids []int) ([]ent.Noder, erro
 
 // OperationLogs is the resolver for the operationLogs field.
 func (r *queryResolver) OperationLogs(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.OperationLogWhereInput) (*ent.OperationLogConnection, error) {
-	return r.client.OperationLog.Query().Paginate(ctx, after, first, before, last, ent.WithOperationLogFilter(where.Filter))
+	return r.data.EntDB.OperationLog(ctx).Query().Paginate(ctx, after, first, before, last, ent.WithOperationLogFilter(where.Filter))
 }
 
 // Permissions is the resolver for the permissions field.
 func (r *queryResolver) Permissions(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.PermissionWhereInput) (*ent.PermissionConnection, error) {
-	return r.client.Permission.Query().Paginate(ctx, after, first, before, last, ent.WithPermissionFilter(where.Filter))
+	return r.data.EntDB.Permission(ctx).Query().Paginate(ctx, after, first, before, last, ent.WithPermissionFilter(where.Filter))
 }
 
 // Roles is the resolver for the roles field.
 func (r *queryResolver) Roles(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, where *ent.RoleWhereInput) (*ent.RoleConnection, error) {
-	return r.client.Role.Query().Paginate(ctx, after, first, before, last, ent.WithRoleFilter(where.Filter))
+	return r.data.EntDB.Role(ctx).Query().Paginate(ctx, after, first, before, last, ent.WithRoleFilter(where.Filter))
 }
 
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.UserOrder, where *ent.UserWhereInput) (*ent.UserConnection, error) {
-	return r.client.User.Query().Paginate(ctx, after, first, before, last, ent.WithUserFilter(where.Filter), ent.WithUserOrder(orderBy))
+	return r.data.EntDB.User(ctx).Query().Paginate(ctx, after, first, before, last, ent.WithUserFilter(where.Filter), ent.WithUserOrder(orderBy))
 }
 
 // Permission returns PermissionResolver implementation.

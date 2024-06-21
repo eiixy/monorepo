@@ -1,9 +1,5 @@
 package config
 
-import (
-	"strings"
-)
-
 type Log struct {
 	Dir          string
 	Level        string
@@ -55,25 +51,4 @@ type KafkaProducer struct {
 type KafkaConsumerGroup struct {
 	GroupId string   `yaml:"groupId"`
 	Topics  []string `yaml:"topics"`
-}
-
-type ClickHouse struct {
-	Addr     string `json:"addr,omitempty"`
-	Database string `json:"database,omitempty"`
-	Username string `json:"username,omitempty"`
-	Password string `json:"password,omitempty"`
-}
-
-func (c ClickHouse) GetAddr() []string {
-	return strings.Split(c.Addr, ",")
-}
-
-type Aliexpress struct {
-	AppKey     string
-	AppSecret  string
-	GatewayUrl string
-}
-
-func (k Kafka) GetAddrs() []string {
-	return strings.Split(k.Addrs, ",")
 }

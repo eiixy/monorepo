@@ -1,5 +1,5 @@
-VERSION=$(shell git describe --tags --always | sed "s|refs/tags/||g")
-GIT_BRANCH=$(shell git branch | sed -n '/\* /s//-/p' | sed "s/-master//g")
+GIT_VERSION=$(shell git describe --tags --always | sed "s|refs/tags/||g")
+GIT_BRANCH=$(shell git branch | sed -n '/\* /s///p' | sed "s/-master//g")
 
 # Includes
 include .env
@@ -10,8 +10,7 @@ include scripts/init.mk
 include scripts/k8s.mk
 
 version:
-	@echo $(VERSION) $(GIT_BRANCH)
-
+	@echo $(GIT_VERSION) $(GIT_BRANCH)
 
 # show help
 help:

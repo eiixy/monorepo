@@ -9,14 +9,25 @@ import (
 )
 
 var ProviderSet = wire.NewSet(
-	NewEntClient,
+	NewData,
 )
 
-func NewEntClient(cfg *conf.Config) (*ent.Client, error) {
+type Data struct {
+	EntClient *ent.Client
+	EntDB     *ent.Database
+}
+
+func NewData(cfg *conf.Config) (*Data, func(), error) {
 	drv, err := database.NewEntDriver(cfg.Data.Database)
 	//drv, err := database.NewEntDriverWithOtel(cfg.Data.Database)
 	if err != nil {
-		return nil, err
+		return nil, func() {}, err
 	}
-	return ent.NewClient(ent.Driver(drv)), nil
+	client := ent.NewClient(ent.Driver(drv))
+	return &Data{
+			EntClient: client,
+			EntDB:     ent.NewDatabase(ent.Driver(drv)),
+		}, func() {
+			_ = drv.Close()
+		}, nil
 }

@@ -4,3 +4,6 @@
 [submodule "third_party/gateway"]
 	path = third_party/gateway
 	url = https://github.com/eiixy/gateway.git
+[submodule "third_party/lo"]
+	path = third_party/lo
+	url = git@github.com:eiixy/lo.git

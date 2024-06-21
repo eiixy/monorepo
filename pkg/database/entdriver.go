@@ -6,7 +6,6 @@ import (
 	entsql "entgo.io/ent/dialect/sql"
 	"github.com/XSAM/otelsql"
 	"github.com/eiixy/monorepo/internal/pkg/config"
-	"github.com/eiixy/monorepo/pkg/helpers"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 	semconv "go.opentelemetry.io/otel/semconv/v1.25.0"
@@ -14,7 +13,10 @@ import (
 )
 
 func NewEntDriver(cfg config.Database) (dialect.Driver, error) {
-	driver := helpers.Get(cfg.Driver, dialect.MySQL)
+	driver := dialect.MySQL
+	if cfg.Driver != "" {
+		driver = cfg.Driver
+	}
 	db, err := sql.Open(driver, cfg.Dsn)
 	if err != nil {
 		return nil, err
@@ -23,7 +25,10 @@ func NewEntDriver(cfg config.Database) (dialect.Driver, error) {
 }
 
 func NewEntDriverWithOtel(cfg config.Database, opts ...otelsql.Option) (dialect.Driver, error) {
-	driver := helpers.Get(cfg.Driver, dialect.MySQL)
+	driver := dialect.MySQL
+	if cfg.Driver != "" {
+		driver = cfg.Driver
+	}
 	opts = append(opts, otelsql.WithAttributes(
 		semconv.DBSystemKey.String(driver),
 	))

@@ -19,14 +19,15 @@ import (
 // Injectors from wire.go:
 
 func initApp(logger log.Logger, config *conf.Config) (*kratos.App, func(), error) {
-	client, err := data.NewEntClient(config)
+	dataData, cleanup, err := data.NewData(config)
 	if err != nil {
 		return nil, nil, err
 	}
 	accountUseCase := biz.NewAccountUseCase(config)
-	executableSchema := graphql.NewSchema(logger, client, accountUseCase)
-	httpServer := server.NewHTTPServer(config, logger, client, executableSchema)
+	executableSchema := graphql.NewSchema(logger, dataData, accountUseCase)
+	httpServer := server.NewHTTPServer(config, logger, dataData, executableSchema)
 	app := newApp(logger, httpServer)
 	return app, func() {
+		cleanup()
 	}, nil
 }

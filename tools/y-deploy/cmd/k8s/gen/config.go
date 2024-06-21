@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
+	"log"
 	"os"
 	"path"
 	"strings"
@@ -30,7 +31,7 @@ var configCmd = &cobra.Command{Use: "config", Run: func(cmd *cobra.Command, args
 	}
 
 	service.Read(service.Path)
-	fmt.Println("configure files generated")
+	log.Println("configure files generated.")
 }}
 
 type Temp struct {
@@ -53,7 +54,6 @@ func (c Temp) Read(dir string) {
 	}
 	for _, fileInfo := range files {
 		if !fileInfo.IsDir() && strings.HasSuffix(fileInfo.Name(), ".yaml") {
-			fmt.Println(fileInfo.Name())
 			content, err := os.ReadFile(fmt.Sprintf("%s/%s", dir, fileInfo.Name()))
 			if err != nil {
 				panic(err)
@@ -65,8 +65,9 @@ func (c Temp) Read(dir string) {
 }
 
 func (c Temp) Write(filename string, content []byte) {
-	fmt.Println("generate", filename)
-	f, err := os.OpenFile(path.Join(c.Output, namespace+"_"+filename), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0777)
+	filePath := path.Join(c.Output, namespace+"_"+filename)
+	log.Println("generate", filePath)
+	f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0777)
 	if err != nil {
 		panic(err)
 	}
