@@ -73,6 +73,11 @@ func (db *Database) Query(ctx context.Context, query string, args ...interface{}
 	return &rows, nil
 }
 
+// Close closes the database connection and prevents new queries from starting.
+func (db *Database) Close() error {
+	return db.client.Close()
+}
+
 // Account is the client for interacting with the Account builders.
 func (db *Database) Account(ctx context.Context) *AccountClient {
 	return db.loadClient(ctx).Account

@@ -7,35 +7,54 @@ import (
 	_ "github.com/eiixy/monorepo/internal/data/example/ent/runtime"
 	"github.com/eiixy/monorepo/pkg/database"
 	"github.com/eiixy/monorepo/pkg/kafka"
+	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
 )
 
 var ProviderSet = wire.NewSet(
 	NewData,
+	NewEntClient,
+	NewEntDatabase,
+	NewKafkaProducer,
 )
 
 type Data struct {
-	EntClient *ent.Client
-	EntDB     *ent.Database
-	Producer  sarama.SyncProducer
+	client *ent.Client
+	db     *ent.Database
 }
 
-func NewData(cfg *conf.Config) (*Data, func(), error) {
+func NewData(client *ent.Client, db *ent.Database, logger log.Logger) (*Data, func(), error) {
+	l := log.NewHelper(log.With(logger, "module", "data"))
+	d := &Data{
+		client: client,
+		db:     db,
+	}
+	return d, func() {
+		if err := d.client.Close(); err != nil {
+			l.Error(err)
+		}
+		if err := d.db.Close(); err != nil {
+			l.Error(err)
+		}
+	}, nil
+}
+
+func NewEntClient(cfg *conf.Config) (*ent.Client, error) {
 	drv, err := database.NewEntDriver(cfg.Data.Database)
-	//drv, err := database.NewEntDriverWithOtel(cfg.Data.Database)
 	if err != nil {
-		return nil, func() {}, err
+		return nil, err
 	}
-	client := ent.NewClient(ent.Driver(drv))
-	producer, err := kafka.NewSyncProducerFromConfig(cfg.Data.Kafka)
+	return ent.NewClient(ent.Driver(drv)), nil
+}
+
+func NewEntDatabase(cfg *conf.Config) (*ent.Database, error) {
+	drv, err := database.NewEntDriver(cfg.Data.Database)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	return &Data{
-			EntClient: client,
-			EntDB:     ent.NewDatabase(ent.Driver(drv)),
-			Producer:  producer,
-		}, func() {
-			_ = drv.Close()
-		}, nil
+	return ent.NewDatabase(ent.Driver(drv)), nil
+}
+
+func NewKafkaProducer(cfg *conf.Config) (sarama.SyncProducer, error) {
+	return kafka.NewSyncProducerFromConfig(cfg.Data.Kafka)
 }

@@ -17,17 +17,21 @@ func main() {
 		Driver: "mysql",
 		Dsn:    "root:12345678@tcp(127.0.0.1:3306)/example?parseTime=true",
 	}
-	newData, f, err := data.NewData(&cfg)
+	client, err := data.NewEntClient(&cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer f()
+	db, err := data.NewEntDatabase(&cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	r := repo{newData.EntClient}
+	r := repo{client, db}
 	uc := userUseCase{
-		data: newData,
-		user: userRepo{r, newData.EntDB},
-		role: roleRepo{r, newData.EntDB},
+		ent:  client,
+		db:   db,
+		user: userRepo{r},
+		role: roleRepo{r},
 	}
 	ctx := context.Background()
 	err = uc.UpdateUserName(ctx, 1, "user1")
@@ -48,7 +52,8 @@ func main() {
 }
 
 type userUseCase struct {
-	data *data.Data
+	ent  *ent.Client
+	db   *ent.Database
 	user userRepo
 	role roleRepo
 }
@@ -60,7 +65,7 @@ func (r userUseCase) UpdateUserName(ctx context.Context, id int, name string) er
 
 // UpdateUserAndRoles 修改用户信息+关联角色 （使用事务）
 func (r userUseCase) UpdateUserAndRoles(ctx context.Context, id int, name string, roleIDs []int) error {
-	return r.data.EntDB.InTx(ctx, func(ctx context.Context) error {
+	return r.db.InTx(ctx, func(ctx context.Context) error {
 		err := r.user.UpdateUserName(ctx, id, name)
 		if err != nil {
 			return err
@@ -71,7 +76,7 @@ func (r userUseCase) UpdateUserAndRoles(ctx context.Context, id int, name string
 
 // UpdateUserAndRoles2 修改用户信息+关联角色 （使用事务，无需增加 ent template）
 func (r userUseCase) UpdateUserAndRoles2(ctx context.Context, id int, name string, roleIDs []int) error {
-	return enthelper.WithTx(ctx, r.data.EntClient, func(ctx context.Context, tx *ent.Tx) error {
+	return enthelper.WithTx(ctx, r.ent, func(ctx context.Context, tx *ent.Tx) error {
 		ctx = ent.NewTxContext(ctx, tx)
 		err := r.user.UpdateUserName2(ctx, id, name)
 		if err != nil {
@@ -83,6 +88,7 @@ func (r userUseCase) UpdateUserAndRoles2(ctx context.Context, id int, name strin
 
 type repo struct {
 	ent *ent.Client
+	db  *ent.Database
 }
 
 func (r repo) client(ctx context.Context) *ent.Client {
@@ -94,12 +100,10 @@ func (r repo) client(ctx context.Context) *ent.Client {
 
 type userRepo struct {
 	repo
-	db *ent.Database
 }
 
 type roleRepo struct {
 	repo
-	db *ent.Database
 }
 
 func (r userRepo) UpdateUserName(ctx context.Context, id int, name string) error {

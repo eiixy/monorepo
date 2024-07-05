@@ -76,6 +76,11 @@ func (db *Database) Query(ctx context.Context, query string, args ...interface{}
     return &rows, nil
 }
 
+// Close closes the database connection and prevents new queries from starting.
+func (db *Database) Close() error {
+    return db.client.Close()
+}
+
 {{ range $n := $.Nodes }}
     {{ $client := print $n.Name "Client" }}
     // {{ $n.Name }} is the client for interacting with the {{ $n.Name }} builders.
