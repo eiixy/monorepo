@@ -10,6 +10,8 @@ import (
 	"github.com/eiixy/monorepo/internal/app/admin/biz"
 	"github.com/eiixy/monorepo/internal/app/admin/conf"
 	"github.com/eiixy/monorepo/internal/app/admin/data"
+	"github.com/eiixy/monorepo/internal/app/admin/job"
+	"github.com/eiixy/monorepo/internal/app/admin/schedule"
 	"github.com/eiixy/monorepo/internal/app/admin/server"
 	"github.com/eiixy/monorepo/internal/app/admin/service/graphql"
 	"github.com/go-kratos/kratos/v2"
@@ -26,7 +28,10 @@ func initApp(logger log.Logger, config *conf.Config) (*kratos.App, func(), error
 	accountUseCase := biz.NewAccountUseCase(config)
 	executableSchema := graphql.NewSchema(logger, dataData, accountUseCase)
 	httpServer := server.NewHTTPServer(config, logger, dataData, executableSchema)
-	app := newApp(logger, httpServer)
+	jobJob := job.NewJob(logger, config, dataData)
+	daily := schedule.NewDaily(dataData)
+	scheduleSchedule := schedule.NewSchedule(logger, dataData, daily)
+	app := newApp(logger, httpServer, jobJob, scheduleSchedule)
 	return app, func() {
 		cleanup()
 	}, nil

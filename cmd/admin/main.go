@@ -5,6 +5,8 @@ package main
 import (
 	"github.com/eiixy/monorepo/internal/app/admin/cmd/migrate"
 	"github.com/eiixy/monorepo/internal/app/admin/conf"
+	"github.com/eiixy/monorepo/internal/app/admin/job"
+	"github.com/eiixy/monorepo/internal/app/admin/schedule"
 	"github.com/eiixy/monorepo/internal/pkg/config"
 	"github.com/eiixy/monorepo/pkg/log"
 	"github.com/go-kratos/kratos/v2"
@@ -52,7 +54,7 @@ func main() {
 		defer cleanup()
 
 		// start and wait for stop signal
-		if err := app.Run(); err != nil {
+		if err = app.Run(); err != nil {
 			panic(err)
 		}
 	}
@@ -61,12 +63,12 @@ func main() {
 	}
 }
 
-func newApp(logger klog.Logger, hs *http.Server) *kratos.App {
+func newApp(logger klog.Logger, hs *http.Server, job *job.Job, schedule *schedule.Schedule) *kratos.App {
 	return kratos.New(
 		kratos.ID(id),
 		kratos.Name(Name),
 		kratos.Version(Version),
 		kratos.Logger(logger),
-		kratos.Server(hs),
+		kratos.Server(hs, job, schedule),
 	)
 }

@@ -26,6 +26,11 @@ type cronLogger struct {
 	log *log.Helper
 }
 
+func (l cronLogger) Debug(msg string, keysAndValues ...interface{}) {
+	keysAndValues = append([]any{"msg", msg}, keysAndValues...)
+	l.log.Debugw(keysAndValues...)
+}
+
 func (l cronLogger) Info(msg string, keysAndValues ...interface{}) {
 	keysAndValues = append([]any{"msg", msg}, keysAndValues...)
 	l.log.Infow(keysAndValues...)

@@ -12,6 +12,7 @@ type Config struct {
 	}
 	Data struct {
 		Database config.Database
+		Kafka    config.Kafka
 	}
 	Email config.Email
 	Trace struct {

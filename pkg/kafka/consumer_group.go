@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/IBM/sarama"
+	"github.com/eiixy/monorepo/internal/pkg/config"
 	"github.com/go-kratos/kratos/v2/log"
 	"os"
 	"os/signal"
@@ -52,12 +53,12 @@ type ConsumerGroup struct {
 }
 
 func NewConsumerGroup(brokers []string, group string, topics []string, opts ...ConsumerGroupOption) *ConsumerGroup {
-	config := sarama.NewConfig()
-	config.Version = sarama.V2_1_0_0
-	config.Consumer.Group.Rebalance.GroupStrategies = []sarama.BalanceStrategy{sarama.NewBalanceStrategyRoundRobin()}
-	config.Consumer.Offsets.Initial = sarama.OffsetOldest
+	cfg := sarama.NewConfig()
+	cfg.Version = sarama.V2_1_0_0
+	cfg.Consumer.Group.Rebalance.GroupStrategies = []sarama.BalanceStrategy{sarama.NewBalanceStrategyRoundRobin()}
+	cfg.Consumer.Offsets.Initial = sarama.OffsetOldest
 	cg := &ConsumerGroup{
-		config: config,
+		config: cfg,
 		setup: func(s sarama.ConsumerGroupSession) error {
 			return nil
 		},
@@ -82,6 +83,11 @@ func NewConsumerGroup(brokers []string, group string, topics []string, opts ...C
 	))
 	cg.client = client
 	return cg
+}
+
+func NewConsumerGroupFromConfig(config config.Kafka, group string, topics []string, opts ...ConfigOption) *ConsumerGroup {
+	opts = append(opts, SetNetSASL(config.User, config.Password))
+	return NewConsumerGroup(config.GetAddr(), group, topics)
 }
 
 func (r *ConsumerGroup) Setup(sess sarama.ConsumerGroupSession) error {

@@ -1,5 +1,7 @@
 package config
 
+import "strings"
+
 type Log struct {
 	Dir          string
 	Level        string
@@ -44,8 +46,8 @@ type Kafka struct {
 	Password string `yaml:"password"`
 }
 
-type KafkaProducer struct {
-	Topic string `yaml:"topic"`
+func (r Kafka) GetAddr() []string {
+	return strings.Split(r.Addrs, ",")
 }
 
 type KafkaConsumerGroup struct {
