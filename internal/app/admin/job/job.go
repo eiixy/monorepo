@@ -20,7 +20,7 @@ func NewJob(logger log.Logger, cfg *conf.Config, data *data.Data) *Job {
 	works := []*app.Worker{
 		app.NewWorker("example", &exampleJob{}),
 		app.NewWorker("kafkaConsumer", &kafkaConsumer{
-			cg:  kafka.NewConsumerGroupFromConfig(cfg.Data.Kafka, "", []string{""}),
+			cg:  kafka.NewConsumerGroupFromConfig(cfg.Data.Kafka, cfg.KafkaConsumerGroup),
 			log: log.NewHelper(log.With(logger, "module", "job/kafka_consumer")),
 		}),
 	}

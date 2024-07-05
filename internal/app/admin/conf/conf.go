@@ -14,8 +14,9 @@ type Config struct {
 		Database config.Database
 		Kafka    config.Kafka
 	}
-	Email config.Email
-	Trace struct {
+	KafkaConsumerGroup config.KafkaConsumerGroup
+	Email              config.Email
+	Trace              struct {
 		Endpoint string
 	}
 	Log config.Log

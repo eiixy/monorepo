@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/eiixy/monorepo/internal/app/admin/biz"
-	"github.com/eiixy/monorepo/internal/app/admin/data"
 	"github.com/eiixy/monorepo/internal/app/admin/server/auth"
+	"github.com/eiixy/monorepo/internal/data/example/ent"
 	"github.com/eiixy/monorepo/internal/data/example/ent/permission"
 	"github.com/eiixy/monorepo/internal/data/example/ent/role"
 	"github.com/eiixy/monorepo/internal/data/example/ent/user"
@@ -24,17 +24,17 @@ import (
 
 type Resolver struct {
 	log            *log.Helper
-	data           *data.Data
+	db             *ent.Database
 	accountUseCase *biz.AccountUseCase
 	captcha        *base64Captcha.Captcha
 }
 
 // NewSchema creates a graphql executable schema.
-func NewSchema(logger log.Logger, data *data.Data, accountUseCase *biz.AccountUseCase) graphql.ExecutableSchema {
+func NewSchema(logger log.Logger, db *ent.Database, accountUseCase *biz.AccountUseCase) graphql.ExecutableSchema {
 	return NewExecutableSchema(Config{
 		Resolvers: &Resolver{
 			log:            log.NewHelper(log.With(logger, "module", "service/graphql")),
-			data:           data,
+			db:             db,
 			accountUseCase: accountUseCase,
 			captcha:        base64Captcha.NewCaptcha(base64Captcha.NewDriverString(40, 140, 0, 0, 4, "1234567890abcdefghijklmnopqrktuvwxyz", &color.RGBA{}, base64Captcha.DefaultEmbeddedFonts, nil), base64Captcha.DefaultMemStore),
 		},
@@ -55,7 +55,7 @@ func NewSchema(logger log.Logger, data *data.Data, accountUseCase *biz.AccountUs
 				}
 				if !u.IsAdmin {
 					keys, err := cache.LocalRemember(fmt.Sprintf("user:%d:permissions", u.ID), time.Minute*2, func() ([]string, error) {
-						return data.EntDB.Permission(ctx).Query().Where(permission.HasRolesWith(role.HasUsersWith(user.ID(u.ID)))).Select(permission.FieldKey).Strings(ctx)
+						return db.Permission(ctx).Query().Where(permission.HasRolesWith(role.HasUsersWith(user.ID(u.ID)))).Select(permission.FieldKey).Strings(ctx)
 					})
 					if err != nil {
 						return nil, err

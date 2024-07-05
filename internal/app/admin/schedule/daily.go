@@ -4,23 +4,24 @@ import (
 	"context"
 	"fmt"
 	"github.com/IBM/sarama"
-	"github.com/eiixy/monorepo/internal/app/admin/data"
+	"github.com/eiixy/monorepo/internal/data/example/ent"
 	"github.com/eiixy/monorepo/internal/data/example/ent/account"
 )
 
 type Daily struct {
-	data *data.Data
+	db       *ent.Database
+	producer sarama.SyncProducer
 }
 
-func NewDaily(data *data.Data) *Daily {
-	return &Daily{data: data}
+func NewDaily(db *ent.Database, producer sarama.SyncProducer) *Daily {
+	return &Daily{db: db, producer: producer}
 }
 
 // Run mock daily send stat data to accounts
 func (r Daily) Run(ctx context.Context) error {
 	startID := 0
 	for {
-		accounts, err := r.data.EntClient.Account.Query().Where(account.IDGT(startID)).Limit(200).All(ctx)
+		accounts, err := r.db.Account(ctx).Query().Where(account.IDGT(startID)).Limit(200).All(ctx)
 		if err != nil {
 			return err
 		}
@@ -35,7 +36,7 @@ func (r Daily) Run(ctx context.Context) error {
 				Value: sarama.StringEncoder("stat data..."),
 			})
 		}
-		err = r.data.Producer.SendMessages(messages)
+		err = r.producer.SendMessages(messages)
 		if err != nil {
 			return err
 		}

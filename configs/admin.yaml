@@ -10,6 +10,12 @@ data:
   database:
     driver: "mysql"
     dsn: "${EXAMPLE_DB_DSN}"
+  kafka:
+    addrs: "${KAFKA_ADDRS}"
+kafkaConsumerGroup:
+  groupId: golang-admin
+  topics:
+    - test
 email:
   host: "${EMAIL_HOST}"
   port: "${EMAIL_PORT}"

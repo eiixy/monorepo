@@ -85,9 +85,9 @@ func NewConsumerGroup(brokers []string, group string, topics []string, opts ...C
 	return cg
 }
 
-func NewConsumerGroupFromConfig(config config.Kafka, group string, topics []string, opts ...ConfigOption) *ConsumerGroup {
+func NewConsumerGroupFromConfig(config config.Kafka, consumerGroup config.KafkaConsumerGroup, opts ...ConfigOption) *ConsumerGroup {
 	opts = append(opts, SetNetSASL(config.User, config.Password))
-	return NewConsumerGroup(config.GetAddr(), group, topics)
+	return NewConsumerGroup(config.GetAddr(), consumerGroup.GroupId, consumerGroup.Topics)
 }
 
 func (r *ConsumerGroup) Setup(sess sarama.ConsumerGroupSession) error {

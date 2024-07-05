@@ -21,16 +21,29 @@ import (
 // Injectors from wire.go:
 
 func initApp(logger log.Logger, config *conf.Config) (*kratos.App, func(), error) {
-	dataData, cleanup, err := data.NewData(config)
+	client, err := data.NewEntClient(config)
+	if err != nil {
+		return nil, nil, err
+	}
+	database, err := data.NewEntDatabase(config)
 	if err != nil {
 		return nil, nil, err
 	}
 	accountUseCase := biz.NewAccountUseCase(config)
-	executableSchema := graphql.NewSchema(logger, dataData, accountUseCase)
-	httpServer := server.NewHTTPServer(config, logger, dataData, executableSchema)
+	executableSchema := graphql.NewSchema(logger, database, accountUseCase)
+	httpServer := server.NewHTTPServer(config, logger, client, executableSchema)
+	dataData, cleanup, err := data.NewData(client, database, logger)
+	if err != nil {
+		return nil, nil, err
+	}
 	jobJob := job.NewJob(logger, config, dataData)
-	daily := schedule.NewDaily(dataData)
-	scheduleSchedule := schedule.NewSchedule(logger, dataData, daily)
+	syncProducer, err := data.NewKafkaProducer(config)
+	if err != nil {
+		cleanup()
+		return nil, nil, err
+	}
+	daily := schedule.NewDaily(database, syncProducer)
+	scheduleSchedule := schedule.NewSchedule(logger, client, daily)
 	app := newApp(logger, httpServer, jobJob, scheduleSchedule)
 	return app, func() {
 		cleanup()

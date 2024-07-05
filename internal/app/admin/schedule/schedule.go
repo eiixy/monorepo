@@ -3,7 +3,6 @@ package schedule
 import (
 	"context"
 	"fmt"
-	"github.com/eiixy/monorepo/internal/app/admin/data"
 	"github.com/eiixy/monorepo/internal/data/example/ent"
 	"github.com/eiixy/monorepo/internal/pkg/app"
 	"github.com/go-kratos/kratos/v2/log"
@@ -19,11 +18,11 @@ type Schedule struct {
 	daily *Daily
 }
 
-func NewSchedule(logger log.Logger, data *data.Data, daily *Daily) *Schedule {
+func NewSchedule(logger log.Logger, client *ent.Client, daily *Daily) *Schedule {
 	s := app.NewSchedule(logger)
 	return &Schedule{
 		Schedule: s,
-		ent:      data.EntClient,
+		ent:      client,
 		log:      log.NewHelper(log.With(logger, "module", "schedule")),
 		daily:    daily,
 	}
