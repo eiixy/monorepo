@@ -16,8 +16,6 @@ func ErrorEncoder(opts ...ErrorEncoderOption) http.EncodeErrorFunc {
 		for _, opt := range opts {
 			e = opt(e, err)
 		}
-		lang := r.Header.Get("X-Language")
-		e.Message = errorsLocale.locale(lang, e.GetCode(), e.Message)
 		resp := e.GetResponse(nil)
 		body, _ := json.Marshal(resp)
 		w.Header().Set("Content-Type", "application/json")
