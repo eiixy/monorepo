@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package zapis.common;
+
+import "response/response.proto";
+
+option go_package = "github.com/eiixy/monorepo/apis/api/common;common";
+
+// code range 100001 - 109999
+enum CommonError {
+  option (response.default_code) = 500;
+
+  Success = 0 [
+    (response.code) = 200,
+    (response.msg) = "Success"
+  ];
+
+  /**
+   * 通用 - 基本错误 1000
+   */
+  ErrUnknown = 100001 [
+    (response.code) = 500,
+    (response.msg) = "Internal Server Error"
+  ];
+
+  ErrCommon = 100002 [
+    (response.code) = 500,
+    (response.msg) = "Internal Server Error"
+  ];
+
+  // 请求验证异常
+  ErrValidate = 100003 [
+    (response.code) = 200,
+    (response.msg) = "%s"
+  ];
+
+  /**
+   * 通用 - 认证授权类错误 1001
+   */
+  // token 无效
+  ErrUnauthorized = 100100 [
+    (response.code) = 401,
+    (response.msg) = "Unauthorized"
+  ];
+  // token 无效
+  ErrTokenInvalid = 100101 [
+    (response.code) = 401,
+    (response.msg) = "Token Invalid"
+  ];
+  // token 过期
+  ErrTokenExpiration = 100102 [
+    (response.code) = 200,
+    (response.msg) = "Token Expiration"
+  ];
+
+  // 已登录，但是没有角色身份 10011
+  ErrNoPartnerIdentity = 100110 [
+    (response.code) = 200,
+    (response.msg) = "The account does not have partner identity"
+  ];
+  ErrNoMerchantIdentity = 100111 [
+    (response.code) = 200,
+    (response.msg) = "The account does not have merchant identity"
+  ];
+  ErrNoBankerIdentity = 100112 [
+    (response.code) = 200,
+    (response.msg) = "The account does not have banker identity"
+  ];
+  ErrNoOrganizationIdentity = 100113 [
+    (response.code) = 200,
+    (response.msg) = "The account does not have organization identity"
+  ];
+
+  // 权限验证不通过 10012
+  ErrPermissionDenied = 100120 [
+    (response.code) = 200,
+    (response.msg) = "Permission Denied"
+  ];
+  //
+
+  /**
+   * 通用 - 数据库类错误 1002
+   */
+  // 资源不存在
+  ErrResourceNotFound = 100201 [
+    (response.code) = 404,
+    (response.msg) = "Resource Not Found"
+  ];
+
+  ErrQueryConditionIsEmpty = 100202 [
+    (response.code) = 200,
+    (response.msg) = "Query Condition Is Empty"
+  ];
+
+}

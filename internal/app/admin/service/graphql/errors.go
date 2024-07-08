@@ -2,57 +2,34 @@ package graphql
 
 import "github.com/vektah/gqlparser/v2/gqlerror"
 
-var ErrDisabled = &gqlerror.Error{
-	Message: "disabled",
-	Extensions: map[string]interface{}{
-		"code": "Disabled",
-	},
-}
+const CustomErrorKey = "custom"
+
+var ErrDisabled = CustomError("Disabled", "disabled")
 
 // ErrDeprecated 方法已弃用
-var ErrDeprecated = &gqlerror.Error{
-	Message: "deprecated",
-	Extensions: map[string]interface{}{
-		"code": "Deprecated",
-	},
-}
+var ErrDeprecated = CustomError("Deprecated", "deprecated")
 
 // ErrNoPermission 无权限
-var ErrNoPermission = &gqlerror.Error{
-	Message: "no permission",
-	Extensions: map[string]interface{}{
-		"code": "NoPermission",
-	},
-}
+var ErrNoPermission = CustomError("NoPermission", "no permission")
 
 // ErrAccessDenied 拒绝访问，无角色或身份
-var ErrAccessDenied = &gqlerror.Error{
-	Message: "access denied",
-	Extensions: map[string]interface{}{
-		"code": "AccessDenied",
-	},
-}
+var ErrAccessDenied = CustomError("AccessDenied", "access denied")
 
 // ErrUnauthorized 未授权
-var ErrUnauthorized = &gqlerror.Error{
-	Message: "Unauthorized",
-	Extensions: map[string]interface{}{
-		"code": "Unauthorized",
-	},
-}
+var ErrUnauthorized = CustomError("Unauthorized", "Unauthorized")
 
 // ErrAccountOrPasswordInvalid 账号或密码无效
-var ErrAccountOrPasswordInvalid = &gqlerror.Error{
-	Message: "account or password invalid",
-	Extensions: map[string]interface{}{
-		"code": "AccountOrPasswordInvalid",
-	},
-}
+var ErrAccountOrPasswordInvalid = CustomError("AccountOrPasswordInvalid", "account or password invalid")
 
 // ErrVerifyCodeInvalid 验证码无效
-var ErrVerifyCodeInvalid = &gqlerror.Error{
-	Message: "verify code invalid",
-	Extensions: map[string]interface{}{
-		"code": "VerifyCodeInvalid",
-	},
+var ErrVerifyCodeInvalid = CustomError("VerifyCodeInvalid", "verify code invalid")
+
+func CustomError(code, message string) *gqlerror.Error {
+	return &gqlerror.Error{
+		Message: message,
+		Extensions: map[string]any{
+			"code": code,
+		},
+		Rule: CustomErrorKey,
+	}
 }

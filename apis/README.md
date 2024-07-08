@@ -1,19 +1,8 @@
 # APIs
 
-## 引入/更新 submodule
-1. 初始化本地子模块配置文件
-    ```shell
-    git submodule init
-    ```
-
-2. 更新项目，抓取子模块内容。
-    ```shell
-    git submodule update
-    ```
-
 ## 生成代码
 ```shell
-make zapis
+make gen
 ```
 
 ## Generate

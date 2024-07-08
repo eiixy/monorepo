@@ -14,10 +14,10 @@ var (
 	)
 )
 
-func Err2HashCode(err error) (string, string) {
+func Err2HashCode(err error) string {
 	msg := err.Error()
 	h := md5.Sum([]byte(msg))
 	code := strings.ToUpper(fmt.Sprintf("%x", h)[0:4])
 	replacer.Replace(code)
-	return code, msg
+	return code
 }

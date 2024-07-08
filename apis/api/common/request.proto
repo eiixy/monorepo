@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package zapis.common;
+
+option go_package = "github.com/eiixy/monorepo/apis/api/common;common";
+
+message Id{
+	uint32 id = 1;
+}
+
+message Key{
+	string key = 1;
+}
+
+message Pagination{
+	uint32 page = 1;
+	uint32 size = 2;
+}
